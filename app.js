@@ -36,3 +36,7 @@ app.post("/create_jam", async (req, res) => {
   res.status(200).json({ message: "Jam Created" });
 });
 
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
