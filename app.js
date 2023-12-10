@@ -44,8 +44,14 @@ app.get("/", (req, res) => {
 app.post("/create_jam", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
-  
-    const { title, time_limit, jam_url = "", options = "{}", image_url = "" } = req.body;
+
+    const {
+      title,
+      time_limit,
+      jam_url = "",
+      options = "{}",
+      image_url = "",
+    } = req.body;
     const jam_id = uuidv4();
     console.log("yes");
     const new_jam = new Jam({
@@ -56,24 +62,16 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       options,
       image_url,
       jam_id: jam_id,
-      _id: jam_id
+      _id: jam_id,
     });
-  
+
     await new_jam.save();
     res.status(200).json({ message: "Jam Created", jam: new_jam });
-  }
-  catch (error) {
+  } catch (error) {
     console.log("there was an error creating the authentication");
     res.status(500).json({ message: error.message });
   }
 });
-
-
-
-
-
-
-
 
 // Add a POST endpoint for creating a JamNote
 app.post("/jam_note", authenticateJWT, async (req, res) => {
@@ -94,24 +92,19 @@ app.post("/jam_note", authenticateJWT, async (req, res) => {
     });
 
     await new_jam_note.save();
-    res.status(201).json({ message: "JamNote Created", jam_note: new_jam_note });
+    res
+      .status(201)
+      .json({ message: "JamNote Created", jam_note: new_jam_note });
   } catch (error) {
     console.error("There was an error creating the JamNote:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
-
-
-
-
-
-
-
-
 // Add a POST endpoint for user registration (signup)
 app.post("/signup", async (req, res) => {
   try {
+    dbConnect(process.env.GEN_AUTH);
     const { username, password } = req.body;
 
     // Check if the username already exists
@@ -140,6 +133,7 @@ app.post("/signup", async (req, res) => {
 // Add a POST endpoint for user login
 app.post("/login", async (req, res) => {
   try {
+    dbConnect(process.env.GEN_AUTH);
     const { username, password } = req.body;
 
     const user = await User.findOne({ username });
@@ -153,7 +147,9 @@ app.post("/login", async (req, res) => {
     }
 
     // Create a JWT token
-    const token = jwt.sign({ userId: user._id }, SECRET_JWT, { expiresIn: "1h" });
+    const token = jwt.sign({ userId: user._id }, SECRET_JWT, {
+      expiresIn: "1h",
+    });
 
     res.status(200).json({ message: "Login successful", token });
   } catch (error) {
@@ -161,8 +157,6 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
-
 
 // Add a new GET endpoint for retrieving jams
 app.get("/jams", authenticateJWT, async (req, res) => {
@@ -197,7 +191,9 @@ app.delete("/jams", authenticateJWT, async (req, res) => {
     const { id } = req.query;
 
     if (!id) {
-      return res.status(400).json({ message: "Please provide an 'id' parameter to delete a jam" });
+      return res
+        .status(400)
+        .json({ message: "Please provide an 'id' parameter to delete a jam" });
     }
 
     // Attempt to find and delete the jam by custom id
@@ -207,13 +203,14 @@ app.delete("/jams", authenticateJWT, async (req, res) => {
       return res.status(404).json({ message: "Jam not found" });
     }
 
-    return res.status(200).json({ message: "Jam deleted successfully", deletedJam });
+    return res
+      .status(200)
+      .json({ message: "Jam deleted successfully", deletedJam });
   } catch (error) {
     console.error("There was an error deleting the jam:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 // Add a PUT endpoint for updating a jam by ID
 app.put("/jams/:id", authenticateJWT, async (req, res) => {
@@ -221,7 +218,13 @@ app.put("/jams/:id", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.params;
-    const { title, time_limit, jam_url = "", options = "{}", image_url = "" } = req.body;
+    const {
+      title,
+      time_limit,
+      jam_url = "",
+      options = "{}",
+      image_url = "",
+    } = req.body;
 
     // Attempt to find and update the jam by ID
     const updatedJam = await Jam.findByIdAndUpdate(
@@ -234,14 +237,14 @@ app.put("/jams/:id", authenticateJWT, async (req, res) => {
       return res.status(404).json({ message: "Jam not found" });
     }
 
-    return res.status(200).json({ message: "Jam updated successfully", updatedJam });
+    return res
+      .status(200)
+      .json({ message: "Jam updated successfully", updatedJam });
   } catch (error) {
     console.error("There was an error updating the jam:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
-
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
