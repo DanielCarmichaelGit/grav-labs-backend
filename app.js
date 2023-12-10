@@ -96,7 +96,7 @@ app.delete("/jams", async (req, res) => {
 
 
 // Add a PUT endpoint for updating a jam by ID
-app.put("/jams/:id", async (req, res) => {
+app.put("/jams", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
