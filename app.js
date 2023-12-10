@@ -99,7 +99,7 @@ app.put("/jams/:id", async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.params;
-    const { title, time_limit, jam_url = "", options = {} } = req.body;
+    const { title, time_limit, jam_url = "", options = "" } = req.body;
 
     // Attempt to find and update the jam by ID
     const updatedJam = await Jam.findByIdAndUpdate(
