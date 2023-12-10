@@ -2,14 +2,38 @@ const express = require("express");
 const cors = require("cors");
 const dbConnect = require("./src/utils/dbConnect");
 const { v4: uuidv4 } = require("uuid");
-const Jam = require("./src/models/jam");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-const mongoose = require("mongoose");
+// Secret key for JWT signing (change it to a strong, random value)
+const SECRET_JWT = PROCESS.ENV.SECRET_JWT;
+
+const User = require("./src/models/user");
+const Jam = require("./src/models/jam");
+const JamNote = require("./src/models/jamNote");
 
 const app = express();
 app.use(cors());
 app.options("*", cors()); // Enable CORS pre-flight request for all routes
 app.use(express.json());
+
+// Middleware to verify JWT token
+function authenticateJWT(req, res, next) {
+  const token = req.header("Authorization");
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  jwt.verify(token, SECRET_JWT, (error, user) => {
+    if (error) {
+      return res.status(403).json({ message: "Token is invalid" });
+    }
+
+    req.user = user;
+    next();
+  });
+}
 
 app.get("/", (req, res) => {
   console.log("received home");
@@ -17,7 +41,7 @@ app.get("/", (req, res) => {
 });
 
 // this endpoint uses the "auth" auth
-app.post("/create_jam", async (req, res) => {
+app.post("/create_jam", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
   
@@ -36,7 +60,7 @@ app.post("/create_jam", async (req, res) => {
     });
   
     await new_jam.save();
-    res.status(200).json({ message: "Jam Created" });
+    res.status(200).json({ message: "Jam Created", jam: new_jam });
   }
   catch (error) {
     console.log("there was an error creating the authentication");
@@ -44,8 +68,63 @@ app.post("/create_jam", async (req, res) => {
   }
 });
 
+// Add a POST endpoint for user registration (signup)
+app.post("/signup", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Check if the username already exists
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+
+    // Hash the password before saving it
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
+      username,
+      password: hashedPassword,
+    });
+
+    await newUser.save();
+
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (error) {
+    console.error("Error during user registration:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Add a POST endpoint for user login
+app.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid username or password" });
+    }
+
+    // Create a JWT token
+    const token = jwt.sign({ userId: user._id }, SECRET_JWT, { expiresIn: "1h" });
+
+    res.status(200).json({ message: "Login successful", token });
+  } catch (error) {
+    console.error("Error during user login:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
+
 // Add a new GET endpoint for retrieving jams
-app.get("/jams", async (req, res) => {
+app.get("/jams", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
@@ -70,7 +149,7 @@ app.get("/jams", async (req, res) => {
 });
 
 // Add a DELETE endpoint for deleting a jam by custom id
-app.delete("/jams", async (req, res) => {
+app.delete("/jams", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
@@ -96,7 +175,7 @@ app.delete("/jams", async (req, res) => {
 
 
 // Add a PUT endpoint for updating a jam by ID
-app.put("/jams/:id", async (req, res) => {
+app.put("/jams/:id", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
