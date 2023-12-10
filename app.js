@@ -51,7 +51,7 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       jam_url = "",
       options = "{}",
       image_url = "",
-      jam_group_id,
+      jam_group_id = "temp_id",
     } = req.body;
     const jam_id = uuidv4();
     console.log("yes");
@@ -187,7 +187,7 @@ app.post("/signup", async (req, res) => {
       username,
       password: hashedPassword,
       uuid: uuidv4(),
-      jam_group, // Assign jam_group to the user
+      jam_group: [jam_group], // Assign jam_group to the user
     });
 
     await newUser.save();
@@ -195,6 +195,89 @@ app.post("/signup", async (req, res) => {
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
     console.error("Error during user registration:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post("/jam_groups", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const {
+      title,
+      users,
+      host_uuid,
+    } = req.body;
+
+    const created_timestamp = Date.now();
+    const jam_group_id = uuidv4();
+
+    const newJamGroup = new JamGroup({
+      title,
+      users,
+      host_uuid,
+      created_timestamp,
+      jam_group_id,
+      _id: jam_group_id,
+    });
+
+    await newJamGroup.save();
+    res.status(201).json({ message: "Jam Group Created", jamGroup: newJamGroup });
+  } catch (error) {
+    console.error("There was an error creating the Jam Group:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.delete("/jam_groups/:id", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { id } = req.params;
+
+    // Attempt to find and delete the Jam Group by ID
+    const deletedJamGroup = await JamGroup.findOneAndDelete({ _id: id });
+
+    if (!deletedJamGroup) {
+      return res.status(404).json({ message: "Jam Group not found" });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Jam Group deleted successfully", deletedJamGroup });
+  } catch (error) {
+    console.error("There was an error deleting the Jam Group:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.put("/jam_groups/:id", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { id } = req.params;
+    const {
+      title,
+      users,
+      host_uuid,
+    } = req.body;
+
+    // Attempt to find and update the Jam Group by ID
+    const updatedJamGroup = await JamGroup.findByIdAndUpdate(
+      id,
+      { title, users, host_uuid },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedJamGroup) {
+      return res.status(404).json({ message: "Jam Group not found" });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Jam Group updated successfully", updatedJamGroup });
+  } catch (error) {
+    console.error("There was an error updating the Jam Group:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
