@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  jam_groups: {
+    type: Array,
+    required: false,
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);

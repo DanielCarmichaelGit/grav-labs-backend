@@ -51,6 +51,7 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       jam_url = "",
       options = "{}",
       image_url = "",
+      jam_group_id,
     } = req.body;
     const jam_id = uuidv4();
     console.log("yes");
@@ -61,7 +62,8 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       jam_url,
       options,
       image_url,
-      jam_id: jam_id,
+      jam_id,
+      jam_group_id,
       _id: jam_id,
     });
 
@@ -101,6 +103,52 @@ app.post("/jam_note", authenticateJWT, async (req, res) => {
   }
 });
 
+// Add a new GET endpoint for retrieving jams
+app.get("/jams", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { id } = req.query;
+    const userJamGroup = req.user.jam_group_id; // Get the user's jam_group
+
+    if (id) {
+      // If an 'id' parameter is provided, get the specific jam by ID
+      const jam = await Jam.findOne({ _id: id, jam_group: userJamGroup });
+      if (!jam) {
+        return res.status(404).json({ message: "Jam not found" });
+      }
+      return res.status(200).json(jam);
+    } else {
+      // If no 'id' parameter is provided, get all jams in the user's jam_group
+      const jams = await Jam.find({ jam_group: userJamGroup });
+      return res.status(200).json(jams);
+    }
+  } catch (error) {
+    console.error("There was an error retrieving jams:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Modify the GET endpoint for getting jam notes by user ID
+app.get("/jam_notes/user/:user_id", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { user_id } = req.params;
+    const userJamGroup = req.user.jam_group_id; // Get the user's jam_group
+
+    // Find all JamNotes associated with the provided user_id and in the user's jam_group
+    const jamNotes = await JamNote.find({ user_id, jam_group: userJamGroup });
+
+    res
+      .status(200)
+      .json({ message: "JamNotes retrieved successfully", jamNotes });
+  } catch (error) {
+    console.error("There was an error retrieving JamNotes:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 // Add a GET endpoint to get all JamNotes associated with a jam_id
 app.get("/jam_notes/jam/:jam_id", authenticateJWT, async (req, res) => {
   try {
@@ -120,31 +168,11 @@ app.get("/jam_notes/jam/:jam_id", authenticateJWT, async (req, res) => {
   }
 });
 
-// Add a GET endpoint to get all JamNotes associated with a user_id
-app.get("/jam_notes/user/:user_id", authenticateJWT, async (req, res) => {
-  try {
-    dbConnect(process.env.GEN_AUTH);
-
-    const { user_id } = req.params;
-
-    // Find all JamNotes associated with the provided user_id
-    const jamNotes = await JamNote.find({ user_id });
-
-    res
-      .status(200)
-      .json({ message: "JamNotes retrieved successfully", jamNotes });
-  } catch (error) {
-    console.error("There was an error retrieving JamNotes:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-
 // Add a POST endpoint for user registration (signup)
 app.post("/signup", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
-    const { username, password } = req.body;
-    const uuid = uuidv4();
+    const { username, password, jam_group } = req.body; // Add jam_group
 
     // Check if the username already exists
     const existingUser = await User.findOne({ username });
@@ -158,7 +186,8 @@ app.post("/signup", async (req, res) => {
     const newUser = new User({
       username,
       password: hashedPassword,
-      uuid,
+      uuid: uuidv4(),
+      jam_group, // Assign jam_group to the user
     });
 
     await newUser.save();
@@ -186,14 +215,23 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid username or password" });
     }
 
-    // Create a JWT token
-    const token = jwt.sign({ userId: user._id }, SECRET_JWT, {
-      expiresIn: "12h",
-    });
+    // Create a JWT token with user ID and jam_group
+    const token = jwt.sign(
+      { userId: user._id, jamGroup: user.jam_group },
+      SECRET_JWT,
+      {
+        expiresIn: "12h",
+      }
+    );
 
     res
       .status(200)
-      .json({ message: "Login successful", token, user_id: user.uuid });
+      .json({
+        message: "Login successful",
+        token,
+        user_id: user.uuid,
+        jam_group: user.jam_group,
+      });
   } catch (error) {
     console.error("Error during user login:", error);
     res.status(500).json({ message: "Internal server error" });
