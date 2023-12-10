@@ -20,6 +20,7 @@ async function dbConnect(auth) {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       poolSize: 10,
+      useFindAndModify: false,
     });
 
     connections[auth] = connection;
