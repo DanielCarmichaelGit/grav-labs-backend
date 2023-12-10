@@ -79,7 +79,7 @@ app.delete("/jams", async (req, res) => {
     }
 
     // Attempt to find and delete the jam by custom id
-    const deletedJam = await Jam.findOneAndDelete({ customId: id });
+    const deletedJam = await Jam.findOneAndDelete({ id });
 
     if (!deletedJam) {
       return res.status(404).json({ message: "Jam not found" });
@@ -88,6 +88,33 @@ app.delete("/jams", async (req, res) => {
     return res.status(200).json({ message: "Jam deleted successfully", deletedJam });
   } catch (error) {
     console.error("There was an error deleting the jam:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
+// Add a PUT endpoint for updating a jam by ID
+app.put("/jams/:id", async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { id } = req.params;
+    const { title, time_limit, jam_url = "", options = {} } = req.body;
+
+    // Attempt to find and update the jam by ID
+    const updatedJam = await Jam.findByIdAndUpdate(
+      id,
+      { title, time_limit, jam_url, options },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedJam) {
+      return res.status(404).json({ message: "Jam not found" });
+    }
+
+    return res.status(200).json({ message: "Jam updated successfully", updatedJam });
+  } catch (error) {
+    console.error("There was an error updating the jam:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
