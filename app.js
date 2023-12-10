@@ -81,7 +81,7 @@ app.delete("/jams", async (req, res) => {
     }
 
     // Attempt to find and delete the jam by custom id
-    const deletedJam = await Jam.findOneAndDelete({ id });
+    const deletedJam = await Jam.findOneAndDelete({ _id: id });
 
     if (!deletedJam) {
       return res.status(404).json({ message: "Jam not found" });
@@ -96,7 +96,7 @@ app.delete("/jams", async (req, res) => {
 
 
 // Add a PUT endpoint for updating a jam by ID
-app.put("/jams", async (req, res) => {
+app.put("/jams/:id", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
