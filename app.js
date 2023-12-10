@@ -42,17 +42,16 @@ app.post("/create_jam", async (req, res) => {
   }
 });
 
-// Add a new GET endpoint for retrieving jams by custom id
+// Add a new GET endpoint for retrieving jams
 app.get("/jams", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { jam_id } = req.query;
+    const { id } = req.query;
 
-    if (jam_id) {
-      // If 'id' parameter is provided, get the specific jam by custom id
-      const jam = await Jam.findOne({ jam_id });
-
+    if (id) {
+      // If an 'id' parameter is provided, get the specific jam by ID
+      const jam = await Jam.findById(id);
       if (!jam) {
         return res.status(404).json({ message: "Jam not found" });
       }
@@ -67,6 +66,7 @@ app.get("/jams", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
