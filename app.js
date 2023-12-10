@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 // Secret key for JWT signing (change it to a strong, random value)
-const SECRET_JWT = PROCESS.ENV.SECRET_JWT;
+const SECRET_JWT = process.env.SECRET_JWT;
 
 const User = require("./src/models/user");
 const Jam = require("./src/models/jam");
