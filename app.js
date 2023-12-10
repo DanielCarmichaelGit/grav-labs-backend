@@ -101,6 +101,44 @@ app.post("/jam_note", authenticateJWT, async (req, res) => {
   }
 });
 
+// Add a GET endpoint to get all JamNotes associated with a jam_id
+app.get("/jam_notes/jam/:jam_id", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { jam_id } = req.params;
+
+    // Find all JamNotes associated with the provided jam_id
+    const jamNotes = await JamNote.find({ jam_id });
+
+    res
+      .status(200)
+      .json({ message: "JamNotes retrieved successfully", jamNotes });
+  } catch (error) {
+    console.error("There was an error retrieving JamNotes:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Add a GET endpoint to get all JamNotes associated with a user_id
+app.get("/jam_notes/user/:user_id", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { user_id } = req.params;
+
+    // Find all JamNotes associated with the provided user_id
+    const jamNotes = await JamNote.find({ user_id });
+
+    res
+      .status(200)
+      .json({ message: "JamNotes retrieved successfully", jamNotes });
+  } catch (error) {
+    console.error("There was an error retrieving JamNotes:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 // Add a POST endpoint for user registration (signup)
 app.post("/signup", async (req, res) => {
   try {
@@ -120,7 +158,7 @@ app.post("/signup", async (req, res) => {
     const newUser = new User({
       username,
       password: hashedPassword,
-      uuid
+      uuid,
     });
 
     await newUser.save();
@@ -153,7 +191,9 @@ app.post("/login", async (req, res) => {
       expiresIn: "12h",
     });
 
-    res.status(200).json({ message: "Login successful", token, user_id: user.uuid });
+    res
+      .status(200)
+      .json({ message: "Login successful", token, user_id: user.uuid });
   } catch (error) {
     console.error("Error during user login:", error);
     res.status(500).json({ message: "Internal server error" });
