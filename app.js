@@ -20,17 +20,17 @@ app.get("/", (req, res) => {
 app.post("/create_jam", async (req, res) => {
   dbConnect(process.env.GEN_AUTH);
 
-  const { title, time_limit, jam_url, options = {} } =  req.body;
+  const { title, time_limit, jam_url, options = {} } = req.body;
   const jam_id = uuidv4();
-
-  const new_jam = new Jam ({
+  console.log("yes");
+  const new_jam = new Jam({
     title,
     time_limit,
     created_timestamp: Date.now(),
     jam_url,
     options,
-    _id: jam_id
-  })
+    _id: jam_id,
+  });
 
   await new_jam.save();
   res.status(200).json({ message: "Jam Created" });
@@ -91,11 +91,10 @@ app.post("/create_jam", async (req, res) => {
 //   const { email, password, full_name } = req.body;
 //   const user_id = uuidv4();
 
-  
 //   console.log("##############################");
 //   console.log("Attempting to sign up user");
 //   console.log("##############################");
-  
+
 //   try {
 //     await dbConnect(process.env.GEN_AUTH).then((res) => {
 //       console.log("database connection established");
@@ -127,7 +126,6 @@ app.post("/create_jam", async (req, res) => {
 
 //       res.status(201).json({ message: "User registered" });
 
-      
 //       try {
 //         // await utility(user);
 //         // connect to config auth and force a reconnect
@@ -191,4 +189,3 @@ app.post("/create_jam", async (req, res) => {
 //     res.status(500).json({ message: "Internal Server Error" });
 //   }
 // });
-
