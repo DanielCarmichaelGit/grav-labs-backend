@@ -30,7 +30,7 @@ app.post("/create_jam", async (req, res) => {
       created_timestamp: Date.now(),
       jam_url,
       options,
-      _id: jam_id,
+      jam_id: jam_id,
     });
   
     await new_jam.save();
@@ -39,6 +39,32 @@ app.post("/create_jam", async (req, res) => {
   catch (error) {
     console.log("there was an error creating the authentication");
     res.status(500).json({ message: error.message });
+  }
+});
+
+// Add a new GET endpoint for retrieving jams by custom id
+app.get("/jams", async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { jam_id } = req.query;
+
+    if (jam_id) {
+      // If 'id' parameter is provided, get the specific jam by custom id
+      const jam = await Jam.findOne({ jam_id });
+
+      if (!jam) {
+        return res.status(404).json({ message: "Jam not found" });
+      }
+      return res.status(200).json(jam);
+    } else {
+      // If no 'id' parameter is provided, get all jams
+      const jams = await Jam.find();
+      return res.status(200).json(jams);
+    }
+  } catch (error) {
+    console.error("There was an error retrieving jams:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
