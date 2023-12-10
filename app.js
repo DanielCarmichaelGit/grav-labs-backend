@@ -67,6 +67,32 @@ app.get("/jams", async (req, res) => {
   }
 });
 
+// Add a DELETE endpoint for deleting a jam by custom id
+app.delete("/jams", async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { id } = req.query;
+
+    if (!id) {
+      return res.status(400).json({ message: "Please provide an 'id' parameter to delete a jam" });
+    }
+
+    // Attempt to find and delete the jam by custom id
+    const deletedJam = await Jam.findOneAndDelete({ customId: id });
+
+    if (!deletedJam) {
+      return res.status(404).json({ message: "Jam not found" });
+    }
+
+    return res.status(200).json({ message: "Jam deleted successfully", deletedJam });
+  } catch (error) {
+    console.error("There was an error deleting the jam:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
