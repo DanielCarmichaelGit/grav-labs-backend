@@ -21,7 +21,7 @@ app.post("/create_jam", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
   
-    const { title, time_limit, jam_url, options = {} } = req.body;
+    const { title, time_limit, jam_url = "", options = "{}", image_url = "" } = req.body;
     const jam_id = uuidv4();
     console.log("yes");
     const new_jam = new Jam({
@@ -30,6 +30,7 @@ app.post("/create_jam", async (req, res) => {
       created_timestamp: Date.now(),
       jam_url,
       options,
+      image_url,
       jam_id: jam_id,
     });
   
@@ -99,12 +100,12 @@ app.put("/jams/:id", async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.params;
-    const { title, time_limit, jam_url = "", options = "" } = req.body;
+    const { title, time_limit, jam_url = "", options = "{}", image_url = "" } = req.body;
 
     // Attempt to find and update the jam by ID
     const updatedJam = await Jam.findByIdAndUpdate(
       id,
-      { title, time_limit, jam_url, options },
+      { title, time_limit, jam_url, options, image_url },
       { new: true } // Return the updated document
     );
 
