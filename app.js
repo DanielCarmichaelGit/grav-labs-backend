@@ -68,6 +68,47 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
   }
 });
 
+
+
+
+
+
+
+
+// Add a POST endpoint for creating a JamNote
+app.post("/jam_note", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { note, jam_id } = req.body;
+    const user_id = req.user.userId; // Extract the user ID from the JWT payload
+    const created_timestamp = Date.now();
+    const jam_note_id = uuidv4();
+
+    const new_jam_note = new JamNote({
+      note,
+      jam_id,
+      user_id,
+      created_timestamp,
+      _id: jam_note_id,
+    });
+
+    await new_jam_note.save();
+    res.status(201).json({ message: "JamNote Created", jam_note: new_jam_note });
+  } catch (error) {
+    console.error("There was an error creating the JamNote:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
+
+
+
+
+
+
+
 // Add a POST endpoint for user registration (signup)
 app.post("/signup", async (req, res) => {
   try {
