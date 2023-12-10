@@ -32,6 +32,7 @@ app.post("/create_jam", async (req, res) => {
       options,
       image_url,
       jam_id: jam_id,
+      _id: jam_id
     });
   
     await new_jam.save();
