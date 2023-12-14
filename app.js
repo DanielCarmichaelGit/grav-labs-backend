@@ -54,22 +54,31 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       image_url = "",
       jam_group_id = "temp_id",
     } = req.body;
-    const jam_id = uuidv4();
-    console.log("yes");
-    const new_jam = new Jam({
-      title,
-      time_limit,
-      created_timestamp: Date.now(),
-      jam_url,
-      options,
-      image_url,
-      jam_id,
-      jam_group_id,
-      _id: jam_id,
-    });
 
-    await new_jam.save();
-    res.status(200).json({ message: "Jam Created", jam: new_jam });
+    const existing_group = JamGroup.findById({ _id: jam_group_id });
+
+    if (!existing_group) {
+      res.status(400).json({
+        message: "Jam Group not found"
+      })
+    }
+    else {
+      const jam_id = uuidv4();
+      const new_jam = new Jam({
+        title,
+        time_limit,
+        created_timestamp: Date.now(),
+        jam_url,
+        options,
+        image_url,
+        jam_id,
+        jam_group_id,
+        _id: jam_id,
+      });
+  
+      await new_jam.save();
+      res.status(200).json({ message: "Jam Created", jam: new_jam });
+    }
   } catch (error) {
     console.log("there was an error creating the authentication");
     res.status(500).json({ message: error.message });
@@ -232,7 +241,7 @@ app.post("/signup", async (req, res) => {
       message: "User Registered",
       user: newUser,
       user_group: newGroup,
-      token
+      token,
     });
   } catch (error) {
     console.error("Error during user registration:", error);
