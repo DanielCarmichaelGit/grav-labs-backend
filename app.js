@@ -217,11 +217,13 @@ app.post("/signup", async (req, res) => {
       _id: new_user_id,
     });
 
-    await newUser.save().then((res) => {
-      newGroup.save();
-      res
-        .status(201)
-        .json({ message: "User registered successfully", newUser });
+    await newUser.save();
+    await newGroup.save();
+
+    res.status(200).json({
+      message: "User Registered",
+      user: newUser,
+      user_group: newGroup,
     });
   } catch (error) {
     console.error("Error during user registration:", error);
