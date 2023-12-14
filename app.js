@@ -11,6 +11,7 @@ const SECRET_JWT = process.env.SECRET_JWT;
 const User = require("./src/models/user");
 const Jam = require("./src/models/jam");
 const JamNote = require("./src/models/jamNote");
+const JamGroup = require("./src/models/jamGroup");
 
 const app = express();
 app.use(cors());
@@ -102,25 +103,33 @@ app.post("/jam_note", authenticateJWT, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
-// Add a new GET endpoint for retrieving jams
-app.get("/jams", authenticateJWT, async (req, res) => {
+app.get("/jams/:id?", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.query;
-    const userJamGroup = req.user.jam_group_id; // Get the user's jam_group
+    const { user_id } = req.body;
+    const userJamGroup = req.body.jam_group_id; // Get the user's jam_group
 
-    if (id) {
-      // If an 'id' parameter is provided, get the specific jam by ID
-      const jam = await Jam.findOne({ _id: id, jam_group: userJamGroup });
-      if (!jam) {
-        return res.status(404).json({ message: "Jam not found" });
+    if (id && user_id) {
+      const user = await User.findById(user_id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
-      return res.status(200).json(jam);
+
+      if (user.jam_groups.includes(id)) {
+        const jam = await Jam.findById(id);
+        if (!jam) {
+          return res.status(404).json({ message: "Jam not found" });
+        }
+        
+        return res.status(201).json(jam);
+      } else {
+        return res.status(403).json({ message: "User does not have access to this jam" });
+      }
     } else {
       // If no 'id' parameter is provided, get all jams in the user's jam_group
-      const jams = await Jam.find({ jam_group: userJamGroup });
+      const jams = await Jam.find({ _id: { $in: userJamGroup } });
       return res.status(200).json(jams);
     }
   } catch (error) {
@@ -128,6 +137,7 @@ app.get("/jams", authenticateJWT, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 // Modify the GET endpoint for getting jam notes by user ID
 app.get("/jam_notes/user/:user_id", authenticateJWT, async (req, res) => {
@@ -172,7 +182,9 @@ app.get("/jam_notes/jam/:jam_id", authenticateJWT, async (req, res) => {
 app.post("/signup", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
-    const { username, password, jam_group } = req.body; // Add jam_group
+    const { username, password } = req.body; // Add jam_group
+    const new_user_id = uuidv4();
+    const new_jam_id = uuidv4();
 
     // Check if the username already exists
     const existingUser = await User.findOne({ username });
@@ -183,16 +195,31 @@ app.post("/signup", async (req, res) => {
     // Hash the password before saving it
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const newGroup = new JamGroup({
+      title: `${username}'s Jam`,
+      users: [user_id],
+      host_id: user_id,
+      created_timestamp: Date.now(),
+      jam_group_id: new_jam_id,
+      join_code: "",
+      _id: new_jam_id
+    })
+
+    //Create a jam group for this new user
     const newUser = new User({
       username,
       password: hashedPassword,
-      uuid: uuidv4(),
-      jam_group: [jam_group], // Assign jam_group to the user
+      user_id,
+      jam_group: [new_jam_id], // Assign jam_group to the user
+      jam_tasks: [],
+      jam_notes: [],
     });
 
-    await newUser.save();
-
-    res.status(201).json({ message: "User registered successfully" });
+    await newUser.save().then((res) => {
+      newGroup.save();
+      res.status(201).json({ message: "User registered successfully" });
+    });
+    
   } catch (error) {
     console.error("Error during user registration:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -203,11 +230,7 @@ app.post("/jam_groups", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const {
-      title,
-      users,
-      host_uuid,
-    } = req.body;
+    const { title, users, host_uuid, join_code = "" } = req.body;
 
     const created_timestamp = Date.now();
     const jam_group_id = uuidv4();
@@ -218,14 +241,56 @@ app.post("/jam_groups", authenticateJWT, async (req, res) => {
       host_uuid,
       created_timestamp,
       jam_group_id,
+      join_code,
       _id: jam_group_id,
     });
 
     await newJamGroup.save();
-    res.status(201).json({ message: "Jam Group Created", jamGroup: newJamGroup });
+    res
+      .status(201)
+      .json({ message: "Jam Group Created", jamGroup: newJamGroup });
   } catch (error) {
     console.error("There was an error creating the Jam Group:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post("/join_group/:id", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { id } = req.params;
+    const { join_code = "", user_id } = req.body;
+
+    const existing_group = JamGroup.findById({ id });
+
+    if (!existing_group) {
+      res
+        .status(201)
+        .json({
+          message: `Jam Group with id "${id}" does not exist or cannot be found`,
+        });
+    } else {
+      if (existing_group.join_code === join_code) {
+        JamGroup.findByIdAndUpdate(
+          id,
+          {
+            users: [...existing_group.users, user_id],
+          },
+          { new: true }
+        ).then(
+          User.findByIdAndUpdate(user_id, {
+            jam_groups: [],
+          })
+        );
+      }
+    }
+  } catch (error) {
+    console.error(
+      "There was an error subscribing the user to the group: ",
+      error
+    );
+    res.status(500).json({ message: "Failed to Subscribe User" });
   }
 });
 
@@ -256,11 +321,7 @@ app.put("/jam_groups/:id", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.params;
-    const {
-      title,
-      users,
-      host_uuid,
-    } = req.body;
+    const { title, users, host_uuid } = req.body;
 
     // Attempt to find and update the Jam Group by ID
     const updatedJamGroup = await JamGroup.findByIdAndUpdate(
@@ -307,20 +368,19 @@ app.post("/login", async (req, res) => {
       }
     );
 
-    res
-      .status(200)
-      .json({
-        message: "Login successful",
-        token,
-        user_id: user.uuid,
-        jam_group: user.jam_group,
-      });
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      user_id: user.uuid,
+      jam_group: user.jam_group,
+    });
   } catch (error) {
     console.error("Error during user login:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
 
+//#######################//#######################//#######################//#######################
 // Add a new GET endpoint for retrieving jams
 app.get("/jams", authenticateJWT, async (req, res) => {
   try {
@@ -345,6 +405,7 @@ app.get("/jams", authenticateJWT, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+//#######################//#######################//#######################//#######################
 
 // Add a DELETE endpoint for deleting a jam by custom id
 app.delete("/jams", authenticateJWT, async (req, res) => {

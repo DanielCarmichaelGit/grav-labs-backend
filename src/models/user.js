@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  uuid: {
+  user_id: {
     type: String,
     required: true,
   },
@@ -19,6 +19,14 @@ const userSchema = new mongoose.Schema({
     type: Array,
     required: false,
   },
+  jam_tasks: {
+    type: Array,
+    required: true,
+  },
+  jam_notes: {
+    type: Array,
+    required: true
+  }
 });
 
 module.exports = mongoose.model("User", userSchema);
