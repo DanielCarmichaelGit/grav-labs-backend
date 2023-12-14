@@ -259,7 +259,7 @@ app.post("/join_group/:id", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.params;
-    const { join_code = "", user_id } = req.body;
+    const { join_code, user_id } = req.body;
 
     // Find the existing JamGroup by ID
     const existingGroup = await JamGroup.findById(id);
@@ -270,17 +270,13 @@ app.post("/join_group/:id", authenticateJWT, async (req, res) => {
       });
     }
 
-    if (existingGroup.join_code === join_code) {
+    if (join_code !== undefined && existingGroup.join_code === join_code) {
       // Update the JamGroup to add the current user to the users array
       existingGroup.users.push(user_id);
       await existingGroup.save();
 
       // Update the User to add the new jam_group to their jam_groups array
-      const user = await User.findById(user_id);
-      if (user) {
-        user.jam_groups.push(id);
-        await user.save();
-      }
+      await User.findByIdAndUpdate(user_id, {$push: {jam_groups: id}});
 
       return res
         .status(200)
