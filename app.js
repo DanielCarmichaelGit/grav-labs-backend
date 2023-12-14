@@ -122,10 +122,12 @@ app.get("/jams/:id?", authenticateJWT, async (req, res) => {
         if (!jam) {
           return res.status(404).json({ message: "Jam not found" });
         }
-        
+
         return res.status(201).json(jam);
       } else {
-        return res.status(403).json({ message: "User does not have access to this jam" });
+        return res
+          .status(403)
+          .json({ message: "User does not have access to this jam" });
       }
     } else {
       // If no 'id' parameter is provided, get all jams in the user's jam_group
@@ -137,7 +139,6 @@ app.get("/jams/:id?", authenticateJWT, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 // Modify the GET endpoint for getting jam notes by user ID
 app.get("/jam_notes/user/:user_id", authenticateJWT, async (req, res) => {
@@ -192,6 +193,7 @@ app.post("/signup", async (req, res) => {
       return res.status(400).json({ message: "Username already exists" });
     }
 
+    console.log(password);
     // Hash the password before saving it
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log(hashedPassword);
@@ -203,8 +205,8 @@ app.post("/signup", async (req, res) => {
       created_timestamp: Date.now(),
       jam_group_id: new_jam_id,
       join_code: "",
-      _id: new_jam_id
-    })
+      _id: new_jam_id,
+    });
 
     //Create a jam group for this new user
     const newUser = new User({
@@ -214,14 +216,15 @@ app.post("/signup", async (req, res) => {
       jam_group: [new_jam_id], // Assign jam_group to the user
       jam_tasks: [],
       jam_notes: [],
-      _id: new_user_id
+      _id: new_user_id,
     });
 
     await newUser.save().then((res) => {
       newGroup.save();
-      res.status(201).json({ message: "User registered successfully", newUser });
+      res
+        .status(201)
+        .json({ message: "User registered successfully", newUser });
     });
-
   } catch (error) {
     console.error("Error during user registration:", error);
     res.status(500).json({ message: "Internal server error", error });
@@ -267,11 +270,9 @@ app.post("/join_group/:id", authenticateJWT, async (req, res) => {
     const existing_group = JamGroup.findById({ id });
 
     if (!existing_group) {
-      res
-        .status(201)
-        .json({
-          message: `Jam Group with id "${id}" does not exist or cannot be found`,
-        });
+      res.status(201).json({
+        message: `Jam Group with id "${id}" does not exist or cannot be found`,
+      });
     } else {
       if (existing_group.join_code === join_code) {
         JamGroup.findByIdAndUpdate(
