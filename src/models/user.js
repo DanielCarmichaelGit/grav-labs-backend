@@ -25,8 +25,12 @@ const userSchema = new mongoose.Schema({
   },
   jam_notes: {
     type: Array,
-    required: true
-  }
+    required: true,
+  },
+  _id: {
+    type: String,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);
