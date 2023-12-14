@@ -309,6 +309,7 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
     } = req.body;
 
     const existing_group = JamGroup.findById({ _id: jam_group_id });
+    const created_timestamp = Date.now();
 
     if (!existing_group) {
       res.status(400).json({
@@ -319,10 +320,10 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       const new_jam = new Jam({
         title,
         time_limit,
-        created_timestamp: (Date.now()),
-        jam_url,
-        options,
-        image_url,
+        created_timestamp,
+        jam_url: jam_url,
+        options: options,
+        image_url: image_url,
         jam_id,
         jam_group_id,
         jam_group: existing_group,
