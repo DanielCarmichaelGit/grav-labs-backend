@@ -319,7 +319,7 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       const new_jam = new Jam({
         title,
         time_limit,
-        created_timestamp: Date.now(),
+        created_timestamp: (Date.now()),
         jam_url,
         options,
         image_url,
