@@ -183,7 +183,7 @@ app.put("/jam_groups/:id", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.params;
-    const { title, users, host_id, jam_notes, join_code, jam_id } = req.body;
+    const { title, users, host_id, jam_notes, join_code, jam_id, subscribe = true } = req.body;
 
     // Find the existing Jam Group by ID
     const existingJamGroup = await JamGroup.findById(id);
@@ -194,12 +194,17 @@ app.put("/jam_groups/:id", authenticateJWT, async (req, res) => {
 
     // Update the Jam Group fields based on the request body
     if (title !== undefined) existingJamGroup.title = title;
-    if (users !== undefined) {
+
+    if (subscribe === false) {
+      // Remove the user's ID from the users array
+      existingJamGroup.users = existingJamGroup.users.filter(userId => userId !== host_id);
+    } else if (users !== undefined) {
       // Use $addToSet to add unique values to the existing array
       existingJamGroup.users = [
         ...new Set([...existingJamGroup.users, ...users]),
       ];
     }
+
     if (host_id !== undefined) existingJamGroup.host_id = host_id;
     if (jam_notes !== undefined) {
       existingJamGroup.jam_notes = [
@@ -225,6 +230,7 @@ app.put("/jam_groups/:id", authenticateJWT, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 app.delete("/jam_groups/:id", authenticateJWT, async (req, res) => {
   try {
