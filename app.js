@@ -198,7 +198,7 @@ app.post("/signup", async (req, res) => {
 
     const newGroup = new JamGroup({
       title: `${username}'s Jam`,
-      users: [user_id],
+      users: [new_user_id],
       host_id: new_user_id,
       created_timestamp: Date.now(),
       jam_group_id: new_jam_id,
