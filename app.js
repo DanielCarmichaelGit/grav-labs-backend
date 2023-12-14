@@ -220,7 +220,7 @@ app.post("/signup", async (req, res) => {
       username,
       password: hashedPassword,
       user_id: new_user_id,
-      jam_group: [new_jam_id], // Assign jam_group to the user
+      jam_groups: [new_jam_id], // Assign jam_group to the user
       jam_tasks: [],
       jam_notes: [],
       _id: new_user_id,
