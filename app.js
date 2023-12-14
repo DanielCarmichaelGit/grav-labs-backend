@@ -160,7 +160,7 @@ app.post("/jam_groups", authenticateJWT, async (req, res) => {
       _id: jam_group_id,
     });
 
-    User.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
       host_id,
       {
         $push: { jam_groups: jam_group_id },
