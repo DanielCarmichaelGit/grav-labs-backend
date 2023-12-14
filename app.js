@@ -194,6 +194,7 @@ app.post("/signup", async (req, res) => {
     }
 
     console.log(password);
+    console.log("Request", req)
     // Hash the password before saving it
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log(hashedPassword);
