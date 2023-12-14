@@ -282,7 +282,7 @@ app.post("/join_group/:id", authenticateJWT, async (req, res) => {
         .status(200)
         .json({ message: "User joined the group successfully" });
     } else {
-      return res.status(400).json({ message: "Invalid join code", group_code: existingGroup.join_code, supplied_code: join_code });
+      return res.status(400).json({ message: "Invalid join code", group_code: existingGroup.join_code, supplied_code: `code: "${join_code}"` });
     }
   } catch (error) {
     console.error(
