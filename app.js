@@ -193,16 +193,13 @@ app.post("/signup", async (req, res) => {
       return res.status(400).json({ message: "Username already exists" });
     }
 
-    console.log(password);
-    console.log("Request", req.body)
     // Hash the password before saving it
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(hashedPassword);
 
     const newGroup = new JamGroup({
       title: `${username}'s Jam`,
       users: [user_id],
-      host_id: user_id,
+      host_id: new_user_id,
       created_timestamp: Date.now(),
       jam_group_id: new_jam_id,
       join_code: "",
