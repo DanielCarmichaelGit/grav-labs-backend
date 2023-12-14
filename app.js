@@ -337,7 +337,7 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
     }
   } catch (error) {
     console.log("there was an error creating the authentication");
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message, full_error: error });
   }
 });
 
