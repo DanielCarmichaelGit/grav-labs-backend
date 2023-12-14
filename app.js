@@ -151,7 +151,7 @@ app.post("/jam_groups", authenticateJWT, async (req, res) => {
 
     const newJamGroup = new JamGroup({
       title,
-      users,
+      users: [...users, host_id],
       host_id,
       created_timestamp,
       jam_group_id,
@@ -159,6 +159,14 @@ app.post("/jam_groups", authenticateJWT, async (req, res) => {
       jam_notes: [],
       _id: jam_group_id,
     });
+
+    User.findByIdAndUpdate(
+      host_id,
+      {
+        $push: { users: host_id },
+      },
+      { new: true }
+    );
 
     await newJamGroup.save();
     res
@@ -338,7 +346,7 @@ app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
 
     if (group_id !== undefined && user_id !== undefined) {
       const existing_user = User.findById({ _id: user_id });
-      
+
       if (existing_user.jam_groups.includes(group_id)) {
         const jam_group = JamGroup.findById({ _id: group_id });
 
