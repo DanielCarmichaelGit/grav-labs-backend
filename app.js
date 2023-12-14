@@ -304,8 +304,8 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       options = "{}",
       image_url = "",
       jam_group_id,
-      jam_tasks,
-      jam_notes,
+      jam_tasks = [],
+      jam_notes = [],
     } = req.body;
 
     const existing_group = JamGroup.findById({ _id: jam_group_id });
