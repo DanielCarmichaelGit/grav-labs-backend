@@ -10,7 +10,7 @@ const jamSchema = new mongoose.Schema({
   jam_group_id: { type: String, required: true },
   jam_group: { type: Object, required: true },
   jam_tasks: { type: Array, required: true },
-  jam_notes: { type: String, required: true },
+  jam_notes: { type: Array, required: true },
   _id: { type: String, require: true },
 });
 
