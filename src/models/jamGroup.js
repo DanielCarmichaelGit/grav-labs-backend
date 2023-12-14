@@ -7,6 +7,7 @@ const jamGroupSchema = new mongoose.Schema({
   created_timestamp: { type: String, required: true },
   jam_group_id: { type: String, required: true },
   jam_notes: { type: Array, required: true },
+  jam_id: { type: Array, required: true },
   join_code: { type: String, required: false },
   _id: { type: String, require: true },
 });
