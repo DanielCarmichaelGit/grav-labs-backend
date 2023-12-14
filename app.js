@@ -183,7 +183,15 @@ app.put("/jam_groups/:id", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.params;
-    const { title, users, host_id, jam_notes, join_code, jam_id, subscribe = true } = req.body;
+    const {
+      title,
+      users,
+      host_id,
+      jam_notes,
+      join_code,
+      jam_id,
+      subscribe = true,
+    } = req.body;
 
     // Find the existing Jam Group by ID
     const existingJamGroup = await JamGroup.findById(id);
@@ -197,7 +205,9 @@ app.put("/jam_groups/:id", authenticateJWT, async (req, res) => {
 
     if (subscribe === false) {
       // Remove the user's ID from the users array
-      existingJamGroup.users = existingJamGroup.users.filter(userId => userId !== host_id);
+      existingJamGroup.users = existingJamGroup.users.filter(
+        (userId) => userId !== host_id
+      );
     } else if (users !== undefined) {
       // Use $addToSet to add unique values to the existing array
       existingJamGroup.users = [
@@ -230,7 +240,6 @@ app.put("/jam_groups/:id", authenticateJWT, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 app.delete("/jam_groups/:id", authenticateJWT, async (req, res) => {
   try {
@@ -276,13 +285,19 @@ app.post("/join_group/:id", authenticateJWT, async (req, res) => {
       await existingGroup.save();
 
       // Update the User to add the new jam_group to their jam_groups array
-      await User.findByIdAndUpdate(user_id, {$push: {jam_groups: id}});
+      await User.findByIdAndUpdate(user_id, { $push: { jam_groups: id } });
 
       return res
         .status(200)
         .json({ message: "User joined the group successfully" });
     } else {
-      return res.status(400).json({ message: "Invalid join code", group_code: existingGroup.join_code, supplied_code: `code: "${join_code}" | user: "${user_id}"` });
+      return res
+        .status(400)
+        .json({
+          message: "Invalid join code",
+          group_code: existingGroup.join_code,
+          supplied_code: `code: "${join_code}" | user: "${user_id}"`,
+        });
     }
   } catch (error) {
     console.error(
@@ -295,7 +310,9 @@ app.post("/join_group/:id", authenticateJWT, async (req, res) => {
 
 app.post("/create_jam", authenticateJWT, async (req, res) => {
   try {
+    console.log("trying to connect");
     dbConnect(process.env.GEN_AUTH);
+    console.log("db connected");
 
     const {
       title,
