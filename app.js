@@ -220,10 +220,19 @@ app.post("/signup", async (req, res) => {
     await newUser.save();
     await newGroup.save();
 
+    const token = jwt.sign(
+      { userId: new_user_id, jamGroup: new_jam_id },
+      SECRET_JWT,
+      {
+        expiresIn: "12h",
+      }
+    );
+
     res.status(200).json({
       message: "User Registered",
       user: newUser,
       user_group: newGroup,
+      token
     });
   } catch (error) {
     console.error("Error during user registration:", error);
