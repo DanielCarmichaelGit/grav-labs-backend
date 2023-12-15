@@ -21,6 +21,7 @@ const Jam = require("./src/models/jam");
 const JamNote = require("./src/models/jamNote");
 const JamGroup = require("./src/models/jamGroup");
 const JamTask = require("./src/models/jamTasks");
+const arrayDifference = require("./src/utils/findDiff");
 
 const app = express();
 app.use(cors());
@@ -229,45 +230,6 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// Add a PUT endpoint for updating the user associated with the JWT
-app.put("/user", authenticateJWT, async (req, res) => {
-  try {
-    dbConnect(process.env.GEN_AUTH);
-
-    const userId = req.userId; // Extract the user ID from the JWT payload
-    const updatedFields = req.body;
-
-    // Find the user by ID
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Update only the fields provided in the request body
-    for (const key in updatedFields) {
-      if (key === "password" || key == email || key == user_id) {
-        return res.status(500).json({
-          message: "Cannot update email, password, or user_id via this endpoint."
-        })
-      }
-      if (updatedFields.hasOwnProperty(key)) {
-        user[key] = updatedFields[key];
-      }
-    }
-
-    // Save the updated user document
-    const updatedUser = await user.save();
-
-    return res
-      .status(200)
-      .json({ message: "User updated successfully", updatedUser });
-  } catch (error) {
-    console.error("There was an error updating the user:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-
 // Add a POST endpoint for user login
 app.post("/login", async (req, res) => {
   try {
@@ -301,6 +263,81 @@ app.post("/login", async (req, res) => {
     });
   } catch (error) {
     console.error("Error during user login:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Add a PUT endpoint for updating the user associated with the JWT
+app.put("/user", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const userId = req.userId; // Extract the user ID from the JWT payload
+    const updatedFields = req.body;
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update only the fields provided in the request body
+    for (const key in updatedFields) {
+      if (key === "password" || key == email || key == user_id) {
+        return res.status(500).json({
+          message:
+            "Cannot update email, password, or user_id via this endpoint.",
+        });
+      }
+      if (updatedFields.hasOwnProperty(key)) {
+        user[key] = updatedFields[key];
+      }
+    }
+
+    // Save the updated user document
+    const updatedUser = await user.save();
+
+    return res
+      .status(200)
+      .json({ message: "User updated successfully", updatedUser });
+  } catch (error) {
+    console.error("There was an error updating the user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/user/:expanded?", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { user_id } = req.userId;
+    const { expanded = "false" } = req.params;
+    const user = User.findById({ _id: user_id });
+
+    if (expanded === false) {
+      return res.status(200).json({
+        message: "User Found",
+        user,
+      });
+    } else if (expanded === "true") {
+      const user_groups = await JamGroup.findById({_id: { $in: user.jam_groups }});
+      const jam_ids = user_groups.reduce((acc, group) => acc.concat(group.jam_id), []);
+      const user_jams = await Jam.findById({ _id: { $in: jam_ids } });
+      const compiled_user = {
+        user_id,
+        user_groups,
+        jam_ids,
+        user_jams,
+        user
+      };
+      return res.status(200).json({
+        message: "Compiled User",
+        compiled_user
+      })
+    }
+  } catch (error) {
+    console.error("Could not fetch user", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -529,7 +566,7 @@ app.get("/jam_group/:id?", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.query;
-    const { user_id } = req.body;
+    const { user_id } = req.userId;
 
     // if id is supplied, get info on single jam group
     if (id) {
@@ -679,6 +716,7 @@ app.get("/jam_notes/jam/:jam_id", authenticateJWT, async (req, res) => {
 app.post("/jam_task/:jam_id", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
+    const task_id = uuidv4();
 
     const {
       title,
@@ -693,6 +731,7 @@ app.post("/jam_task/:jam_id", authenticateJWT, async (req, res) => {
       tasked_users,
       complete_by_timestamp,
       status: "incomplete",
+      _id: task_id
     });
 
     await new_task.save();
@@ -710,6 +749,65 @@ app.post("/jam_task/:jam_id", authenticateJWT, async (req, res) => {
     });
   }
 });
+
+app.get("/jam_task/:id", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+    const { id } = req.params;
+
+    const task = JamTask.findById({ _id: id });
+  }
+  catch (error) {
+    res.status(500).json({
+      message: "Error fetching task",
+      error,
+    });
+  }
+})
+
+app.put("/jam_tasks/:id", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+    const { id } = req.params;
+    const { title, tasked_users, complete_by_timestamp, status } = req.body;
+
+    // Find the JamTask by ID
+    const task = await JamTask.findById(id);
+
+    if (!task) {
+      return res.status(404).json({ message: "JamTask not found" });
+    }
+
+    // Ensure that created timestamp, _id, and jam_id do not change
+    const { created_timestamp, _id, jam_id } = task;
+    const compare_diff = {
+      tasked_users: task.tasked_users
+    }
+
+    // Update only the fields provided in the request body
+    task.title = title || task.title;
+    task.tasked_users = tasked_users || task.tasked_users;
+    task.complete_by_timestamp = complete_by_timestamp || task.complete_by_timestamp;
+    task.status = status || task.status;
+
+    // Save the updated JamTask document
+    const updatedTask = await task.save();
+
+    if (compare_diff.tasked_users !== task.tasked_users) {
+      User.findByIdAndUpdate({ _id: { $in: arrayDifference(compare_diff.tasked_users, task.tasked_users) } },
+        {
+          $push: { jam_tasks: task }
+        }
+      );
+    }
+
+    res.status(200).json({ message: "JamTask updated successfully", updatedTask });
+  } catch (error) {
+    console.error("There was an error updating the JamTask:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 
 // Add a DELETE endpoint for deleting a jam by custom id
 app.delete("/jam/:id", authenticateJWT, async (req, res) => {
