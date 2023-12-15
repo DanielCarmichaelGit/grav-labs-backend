@@ -12,6 +12,7 @@ const User = require("./src/models/user");
 const Jam = require("./src/models/jam");
 const JamNote = require("./src/models/jamNote");
 const JamGroup = require("./src/models/jamGroup");
+const JamTask = require("./src/models/jamTasks");
 
 const app = express();
 app.use(cors());
@@ -511,6 +512,37 @@ app.get("/jam_notes/jam/:jam_id", authenticateJWT, async (req, res) => {
   } catch (error) {
     console.error("There was an error retrieving JamNotes:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post("/jam_task/:jam_id", authenticatetJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const user_id = req.user.userId;
+    const { title, tasked_users = [user_id], complete_by_timestamp } = req.body;
+    const { jam_id } = req.params;
+
+    const new_task = new JamTask({
+      title,
+      tasked_users,
+      complete_by_timestamp,
+      status: "incomplete",
+    });
+
+    await new_task.save();
+
+    await User.findByIdAndUpdate(user_id, {
+      $push: { $in: { jam_tasks: new_task } },
+    });
+    await Jam.findByIdAndUpdate(jam_id, {
+      $push: { $in: { jam_tasks: new_task } },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error creating task",
+      error,
+    });
   }
 });
 

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const jamNoteSchema = new mongoose.Schema({
+const jamTaskSchema = new mongoose.Schema({
   title: { type: String, required: true },
   jam_id: { type: String, required: true },
   tasked_users: { type: Array, required: false },
@@ -11,4 +11,4 @@ const jamNoteSchema = new mongoose.Schema({
   _id: { type: String, require: true },
 });
 
-module.exports = mongoose.model("JamNote", jamNoteSchema);
+module.exports = mongoose.model("JamTask", jamTaskSchema);
