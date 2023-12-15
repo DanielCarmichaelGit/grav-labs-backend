@@ -311,8 +311,6 @@ app.get("/user/:expanded?", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    console.log("12345", req);
-
     const { user_id } = req.user.userId;
     const { expanded = "false" } = req.params;
     const user = User.findById({ _id: user_id });
