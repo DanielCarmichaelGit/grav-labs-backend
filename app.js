@@ -376,7 +376,7 @@ app.get("/jam_group/:id?", authenticateJWT, async (req, res) => {
       // if group id not supplied get all jam groups user is subscribed to
     } else if (user_id && id === undefined) {
       const user = await User.findById({ _id: user_id });
-      const jam_groups = await JamGroups.findById({ _id: { $in: user.jam_groups } })
+      const jam_groups = await JamGroup.findById({ _id: { $in: user.jam_groups } })
 
       res.status(201).json({
         message: "User groups found",
