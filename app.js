@@ -319,7 +319,7 @@ app.get("/user/:expanded?", authenticateJWT, async (req, res) => {
     console.log("expanded", expanded);
     console.log("user", user);
 
-    if (expanded === false) {
+    if (expanded === "false") {
       res.status(200).json({
         message: "User Found",
         user,
