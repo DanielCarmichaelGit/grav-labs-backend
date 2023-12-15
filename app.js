@@ -404,6 +404,8 @@ app.put("/jam_groups/:id", authenticateJWT, async (req, res) => {
       subscribe = true,
     } = req.body;
 
+    const userId = req.user.userId;
+
     // Find the existing Jam Group by ID
     const existingJamGroup = await JamGroup.findById(id);
 
@@ -418,6 +420,10 @@ app.put("/jam_groups/:id", authenticateJWT, async (req, res) => {
       // Remove the user's ID from the users array
       existingJamGroup.users = existingJamGroup.users.filter(
         (userId) => userId !== host_id
+      );
+      await User.findByIdAndUpdate(
+        { _id: user_id },
+        { $pop: { users: userId } }
       );
     } else if (users !== undefined) {
       // Use $addToSet to add unique values to the existing array
@@ -452,7 +458,7 @@ app.put("/jam_groups/:id", authenticateJWT, async (req, res) => {
   }
 });
 
-app.delete("/jam_groups/:id", authenticateJWT, async (req, res) => {
+app.delete("/jam_group/:id", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
@@ -479,7 +485,8 @@ app.post("/join_group/:id", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.params;
-    const { join_code, user_id } = req.body;
+    const { join_code} = req.body;
+    const user_id = req.user.userId;
 
     // Find the existing JamGroup by ID
     const existingGroup = await JamGroup.findById(id);
@@ -608,7 +615,7 @@ app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
     const { group_id } = req.params;
     console.log("group id", group_id);
-    const { user_id } = req.body;
+    const { user_id } = req.user.userId;
 
     if (group_id !== undefined) {
       const jam_group = await JamGroup.findById({ _id: group_id });
@@ -647,7 +654,8 @@ app.post("/jam_note/:jam_id", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { note, jam_group_id, user_id } = req.body;
+    const { note, jam_group_id } = req.body;
+    const user_id = req.user.userId;
     const { jam_id } = req.params;
 
     const created_timestamp = Date.now();
@@ -686,10 +694,10 @@ app.post("/jam_note/:jam_id", authenticateJWT, async (req, res) => {
 });
 
 // Modify the GET endpoint for getting jam notes by user ID
-app.get("/jam_notes/user/:user_id", authenticateJWT, async (req, res) => {
+app.get("/jam_note/user", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
-    const { user_id } = req.params;
+    const user_id = req.user.userId;
 
     const user = await User.findById({ _id: user_id });
     const jamNotes = user.jam_notes;
@@ -704,7 +712,7 @@ app.get("/jam_notes/user/:user_id", authenticateJWT, async (req, res) => {
 });
 
 // Add a GET endpoint to get all JamNotes associated with a jam_id
-app.get("/jam_notes/jam/:jam_id", authenticateJWT, async (req, res) => {
+app.get("/jam_notes/:jam_id", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
@@ -731,8 +739,8 @@ app.post("/jam_task/:jam_id", authenticateJWT, async (req, res) => {
       title,
       tasked_users = [user_id],
       complete_by_timestamp,
-      user_id,
     } = req.body;
+    const user_id = req.user.userId;
     const { jam_id } = req.params;
 
     const new_task = new JamTask({
@@ -759,12 +767,16 @@ app.post("/jam_task/:jam_id", authenticateJWT, async (req, res) => {
   }
 });
 
-app.get("/jam_task/:id", authenticateJWT, async (req, res) => {
+app.get("/jam_task/:task_id", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
-    const { id } = req.params;
+    const { task_id } = req.params;
 
-    const task = JamTask.findById({ _id: id });
+    const task = JamTask.findById({ _id: task_id });
+    res.status(200).json({
+      message: "Jam Task Found",
+      task
+    })
   } catch (error) {
     res.status(500).json({
       message: "Error fetching task",
