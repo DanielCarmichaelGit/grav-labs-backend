@@ -47,7 +47,7 @@ app.get("/", (req, res) => {
 app.post("/signup", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
-    const { username, password } = req.body; // Add jam_group
+    const { username, password, email } = req.body; // Add jam_group
     const new_user_id = uuidv4();
     const new_jam_id = uuidv4();
 
