@@ -396,9 +396,10 @@ app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
     const { group_id } = req.query;
+    console.log("group id", group_id);
     const { user_id } = req.body;
 
-    if (group_id) {
+    if (group_id !== undefined) {
       const jam_group = await JamGroup.findById({ _id: group_id });
       const jams = await Jam.find({ _id: { $in: jam_group.jam_id }});
 
@@ -406,6 +407,22 @@ app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
         message: "Jams found",
         count: jams.length,
         jams
+      })
+    }
+    else if (user_id !== undefined) {
+      const user = await User.findById({ _id: user_id });
+      const user_groups = user.jam_groups;
+
+      const user_jams = await Jam.find({jam_group_id: { $in: user_groups}});
+      res.status(201).json({
+        message: "Jams Found",
+        count: user_jams.length,
+        jams: user_jams
+      })
+    }
+    else {
+      res.status(400).json({
+        message: "Please provide group_id or user_id"
       })
     }
   } catch (error) {
