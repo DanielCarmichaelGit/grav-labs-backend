@@ -308,9 +308,7 @@ app.post("/join_group/:id", authenticateJWT, async (req, res) => {
 
 app.post("/create_jam", authenticateJWT, async (req, res) => {
   try {
-    console.log("trying to connect");
     dbConnect(process.env.GEN_AUTH);
-    console.log("db connected");
 
     const {
       title,
@@ -323,13 +321,7 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       jam_notes = [],
     } = req.body;
 
-    console.log("reqessst", req.body);
-
     const existing_group =  await JamGroup.findById({ _id: jam_group_id });
-
-    console.log("###############################################");
-    console.log(existing_group);
-    console.log("###############################################");
 
     const created_timestamp = Date.now();
 
@@ -338,7 +330,6 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
         message: "Jam Group not found",
       });
     } else {
-      console.log("about to create jam");
       const jam_id = uuidv4();
       const new_jam = new Jam({
         title,
@@ -355,10 +346,7 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
         _id: jam_id,
       });
 
-      console.log("new jam", new_jam);
-
       await new_jam.save();
-      console.log("jam saved");
       res.status(200).json({ message: "Jam Created", jam: new_jam });
     }
   } catch (error) {
