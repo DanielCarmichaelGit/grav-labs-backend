@@ -359,6 +359,38 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
   }
 });
 
+app.get("/jam_group/:id?", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { id } = req.query;
+    const { user_id } = body.req;
+
+    // if id is supplied, get info on single jam group
+    if (id) {
+      const jam_group = await JamGroup.findById({ _id: id });
+      res.status(201).json({
+        message: "Jam Group Found",
+        jam_group,
+      });
+      // if group id not supplied get all jam groups user is subscribed to
+    } else if (user_id && id === undefined) {
+      const user = await User.findById({ _id: user_id });
+      const jam_groups = await JamGroups.findById({ _id: { $in: user.jam_groups } })
+
+      res.status(201).json({
+        message: "User groups found",
+        jam_groups
+      })
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to authenticate",
+      error_message: error.message,
+    });
+  }
+});
+
 app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
