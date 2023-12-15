@@ -434,11 +434,13 @@ app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
 //###########################################################################
 
 // Add a POST endpoint for creating a JamNote
-app.post("/jam_note", authenticateJWT, async (req, res) => {
+app.post("/jam_note/:jam_id", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { note, jam_id, jam_group_id } = req.body;
+    const { note, jam_group_id } = req.body;
+    const { jam_id } = req.params;
+    
     const user_id = req.user.userId; // Extract the user ID from the JWT payload
     const created_timestamp = Date.now();
     const jam_note_id = uuidv4();
