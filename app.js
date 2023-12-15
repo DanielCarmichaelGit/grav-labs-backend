@@ -315,6 +315,8 @@ app.get("/user/:expanded?", authenticateJWT, async (req, res) => {
     const { expanded = "false" } = req.params;
     const user = User.findById({ _id: user_id });
 
+    console.log("12345", req);
+
     if (expanded === false) {
       return res.status(200).json({
         message: "User Found",
