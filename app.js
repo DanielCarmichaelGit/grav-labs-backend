@@ -364,7 +364,7 @@ app.get("/jam_group/:id?", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.query;
-    const { user_id } = body.req;
+    const { user_id } = req.body;
 
     // if id is supplied, get info on single jam group
     if (id) {
