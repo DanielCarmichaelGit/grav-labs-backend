@@ -310,12 +310,13 @@ app.put("/user", authenticateJWT, async (req, res) => {
 app.get("/user/:expanded?", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
+    
+    console.log("12345", req);
 
     const { user_id } = req.userId;
     const { expanded = "false" } = req.params;
     const user = User.findById({ _id: user_id });
 
-    console.log("12345", req);
 
     if (expanded === false) {
       return res.status(200).json({
