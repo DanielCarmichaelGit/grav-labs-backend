@@ -483,35 +483,8 @@ app.get("/jam_notes/jam/:jam_id", authenticateJWT, async (req, res) => {
   }
 });
 
-//#######################//#######################//#######################//#######################
-// Add a new GET endpoint for retrieving jams
-app.get("/jams", authenticateJWT, async (req, res) => {
-  try {
-    dbConnect(process.env.GEN_AUTH);
-
-    const { id } = req.query;
-
-    if (id) {
-      // If an 'id' parameter is provided, get the specific jam by ID
-      const jam = await Jam.findById(id);
-      if (!jam) {
-        return res.status(404).json({ message: "Jam not found" });
-      }
-      return res.status(200).json(jam);
-    } else {
-      // If no 'id' parameter is provided, get all jams
-      const jams = await Jam.find();
-      return res.status(200).json(jams);
-    }
-  } catch (error) {
-    console.error("There was an error retrieving jams:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-//#######################//#######################//#######################//#######################
-
 // Add a DELETE endpoint for deleting a jam by custom id
-app.delete("/jams", authenticateJWT, async (req, res) => {
+app.delete("/jam/:id", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
