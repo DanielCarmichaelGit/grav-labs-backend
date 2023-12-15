@@ -325,14 +325,14 @@ app.get("/user/:expanded?", authenticateJWT, async (req, res) => {
         user,
       });
     } else if (expanded === "true") {
-      const user_groups = await JamGroup.findById({
+      const user_groups = await JamGroup.find({
         _id: { $in: user.jam_groups },
       });
       const jam_ids = user_groups.reduce(
         (acc, group) => acc.concat(group.jam_id),
         []
       );
-      const user_jams = await Jam.findById({ _id: { $in: jam_ids } });
+      const user_jams = await Jam.find({ _id: { $in: jam_ids } });
       const compiled_user = {
         user_id,
         user_groups,
