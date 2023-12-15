@@ -321,7 +321,7 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       jam_notes = [],
     } = req.body;
 
-    const existing_group =  await JamGroup.findById({ _id: jam_group_id });
+    const existing_group = await JamGroup.findById({ _id: jam_group_id });
 
     const created_timestamp = Date.now();
 
@@ -363,9 +363,11 @@ app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
 
     if (group_id !== undefined && user_id !== undefined) {
       const existing_user = User.findById({ _id: user_id });
+      console.log("existing_user", existing_user);
 
       if (existing_user.jam_groups.includes(group_id)) {
         const jam_group = JamGroup.findById({ _id: group_id });
+        console.log("jam group", jam_group);
 
         const jam_ids = jam_group.jam_id;
 
