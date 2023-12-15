@@ -107,7 +107,7 @@ app.post("/signup", async (req, res) => {
 
     // generate email content
     const mail_options = {
-      from: "danielfcarmichael@gmail.com",
+      from: "jammanager.io@gmail.com",
       to: email, // The user's email address
       subject: "Welcome to Jam Manager",
       html: `
