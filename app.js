@@ -111,20 +111,91 @@ app.post("/signup", async (req, res) => {
       to: email, // The user's email address
       subject: "Welcome to Jam Manager",
       html: `
-        <html>
-          <head>
-            <style>
-              /* Add any custom CSS styles here for your email */
-            </style>
-          </head>
-          <body>
-            <h1>Welcome to Our Platform</h1>
-            <p>Thank you for signing up!</p>
-            <img src=https://jammanager.s3.us-east-2.amazonaws.com/DALL%C2%B7E%202023-12-15%2001.44.30%20-%20Create%20a%20logo%20for%20%27Jam%20Manager%27%20without%20any%20text%2C%20focusing%20purely%20on%20visual%20elements.%20The%20logo%20should%20feature%20a%20stylized%2C%20colorful%20jar%20of%20jam%2C%20represe.png?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEPj%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJHMEUCIFWs9HNhqY4EY%2B%2FqsDLcCsH4UEQDLf63hY0hgs%2FR%2FtgRAiEA0DhOgpTt2P81bzYyWIy%2Bqase%2Bm2NJdYgxQCte%2BppZ%2BMq5AIIcRABGgwwMDgyMDY4MzI1MTkiDGv76ma%2BQfCxzoC2cCrBAsUOHfBLRQKS0AG3JS1UOgfPXlMyVf%2FbdHqiDBrn%2BOkiI%2B%2FHDu7OP3sp94YYD9QLcvwecr4%2BoNLJ0CydUDaFdBqsihVyZ7pTgX37A8jrAnWM9Znq57lsCjz9%2FrxzENgNEyQ4FMF0ZXF1sc3JGA%2Ft%2B6cc3xkxtHHrzmvqqGwQ7vf2vOyxCyF84Iz4qlQ8nsCLpmdA5UyKOJh8aSRacEBHVxuXiWbZT7B0yttxVNrYPTT4sP8Z4oAmjBQYWo%2BDMUQgc3LKxyJPlJOWQfJS8yeXUBIPH8ZL%2Bvi6XXJezYFM1BK4ldQt3Bpnh4wYLj2VjEp9syfHjTy6O5ZDajFCApktduCE6GntE7aYhCvRQUqiickXCvwzVWcfMgovq6FeYKZX9Y3nAzSVT%2Fghzavj6opxEBWkMQ31ew75MqImjzOoSBvA1DDKgPCrBjqzAik6rj8d1fG88OSZXOlo3qS4WWPXFfDyCiGBXEV6hPw3sV1HSlDzo260vPvgVBiksrXbIpk%2Frkm%2FZ4LX9PbZbCbJMvD2oi9tqT5BS47rCBZ3Wc0pqxD2jC9cCaG5YvtIsjDBnXNOr7SpXgksgtXR6MZQTw087mKepzzsqOedGyzQ8k2J%2Fsd4olnaxxmiqIoVLOSnAXsRRyLk%2Fryen80l11OlWxU7JIKYDDHkiuu2cJhLucUkWH2%2FOaoK04jWG5y7sHcMPtN7PLQr4iTec7P62G5hTG4UICKkAZjddlMvc5fPExhz8eGi44v5eN%2BQY9Oku44dlqlvs3vxOFZLWZ6%2BAQMGvhpBbeIPUZ22wkS0uiL7jnTVMEMq6sLRhFpHLo6OIDbDohtTSkhvVGxvYQY8QiCvtH8%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20231215T074633Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIAQD2JKKODYIOPB6IX%2F20231215%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=25c3122b7e67424242cc4e526f41449439e961314796b47978bf9ffa475989a5" alt="Jam Manager Logo" width="200">
-            <br>
-            <a href="https://jam-manager.netlify.app/" style="background-color: #007BFF; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Visit Our Website</a>
-          </body>
-        </html>
+      <html>
+      <head>
+        <style>
+          /* Add inline styles here for your email */
+          body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            text-align: center;
+            background-color: #007BFF;
+            color: #ffffff;
+            padding: 20px 0;
+            border-radius: 10px 10px 0 0;
+          }
+          .header h1 {
+            font-size: 24px;
+            margin: 0;
+          }
+          .content {
+            padding: 20px;
+          }
+          .content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+          }
+          .button {
+            text-align: center;
+            margin-top: 20px;
+          }
+          .button a {
+            display: inline-block;
+            background-color: #007BFF;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+          }
+          .unsubscribe {
+            text-align: center;
+            margin-top: 20px;
+          }
+          .unsubscribe a {
+            color: #007BFF;
+            text-decoration: none;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Welcome to Jam Manager</h1>
+          </div>
+          <div class="content">
+            <img src="https://jammanager.s3.us-east-2.amazonaws.com/DALL%C2%B7E+2023-12-15+01.44.30+-+Create+a+logo+for+'Jam+Manager'+without+any+text%2C+focusing+purely+on+visual+elements.+The+logo+should+feature+a+stylized%2C+colorful+jar+of+jam%2C+represe.png" alt="Jam Manager Logo">
+            <div class="button">
+              <a href="https://jam-manager.netlify.app/" style="background-color: #007BFF; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Visit Jam Manager</a>
+            </div>
+          </div>
+          <div class="unsubscribe">
+            <a href="#">Unsubscribe</a>
+          </div>
+          <div class="footer">
+            <a href="#">Terms</a>
+          </div>
+        </div>
+      </body>
+      </html>
       `,
     };
 
