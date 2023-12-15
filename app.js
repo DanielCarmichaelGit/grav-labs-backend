@@ -315,6 +315,8 @@ app.get("/user/:expanded?", authenticateJWT, async (req, res) => {
     const { expanded = "false" } = req.params;
     const user = User.findById({ _id: user_id });
 
+    console.log("expanded", expanded);
+    console.log("user", user);
 
     if (expanded === false) {
       return res.status(200).json({
@@ -322,20 +324,25 @@ app.get("/user/:expanded?", authenticateJWT, async (req, res) => {
         user,
       });
     } else if (expanded === "true") {
-      const user_groups = await JamGroup.findById({_id: { $in: user.jam_groups }});
-      const jam_ids = user_groups.reduce((acc, group) => acc.concat(group.jam_id), []);
+      const user_groups = await JamGroup.findById({
+        _id: { $in: user.jam_groups },
+      });
+      const jam_ids = user_groups.reduce(
+        (acc, group) => acc.concat(group.jam_id),
+        []
+      );
       const user_jams = await Jam.findById({ _id: { $in: jam_ids } });
       const compiled_user = {
         user_id,
         user_groups,
         jam_ids,
         user_jams,
-        user
+        user,
       };
       return res.status(200).json({
         message: "Compiled User",
-        compiled_user
-      })
+        compiled_user,
+      });
     }
   } catch (error) {
     console.error("Could not fetch user", error);
@@ -732,7 +739,7 @@ app.post("/jam_task/:jam_id", authenticateJWT, async (req, res) => {
       tasked_users,
       complete_by_timestamp,
       status: "incomplete",
-      _id: task_id
+      _id: task_id,
     });
 
     await new_task.save();
@@ -757,14 +764,13 @@ app.get("/jam_task/:id", authenticateJWT, async (req, res) => {
     const { id } = req.params;
 
     const task = JamTask.findById({ _id: id });
-  }
-  catch (error) {
+  } catch (error) {
     res.status(500).json({
       message: "Error fetching task",
       error,
     });
   }
-})
+});
 
 app.put("/jam_tasks/:id", authenticateJWT, async (req, res) => {
   try {
@@ -782,33 +788,40 @@ app.put("/jam_tasks/:id", authenticateJWT, async (req, res) => {
     // Ensure that created timestamp, _id, and jam_id do not change
     const { created_timestamp, _id, jam_id } = task;
     const compare_diff = {
-      tasked_users: task.tasked_users
-    }
+      tasked_users: task.tasked_users,
+    };
 
     // Update only the fields provided in the request body
     task.title = title || task.title;
     task.tasked_users = tasked_users || task.tasked_users;
-    task.complete_by_timestamp = complete_by_timestamp || task.complete_by_timestamp;
+    task.complete_by_timestamp =
+      complete_by_timestamp || task.complete_by_timestamp;
     task.status = status || task.status;
 
     // Save the updated JamTask document
     const updatedTask = await task.save();
 
     if (compare_diff.tasked_users !== task.tasked_users) {
-      User.findByIdAndUpdate({ _id: { $in: arrayDifference(compare_diff.tasked_users, task.tasked_users) } },
+      User.findByIdAndUpdate(
         {
-          $push: { jam_tasks: task }
+          _id: {
+            $in: arrayDifference(compare_diff.tasked_users, task.tasked_users),
+          },
+        },
+        {
+          $push: { jam_tasks: task },
         }
       );
     }
 
-    res.status(200).json({ message: "JamTask updated successfully", updatedTask });
+    res
+      .status(200)
+      .json({ message: "JamTask updated successfully", updatedTask });
   } catch (error) {
     console.error("There was an error updating the JamTask:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 // Add a DELETE endpoint for deleting a jam by custom id
 app.delete("/jam/:id", authenticateJWT, async (req, res) => {
