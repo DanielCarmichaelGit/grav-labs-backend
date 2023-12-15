@@ -291,13 +291,11 @@ app.post("/join_group/:id", authenticateJWT, async (req, res) => {
         .status(200)
         .json({ message: "User joined the group successfully" });
     } else {
-      return res
-        .status(400)
-        .json({
-          message: "Invalid join code",
-          group_code: existingGroup.join_code,
-          supplied_code: `code: "${join_code}" | user: "${user_id}"`,
-        });
+      return res.status(400).json({
+        message: "Invalid join code",
+        group_code: existingGroup.join_code,
+        supplied_code: `code: "${join_code}" | user: "${user_id}"`,
+      });
     }
   } catch (error) {
     console.error(
@@ -328,6 +326,11 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
     console.log("reqessst", req.body);
 
     const existing_group = JamGroup.findById({ _id: jam_group_id });
+
+    console.log("###############################################");
+    console.log(existing_group);
+    console.log("###############################################");
+
     const created_timestamp = Date.now();
 
     if (!existing_group) {
@@ -335,7 +338,7 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
         message: "Jam Group not found",
       });
     } else {
-      console.log("about to create jam")
+      console.log("about to create jam");
       const jam_id = uuidv4();
       const new_jam = new Jam({
         title,
@@ -352,10 +355,10 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
         _id: jam_id,
       });
 
-      console.log("new jam", new_jam)
+      console.log("new jam", new_jam);
 
       await new_jam.save();
-      console.log("jam saved")
+      console.log("jam saved");
       res.status(200).json({ message: "Jam Created", jam: new_jam });
     }
   } catch (error) {
