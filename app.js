@@ -66,7 +66,7 @@ app.post("/signup", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
     const { password, email } = req.body; // Add jam_group
-    const new_user_id = generateUniqueUsername();
+    const new_user_id = uuidv4();
     const new_jam_id = uuidv4();
     const username = generateUniqueUsername();
 
@@ -107,7 +107,7 @@ app.post("/signup", async (req, res) => {
 
     // generate email content
     const mail_options = {
-      from: "jammanager.io@gmail.com",
+      from: "danielfcarmichael@gmail.com",
       to: email, // The user's email address
       subject: "Welcome to Jam Manager",
       html: `
