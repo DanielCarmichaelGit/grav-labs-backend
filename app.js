@@ -234,7 +234,7 @@ app.put("/user", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const userId = req.user.user_id; // Extract the user ID from the JWT payload
+    const userId = req.userId; // Extract the user ID from the JWT payload
     const updatedFields = req.body;
 
     // Find the user by ID
