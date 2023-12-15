@@ -246,6 +246,11 @@ app.put("/user", authenticateJWT, async (req, res) => {
 
     // Update only the fields provided in the request body
     for (const key in updatedFields) {
+      if (key === "password" || key == email || key == user_id) {
+        return res.status(500).json({
+          message: "Cannot update email, password, or user_id via this endpoint."
+        })
+      }
       if (updatedFields.hasOwnProperty(key)) {
         user[key] = updatedFields[key];
       }
