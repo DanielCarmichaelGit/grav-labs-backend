@@ -325,7 +325,7 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
 
     console.log("reqessst", req.body);
 
-    const existing_group = JamGroup.findById({ _id: jam_group_id });
+    const existing_group =  await JamGroup.findById({ _id: jam_group_id });
 
     console.log("###############################################");
     console.log(existing_group);
