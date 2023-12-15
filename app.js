@@ -396,44 +396,16 @@ app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
     const { group_id } = req.query;
-    const { user_id } = req.body;
 
-    if (group_id !== undefined && user_id !== undefined) {
-      const existing_user = User.findById({ _id: user_id });
-      console.log("existing_user", existing_user);
+    if (group_id) {
+      const jam_group = await JamGroup.findById({ _id: group_id });
+      const jams = await Jam.find({ _id: { $in: jam_group.jam_id }});
 
-      if (existing_user.jam_groups.includes(group_id)) {
-        const jam_group = JamGroup.findById({ _id: group_id });
-        console.log("jam group", jam_group);
-
-        const jam_ids = jam_group.jam_id;
-
-        const related_jams = await Jam.find({ _id: { $in: jam_ids } });
-
-        res.status(201).json({
-          message: "Jams found",
-          count: related_jams.length,
-          jams: related_jams,
-        });
-      } else {
-        res
-          .status(500)
-          .json({ message: "User does not have access to this jam" });
-      }
-    } else if (group_id === undefined && user_id !== undefined) {
-      const existing_user = User.findById({ _id: user_id });
-      const user_groups = existing_user.jam_groups;
-
-      const user_jams = await Jam.find({ jam_group_id: { $in: user_groups } });
       res.status(201).json({
-        message: "Jams Found",
-        count: user_jams.length,
-        jams: user_jams,
-      });
-    } else {
-      res
-        .status(400)
-        .json({ message: "No user id supplied. User id required" });
+        message: "Jams found",
+        count: jams.length,
+        jams
+      })
     }
   } catch (error) {
     console.error("There was an error retrieving jams:", error);
