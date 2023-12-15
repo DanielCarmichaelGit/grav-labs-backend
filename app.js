@@ -312,6 +312,9 @@ app.get("/user/:expanded?", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { user_id } = req.user;
+
+    console.log("user id direct", req.user.user_id);
+    console.log("user id destructure", user_id);
     const { expanded = "false" } = req.params;
     const user = await User.findById({ _id: user_id });
 
