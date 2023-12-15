@@ -376,13 +376,13 @@ app.get("/jam_group/:id?", authenticateJWT, async (req, res) => {
       // if group id not supplied get all jam groups user is subscribed to
     } else if (user_id && id === undefined) {
       const user = await User.findById({ _id: user_id });
-      console.log("user jam groups", user.jam_groups)
-      const jam_groups = await JamGroup.find({ _id: { $in: user.jam_groups } })
+      console.log("user jam groups", user.jam_groups);
+      const jam_groups = await JamGroup.find({ _id: { $in: user.jam_groups } });
 
       res.status(200).json({
         message: "User groups found",
-        jam_groups
-      })
+        jam_groups,
+      });
     }
   } catch (error) {
     res.status(500).json({
@@ -401,29 +401,27 @@ app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
 
     if (group_id !== undefined) {
       const jam_group = await JamGroup.findById({ _id: group_id });
-      const jams = await Jam.find({ _id: { $in: jam_group.jam_id }});
+      const jams = await Jam.find({ _id: { $in: jam_group.jam_id } });
 
       res.status(200).json({
         message: "Jams found",
         count: jams.length,
-        jams
-      })
-    }
-    else if (user_id !== undefined) {
+        jams,
+      });
+    } else if (user_id !== undefined) {
       const user = await User.findById({ _id: user_id });
       const user_groups = user.jam_groups;
 
-      const user_jams = await Jam.find({jam_group_id: { $in: user_groups}});
+      const user_jams = await Jam.find({ jam_group_id: { $in: user_groups } });
       res.status(200).json({
         message: "Jams Found",
         count: user_jams.length,
-        jams: user_jams
-      })
-    }
-    else {
+        jams: user_jams,
+      });
+    } else {
       res.status(400).json({
-        message: "Please provide group_id or user_id"
-      })
+        message: "Please provide group_id or user_id",
+      });
     }
   } catch (error) {
     console.error("There was an error retrieving jams:", error);
@@ -440,7 +438,7 @@ app.post("/jam_note/:jam_id", authenticateJWT, async (req, res) => {
 
     const { note, jam_group_id } = req.body;
     const { jam_id } = req.params;
-    
+
     const user_id = req.user.userId; // Extract the user ID from the JWT payload
     const created_timestamp = Date.now();
     const jam_note_id = uuidv4();
@@ -455,6 +453,19 @@ app.post("/jam_note/:jam_id", authenticateJWT, async (req, res) => {
     });
 
     await new_jam_note.save();
+
+    await User.findByIdAndUpdate(user_id, {
+      $push: { jam_notes: new_jam_note },
+    });
+
+    await Jam.findByIdAndUpdate(jam_id, {
+      $push: { jam_notes: new_jam_note },
+    });
+
+    await JamGroup.findByIdAndUpdate(jam_group_id, {
+      $push: { jam_notes: new_jam_note },
+    });
+
     res
       .status(201)
       .json({ message: "JamNote Created", jam_note: new_jam_note });
