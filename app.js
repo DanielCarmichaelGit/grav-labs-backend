@@ -347,6 +347,10 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       });
 
       await new_jam.save();
+      await JamGroup.findByIdAndUpdate(jam_group_id, {
+        $push: { jam_id },
+      });
+
       res.status(200).json({ message: "Jam Created", jam: new_jam });
     }
   } catch (error) {
