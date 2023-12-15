@@ -128,7 +128,7 @@ app.post("/login", async (req, res) => {
       }
     );
 
-    res.status(201).json({
+    res.status(200).json({
       message: "Login successful",
       token,
       user_id: user.uuid,
@@ -369,7 +369,7 @@ app.get("/jam_group/:id?", authenticateJWT, async (req, res) => {
     // if id is supplied, get info on single jam group
     if (id) {
       const jam_group = await JamGroup.findById({ _id: id });
-      res.status(201).json({
+      res.status(200).json({
         message: "Jam Group Found",
         jam_group,
       });
@@ -379,7 +379,7 @@ app.get("/jam_group/:id?", authenticateJWT, async (req, res) => {
       console.log("user jam groups", user.jam_groups)
       const jam_groups = await JamGroup.find({ _id: { $in: user.jam_groups } })
 
-      res.status(201).json({
+      res.status(200).json({
         message: "User groups found",
         jam_groups
       })
@@ -403,7 +403,7 @@ app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
       const jam_group = await JamGroup.findById({ _id: group_id });
       const jams = await Jam.find({ _id: { $in: jam_group.jam_id }});
 
-      res.status(201).json({
+      res.status(200).json({
         message: "Jams found",
         count: jams.length,
         jams
@@ -414,7 +414,7 @@ app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
       const user_groups = user.jam_groups;
 
       const user_jams = await Jam.find({jam_group_id: { $in: user_groups}});
-      res.status(201).json({
+      res.status(200).json({
         message: "Jams Found",
         count: user_jams.length,
         jams: user_jams
