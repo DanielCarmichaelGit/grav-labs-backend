@@ -46,7 +46,7 @@ function authenticateJWT(req, res, next) {
 
 // create utility transporter for email service
 const transporter = nodemailer.createTransport({
-  service: "Gmail", // e.g., 'Gmail', 'SMTP', etc.
+  service: "gmail", // e.g., 'Gmail', 'SMTP', etc.
   auth: {
     user: "jammanager.io@gmail.com",
     pass: process.env.EMAIL_AUTH,
