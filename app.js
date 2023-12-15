@@ -313,7 +313,7 @@ app.get("/user/:expanded?", authenticateJWT, async (req, res) => {
 
     const { user_id } = req.user.userId;
     const { expanded = "false" } = req.params;
-    const user = User.findById({ _id: user_id });
+    const user = await User.findById({ _id: user_id });
 
     console.log("expanded", expanded);
     console.log("user", user);
