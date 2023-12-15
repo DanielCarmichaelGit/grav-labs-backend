@@ -10,6 +10,7 @@ const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const sgTransport = require("nodemailer-sendgrid-transport");
 
 // Secret key for JWT signing (change it to a strong, random value)
 const SECRET_JWT = process.env.SECRET_JWT;
@@ -45,13 +46,13 @@ function authenticateJWT(req, res, next) {
 }
 
 // create utility transporter for email service
-const transporter = nodemailer.createTransport({
-  service: "gmail", // e.g., 'Gmail', 'SMTP', etc.
-  auth: {
-    user: "jammanager.io@gmail.com",
-    pass: process.env.EMAIL_AUTH,
-  },
-});
+const transporter = nodemailer.createTransport(
+  sgTransport({
+    auth: {
+      api_key: process.env.SG_API_KEY, // Replace with your SendGrid API key
+    },
+  })
+);
 
 // test endpoint to verify server status
 app.get("/", (req, res) => {
