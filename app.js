@@ -272,11 +272,11 @@ app.put("/user", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const userId = req.user; // Extract the user ID from the JWT payload
+    const user_id = req.user.userId; // Extract the user ID from the JWT payload
     const updatedFields = req.body;
 
     // Find the user by ID
-    const user = await User.findById(userId);
+    const user = await User.findById(user_id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -311,10 +311,8 @@ app.get("/user/:expanded?", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { user_id } = req.user;
+    const user_id = req.user.userId;
 
-    console.log("user id direct", req.user.userId);
-    console.log("user id destructure", userId);
     const { expanded = "false" } = req.params;
     const user = await User.findById({ _id: user_id });
 
@@ -577,7 +575,7 @@ app.get("/jam_group/:id?", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.query;
-    const { user_id } = req.user;
+    const user_id = req.user.userId;
 
     // if id is supplied, get info on single jam group
     if (id) {
