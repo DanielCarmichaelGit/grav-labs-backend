@@ -515,7 +515,7 @@ app.get("/jam_notes/jam/:jam_id", authenticateJWT, async (req, res) => {
   }
 });
 
-app.post("/jam_task/:jam_id", authenticatetJWT, async (req, res) => {
+app.post("/jam_task/:jam_id", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
