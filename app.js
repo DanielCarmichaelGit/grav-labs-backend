@@ -1,13 +1,20 @@
 const express = require("express");
 const cors = require("cors");
+
+// import utility functions
 const dbConnect = require("./src/utils/dbConnect");
+const generateUniqueUsername = require("./src/utils/generateUsername");
+
+// import packages
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 // Secret key for JWT signing (change it to a strong, random value)
 const SECRET_JWT = process.env.SECRET_JWT;
 
+// import models
 const User = require("./src/models/user");
 const Jam = require("./src/models/jam");
 const JamNote = require("./src/models/jamNote");
@@ -37,6 +44,16 @@ function authenticateJWT(req, res, next) {
   });
 }
 
+// create utility transporter for email service
+const transporter = nodemailer.createTransport({
+  service: "Gmail", // e.g., 'Gmail', 'SMTP', etc.
+  auth: {
+    user: "jammanager.io@gmail.com",
+    pass: process.env.EMAIL_AUTH,
+  },
+});
+
+// test endpoint to verify server status
 app.get("/", (req, res) => {
   console.log("received home");
   return res.status(200).json({ message: "working" });
@@ -47,9 +64,10 @@ app.get("/", (req, res) => {
 app.post("/signup", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
-    const { username, password, email } = req.body; // Add jam_group
-    const new_user_id = uuidv4();
+    const { password, email } = req.body; // Add jam_group
+    const new_user_id = generate;
     const new_jam_id = uuidv4();
+    const username = generateUniqueUsername();
 
     // Check if the username already exists
     const existingUser = await User.findOne({ username });
@@ -74,6 +92,7 @@ app.post("/signup", async (req, res) => {
     const newUser = new User({
       username,
       password: hashedPassword,
+      email,
       user_id: new_user_id,
       jam_groups: [new_jam_id], // Assign jam_group to the user
       jam_tasks: [],
@@ -81,9 +100,43 @@ app.post("/signup", async (req, res) => {
       _id: new_user_id,
     });
 
+    // save new user and the new group made for the user
     await newUser.save();
     await newGroup.save();
 
+    // generate email content
+    const mail_options = {
+      from: "jammanager.io@gmail.com",
+      to: email, // The user's email address
+      subject: "Welcome to Jam Manager",
+      html: `
+        <html>
+          <head>
+            <style>
+              /* Add any custom CSS styles here for your email */
+            </style>
+          </head>
+          <body>
+            <h1>Welcome to Our Platform</h1>
+            <p>Thank you for signing up!</p>
+            <img src=https://jammanager.s3.us-east-2.amazonaws.com/DALL%C2%B7E%202023-12-15%2001.44.30%20-%20Create%20a%20logo%20for%20%27Jam%20Manager%27%20without%20any%20text%2C%20focusing%20purely%20on%20visual%20elements.%20The%20logo%20should%20feature%20a%20stylized%2C%20colorful%20jar%20of%20jam%2C%20represe.png?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEPj%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJHMEUCIFWs9HNhqY4EY%2B%2FqsDLcCsH4UEQDLf63hY0hgs%2FR%2FtgRAiEA0DhOgpTt2P81bzYyWIy%2Bqase%2Bm2NJdYgxQCte%2BppZ%2BMq5AIIcRABGgwwMDgyMDY4MzI1MTkiDGv76ma%2BQfCxzoC2cCrBAsUOHfBLRQKS0AG3JS1UOgfPXlMyVf%2FbdHqiDBrn%2BOkiI%2B%2FHDu7OP3sp94YYD9QLcvwecr4%2BoNLJ0CydUDaFdBqsihVyZ7pTgX37A8jrAnWM9Znq57lsCjz9%2FrxzENgNEyQ4FMF0ZXF1sc3JGA%2Ft%2B6cc3xkxtHHrzmvqqGwQ7vf2vOyxCyF84Iz4qlQ8nsCLpmdA5UyKOJh8aSRacEBHVxuXiWbZT7B0yttxVNrYPTT4sP8Z4oAmjBQYWo%2BDMUQgc3LKxyJPlJOWQfJS8yeXUBIPH8ZL%2Bvi6XXJezYFM1BK4ldQt3Bpnh4wYLj2VjEp9syfHjTy6O5ZDajFCApktduCE6GntE7aYhCvRQUqiickXCvwzVWcfMgovq6FeYKZX9Y3nAzSVT%2Fghzavj6opxEBWkMQ31ew75MqImjzOoSBvA1DDKgPCrBjqzAik6rj8d1fG88OSZXOlo3qS4WWPXFfDyCiGBXEV6hPw3sV1HSlDzo260vPvgVBiksrXbIpk%2Frkm%2FZ4LX9PbZbCbJMvD2oi9tqT5BS47rCBZ3Wc0pqxD2jC9cCaG5YvtIsjDBnXNOr7SpXgksgtXR6MZQTw087mKepzzsqOedGyzQ8k2J%2Fsd4olnaxxmiqIoVLOSnAXsRRyLk%2Fryen80l11OlWxU7JIKYDDHkiuu2cJhLucUkWH2%2FOaoK04jWG5y7sHcMPtN7PLQr4iTec7P62G5hTG4UICKkAZjddlMvc5fPExhz8eGi44v5eN%2BQY9Oku44dlqlvs3vxOFZLWZ6%2BAQMGvhpBbeIPUZ22wkS0uiL7jnTVMEMq6sLRhFpHLo6OIDbDohtTSkhvVGxvYQY8QiCvtH8%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20231215T074633Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIAQD2JKKODYIOPB6IX%2F20231215%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=25c3122b7e67424242cc4e526f41449439e961314796b47978bf9ffa475989a5" alt="Jam Manager Logo" width="200">
+            <br>
+            <a href="https://jam-manager.netlify.app/" style="background-color: #007BFF; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Visit Our Website</a>
+          </body>
+        </html>
+      `,
+    };
+
+    // call transporter to send email
+    transporter.sendMail(mail_options, (error, info) => {
+      if (error) {
+        console.error("Email sending error:", error);
+      } else {
+        console.log("Email sent:", info.response);
+      }
+    });
+
+    // sign the first token provided to the user
     const token = jwt.sign(
       { userId: new_user_id, jamGroup: new_jam_id },
       SECRET_JWT,
@@ -101,6 +154,40 @@ app.post("/signup", async (req, res) => {
   } catch (error) {
     console.error("Error during user registration:", error);
     res.status(500).json({ message: "Internal server error", error });
+  }
+});
+
+// Add a PUT endpoint for updating the user associated with the JWT
+app.put("/user", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const userId = req.user.user_id; // Extract the user ID from the JWT payload
+    const updatedFields = req.body;
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update only the fields provided in the request body
+    for (const key in updatedFields) {
+      if (updatedFields.hasOwnProperty(key)) {
+        user[key] = updatedFields[key];
+      }
+    }
+
+    // Save the updated user document
+    const updatedUser = await user.save();
+
+    return res
+      .status(200)
+      .json({ message: "User updated successfully", updatedUser });
+  } catch (error) {
+    console.error("There was an error updating the user:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
@@ -437,10 +524,9 @@ app.post("/jam_note/:jam_id", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { note, jam_group_id } = req.body;
+    const { note, jam_group_id, user_id } = req.body;
     const { jam_id } = req.params;
 
-    const user_id = req.user.userId; // Extract the user ID from the JWT payload
     const created_timestamp = Date.now();
     const jam_note_id = uuidv4();
 
@@ -480,12 +566,10 @@ app.post("/jam_note/:jam_id", authenticateJWT, async (req, res) => {
 app.get("/jam_notes/user/:user_id", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
-
     const { user_id } = req.params;
-    const userJamGroup = req.user.jam_group_id; // Get the user's jam_group
 
-    // Find all JamNotes associated with the provided user_id and in the user's jam_group
-    const jamNotes = await JamNote.find({ user_id, jam_group: userJamGroup });
+    const user = await User.findById({ _id: user_id });
+    const jamNotes = user.jam_notes;
 
     res
       .status(200)
@@ -519,8 +603,12 @@ app.post("/jam_task/:jam_id", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const user_id = req.user.userId;
-    const { title, tasked_users = [user_id], complete_by_timestamp } = req.body;
+    const {
+      title,
+      tasked_users = [user_id],
+      complete_by_timestamp,
+      user_id,
+    } = req.body;
     const { jam_id } = req.params;
 
     const new_task = new JamTask({

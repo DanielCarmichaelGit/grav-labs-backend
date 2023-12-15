@@ -11,6 +11,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  email: {
+    type: String,
+    required: true,
+  },
   user_id: {
     type: String,
     required: true,
@@ -30,6 +34,10 @@ const userSchema = new mongoose.Schema({
   _id: {
     type: String,
     required: true,
+  },
+  profile_image_url: {
+    type: String,
+    required: false,
   },
 });
 
