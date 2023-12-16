@@ -4,6 +4,7 @@ const cors = require("cors");
 // import utility functions
 const dbConnect = require("./src/utils/dbConnect");
 const generateUniqueUsername = require("./src/utils/generateUsername");
+const arrayDifference = require("./src/utils/findDiff");
 
 // import packages
 const { v4: uuidv4 } = require("uuid");
@@ -21,7 +22,7 @@ const Jam = require("./src/models/jam");
 const JamNote = require("./src/models/jamNote");
 const JamGroup = require("./src/models/jamGroup");
 const JamTask = require("./src/models/jamTasks");
-const arrayDifference = require("./src/utils/findDiff");
+
 
 const app = express();
 app.use(cors());
