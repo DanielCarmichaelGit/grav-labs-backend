@@ -23,7 +23,6 @@ const JamNote = require("./src/models/jamNote");
 const JamGroup = require("./src/models/jamGroup");
 const JamTask = require("./src/models/jamTasks");
 
-
 const app = express();
 app.use(cors());
 app.options("*", cors()); // Enable CORS pre-flight request for all routes
@@ -260,7 +259,7 @@ app.post("/login", async (req, res) => {
       message: "Login successful",
       token,
       user_id: user.uuid,
-      user
+      user,
     });
   } catch (error) {
     console.error("Error during user login:", error);
@@ -486,7 +485,7 @@ app.post("/join_group/:id", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.params;
-    const { join_code} = req.body;
+    const { join_code } = req.body;
     const user_id = req.user.userId;
 
     // Find the existing JamGroup by ID
@@ -617,6 +616,7 @@ app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
     const { group_id } = req.params;
     console.log("group id", group_id);
     const { user_id } = req.user.userId;
+    console.log("user id", user_id);
 
     if (group_id !== undefined) {
       const jam_group = await JamGroup.findById({ _id: group_id });
@@ -736,11 +736,7 @@ app.post("/jam_task/:jam_id", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
     const task_id = uuidv4();
 
-    const {
-      title,
-      tasked_users = [user_id],
-      complete_by_timestamp,
-    } = req.body;
+    const { title, tasked_users = [user_id], complete_by_timestamp } = req.body;
     const user_id = req.user.userId;
     const { jam_id } = req.params;
 
@@ -776,8 +772,8 @@ app.get("/jam_task/:task_id", authenticateJWT, async (req, res) => {
     const task = JamTask.findById({ _id: task_id });
     res.status(200).json({
       message: "Jam Task Found",
-      task
-    })
+      task,
+    });
   } catch (error) {
     res.status(500).json({
       message: "Error fetching task",
@@ -905,7 +901,6 @@ app.put("/jams/:id", authenticateJWT, async (req, res) => {
 //     dbConnect(process.env.GEN_AUTH);
 
 //     const { new_password, email } = req.body;
-
 
 //   }
 //   catch (error) {
