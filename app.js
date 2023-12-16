@@ -614,9 +614,8 @@ app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
     const { group_id } = req.params;
-    console.log("group id", group_id);
     const { user_id } = req.user.userId;
-    console.log("user id", user_id);
+    console.log(req.user)
 
     if (group_id !== undefined) {
       const jam_group = await JamGroup.findById({ _id: group_id });
