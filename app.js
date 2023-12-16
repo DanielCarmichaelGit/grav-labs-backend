@@ -260,7 +260,7 @@ app.post("/login", async (req, res) => {
       message: "Login successful",
       token,
       user_id: user.uuid,
-      jam_group: user.jam_group,
+      user
     });
   } catch (error) {
     console.error("Error during user login:", error);
