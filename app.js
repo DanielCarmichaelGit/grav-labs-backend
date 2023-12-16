@@ -569,7 +569,13 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
         $push: { jam_id },
       });
 
-      res.status(200).json({ message: "Jam Created", jam: new_jam });
+      const user = await User.findById({ _id: user_id });
+      console.log(user);
+      const user_groups = user.jam_groups;
+      console.log(user_groups);
+      const user_jams = await Jam.find({ jam_group_id: { $in: user_groups } });
+
+      res.status(200).json({ message: "Jam Created", new_jam, user_jams });
     }
   } catch (error) {
     console.log("there was an error creating the authentication");
@@ -628,7 +634,6 @@ app.get("/jams/:group_id?", authenticateJWT, async (req, res) => {
     } else if (user_id !== undefined) {
       const user = await User.findById({ _id: user_id });
       const user_groups = user.jam_groups;
-
       const user_jams = await Jam.find({ jam_group_id: { $in: user_groups } });
       res.status(200).json({
         message: "Jams Found",
