@@ -900,6 +900,20 @@ app.put("/jams/:id", authenticateJWT, async (req, res) => {
   }
 });
 
+// app.post("/forgot_password", async (req, res) => {
+//   try {
+//     dbConnect(process.env.GEN_AUTH);
+
+//     const { new_password, email } = req.body;
+
+
+//   }
+//   catch (error) {
+//     console.error("There was an error updating user's password:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// })
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
