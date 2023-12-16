@@ -539,7 +539,7 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       jam_notes = [],
     } = req.body;
 
-    const existing_group = await JamGroup.findById({ _id: jam_group_id });
+    const existing_group = await JamGroup.find({ jam_group_id });
 
     const created_timestamp = Date.now();
 
