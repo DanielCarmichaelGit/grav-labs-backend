@@ -79,7 +79,7 @@ app.post("/signup", async (req, res) => {
     }
 
     // Hash the password before saving it
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hash(password, 10);
 
     const newGroup = new JamGroup({
       title: `${username}'s Jam`,
