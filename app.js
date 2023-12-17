@@ -214,7 +214,7 @@ app.post("/signup", async (req, res) => {
       { userId: new_user_id, jamGroup: new_jam_id },
       SECRET_JWT,
       {
-        expiresIn: "12h",
+        expiresIn: "30d",
       }
     );
 
