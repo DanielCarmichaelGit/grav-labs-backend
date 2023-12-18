@@ -537,6 +537,8 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       jam_group_id,
       jam_tasks = [],
       jam_notes = [],
+      start_time,
+      moderators,
     } = req.body;
 
     const user_id = req.user.userId;
@@ -563,6 +565,8 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
         jam_group: existing_group,
         jam_tasks,
         jam_notes,
+        start_time,
+        moderators: [...moderators, existing_group.host_id, user_id],
         _id: jam_id,
       });
 
@@ -574,7 +578,6 @@ app.post("/create_jam", authenticateJWT, async (req, res) => {
       const user = await User.findById({ _id: user_id });
 
       const user_groups = user.jam_groups;
-      console.log(user_groups);
       const user_jams = await Jam.find({ jam_group_id: { $in: user_groups } });
 
       res.status(200).json({ message: "Jam Created", new_jam, user_jams });
@@ -844,6 +847,7 @@ app.delete("/jam/:id", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const { id } = req.query;
+    const user_id = req.user.userId;
 
     if (!id) {
       return res
@@ -852,15 +856,21 @@ app.delete("/jam/:id", authenticateJWT, async (req, res) => {
     }
 
     // Attempt to find and delete the jam by custom id
-    const deletedJam = await Jam.findOneAndDelete({ _id: id });
-
-    if (!deletedJam) {
-      return res.status(404).json({ message: "Jam not found" });
+    const jam = await Jam.findById({ _id: id });
+    if (jam.moderators.includes(user_id)) {
+      const deletedJam = await Jam.findOneAndDelete({ _id: id });
+      if (!deletedJam) {
+        return res.status(404).json({ message: "Jam not found" });
+      } else {
+        return res
+          .status(200)
+          .json({ message: "Jam deleted successfully", deletedJam });
+      }
+    } else {
+      return res.status(403).json({
+        message: "user does not have moderator access to this jam",
+      });
     }
-
-    return res
-      .status(200)
-      .json({ message: "Jam deleted successfully", deletedJam });
   } catch (error) {
     console.error("There was an error deleting the jam:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -879,12 +889,13 @@ app.put("/jams/:id", authenticateJWT, async (req, res) => {
       jam_url = "",
       options = "{}",
       image_url = "",
+      moderators = [],
     } = req.body;
 
     // Attempt to find and update the jam by ID
     const updatedJam = await Jam.findByIdAndUpdate(
       id,
-      { title, time_limit, jam_url, options, image_url },
+      { title, time_limit, jam_url, options, image_url, $push: { moderators } },
       { new: true } // Return the updated document
     );
 

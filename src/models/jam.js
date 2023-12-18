@@ -11,6 +11,8 @@ const jamSchema = new mongoose.Schema({
   jam_group: { type: Object, required: true },
   jam_tasks: { type: Array, required: true },
   jam_notes: { type: Array, required: true },
+  start_time: { type: String, required: true },
+  moderators: { type: Array, required: true },
   _id: { type: String, require: true },
 });
 
