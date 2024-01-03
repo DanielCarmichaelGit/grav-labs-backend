@@ -80,7 +80,6 @@ app.post("/signup", async (req, res) => {
         },
       }],
       type,
-      _id: user_id,
     });
 
     // save new user and the new group made for the user
