@@ -16,6 +16,9 @@ const SECRET_JWT = process.env.SECRET_JWT;
 
 // import models
 const User = require("./src/models/user");
+const Organization = require("./src/models/organization");
+const Task = require("./src/models/task");
+const Sprint = require("./src/models/sprint");
 
 const app = express();
 app.use(cors());
@@ -65,33 +68,51 @@ app.post("/signup", async (req, res) => {
       email,
       organization: {},
       kpi_data: {},
-      tasks: [{
-        title: "Orientation",
-        assigned_by: {
-          name: "Kamari",
-          email: "danielfcarmichael@gmail.com",
-          assignees: [],
-          client: {},
-          status: {
-            status_title: "Not Started",
-            status_code: "000",
-            status_percentage: 0
-          }
-        },
-      }],
+      tasks: [],
       type,
     });
 
     // save new user and the new group made for the user
     newUser.save().then((res) => {
-      console.log(res)
+      const newOrg = new Organization({
+        name: organization,
+        admins: [res.email],
+        seats: 2,
+        status: "active",
+        billable_user: {
+          email: res.email,
+          user_id: res.user_id
+        },
+        billing: {}
+      })
+      const firstTask = newTask({
+        title: "Getting Started",
+        assigned_by: {
+          email: "danielfcarmichael@gmail.com",
+        },
+        assignees: [res.email],
+        status: "Not Started",
+        escalation: "Low",
+        start_time: Date.now(),
+        duration: 5,
+        hard_limit: false,
+        requires_authorization: false
+      });
     });
+
+    firstTask.save().then(async (res) => {
+      await User.findByIdAndUpdate(user_id, {
+        $push: {tasks: res}
+      })
+
+      await newOrg.save();
+    })
 
     // generate email content
     const mail_options = {
       from: "jammanager.io@gmail.com",
       to: email, // The user's email address
-      subject: "Welcome to Jam Manager",
+      subject: "Welcome to Kamari",
       html: `
       <html>
       <head>
@@ -202,7 +223,7 @@ app.post("/signup", async (req, res) => {
     res.status(200).json({
       message: "User Registered",
       user: newUser,
-      user_group: newGroup,
+      organization: newOrg,
       token,
     });
   } catch (error) {
