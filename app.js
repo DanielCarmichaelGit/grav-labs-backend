@@ -3,8 +3,6 @@ const cors = require("cors");
 
 // import utility functions
 const dbConnect = require("./src/utils/dbConnect");
-const generateUniqueUsername = require("./src/utils/generateUsername");
-const arrayDifference = require("./src/utils/findDiff");
 
 // import packages
 const { v4: uuidv4 } = require("uuid");
@@ -24,24 +22,6 @@ const app = express();
 app.use(cors());
 app.options("*", cors()); // Enable CORS pre-flight request for all routes
 app.use(express.json());
-
-// Middleware to verify JWT token
-function authenticateJWT(req, res, next) {
-  const token = req.header("Authorization");
-
-  if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-
-  jwt.verify(token, SECRET_JWT, (error, user) => {
-    if (error) {
-      return res.status(403).json({ message: "Token is invalid" });
-    }
-
-    req.user = user;
-    next();
-  });
-}
 
 // create utility transporter for email service
 const transporter = nodemailer.createTransport(
