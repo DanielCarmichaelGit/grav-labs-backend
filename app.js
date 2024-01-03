@@ -68,7 +68,7 @@ app.post("/signup", async (req, res) => {
       tasks: [{
         title: "Orientation",
         assigned_by: {
-          name: Kamari,
+          name: "Kamari",
           email: "danielfcarmichael@gmail.com",
           assignees: [],
           client: {},
