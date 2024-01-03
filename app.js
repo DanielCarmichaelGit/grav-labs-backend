@@ -19,6 +19,7 @@ const User = require("./src/models/user");
 const Organization = require("./src/models/organization");
 const Task = require("./src/models/task");
 const Sprint = require("./src/models/sprint");
+const Alert = require("./src/models/alerts");
 
 const app = express();
 app.use(cors());
@@ -45,13 +46,19 @@ app.get("/", (req, res) => {
 app.post("/signup", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
-    const { password, email, organization, type, first_name, last_name } = req.body; // Add jam_group
+    const { password, email, organization, type, first_name, last_name } =
+      req.body; // Add jam_group
 
     // Check if the username already exists
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      return res.status(409).json({ message: "Username already exists", redirect: { url: "google.com"} });
+      return res
+        .status(409)
+        .json({
+          message: "Username already exists",
+          redirect: { url: "google.com" },
+        });
     }
 
     const user_id = uuidv4();
@@ -59,15 +66,13 @@ app.post("/signup", async (req, res) => {
     // Hash the password before saving it
     const hashedPassword = await bcrypt.hash(password, 10);
 
-
-
     //Create a jam group for this new user
     const newUser = new User({
       user_id,
       password: hashedPassword,
       name: {
         first: first_name,
-        last: last_name
+        last: last_name,
       },
       email,
       organization: {},
@@ -84,10 +89,10 @@ app.post("/signup", async (req, res) => {
       status: "active",
       billable_user: {
         email: newUser.email,
-        user_id: newUser.user_id
+        user_id: newUser.user_id,
       },
-      billing: {}
-    })
+      billing: {},
+    });
 
     // create first task
     const firstTask = new Task({
@@ -101,31 +106,30 @@ app.post("/signup", async (req, res) => {
       start_time: Date.now(),
       duration: 5,
       hard_limit: false,
-      requires_authorization: false
+      requires_authorization: false,
     });
 
     const newAlert = new Alert({
       to_user: newUser,
       created_by: {
-        name: "Kamari"
+        name: "Kamari",
       },
       text: "Welcome to Kamari. We are so excited you trust us as a sprint management tool! Check out your first task to get oriented around the platform.",
       task: firstTask,
       timestamp: Date.now(),
-      escalation: "Low"
+      escalation: "Low",
     });
 
     // save new user and the new group made for the user
-    await newUser.save()
+    await newUser.save();
 
     firstTask.save().then(async (res) => {
       await User.findByIdAndUpdate(user_id, {
-        $push: {tasks: res}
-      })
+        $push: { tasks: res },
+      });
 
       await newOrg.save();
-    })
-
+    });
 
     // generate email content
     const mail_options = {
@@ -250,7 +254,6 @@ app.post("/signup", async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 });
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
