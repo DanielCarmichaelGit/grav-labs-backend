@@ -16,7 +16,6 @@ const SECRET_JWT = process.env.SECRET_JWT;
 
 // import models
 const User = require("./src/models/user");
-const Organization = require("./src/models/organization");
 
 const app = express();
 app.use(cors());
@@ -212,3 +211,7 @@ app.post("/signup", async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 });
+
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
