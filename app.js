@@ -45,7 +45,7 @@ app.get("/", (req, res) => {
 app.post("/signup", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
-    const { password, email, organization, type } = req.body; // Add jam_group
+    const { password, email, organization, type, first_name, last_name } = req.body; // Add jam_group
 
     // Check if the username already exists
     const existingUser = await User.findOne({ email });
@@ -65,6 +65,10 @@ app.post("/signup", async (req, res) => {
     const newUser = new User({
       user_id,
       password: hashedPassword,
+      name: {
+        first: first_name,
+        last: last_name
+      },
       email,
       organization: {},
       kpi_data: {},
@@ -72,33 +76,47 @@ app.post("/signup", async (req, res) => {
       type,
     });
 
-    // save new user and the new group made for the user
-    newUser.save().then((res) => {
-      const newOrg = new Organization({
-        name: organization,
-        admins: [res.email],
-        seats: 2,
-        status: "active",
-        billable_user: {
-          email: res.email,
-          user_id: res.user_id
-        },
-        billing: {}
-      })
-      const firstTask = newTask({
-        title: "Getting Started",
-        assigned_by: {
-          email: "danielfcarmichael@gmail.com",
-        },
-        assignees: [res.email],
-        status: "Not Started",
-        escalation: "Low",
-        start_time: Date.now(),
-        duration: 5,
-        hard_limit: false,
-        requires_authorization: false
-      });
+    // create new org
+    const newOrg = new Organization({
+      name: organization,
+      admins: [newUser.email],
+      seats: 2,
+      status: "active",
+      billable_user: {
+        email: newUser.email,
+        user_id: newUser.user_id
+      },
+      billing: {}
+    })
+
+    // create first task
+    const firstTask = new Task({
+      title: "Getting Started",
+      assigned_by: {
+        email: "danielfcarmichael@gmail.com",
+      },
+      assignees: [newUser.email],
+      status: "Not Started",
+      escalation: "Low",
+      start_time: Date.now(),
+      duration: 5,
+      hard_limit: false,
+      requires_authorization: false
     });
+
+    const newAlert = new Alert({
+      to_user: newUser,
+      created_by: {
+        name: "Kamari"
+      },
+      text: "Welcome to Kamari. We are so excited you trust us as a sprint management tool! Check out your first task to get oriented around the platform.",
+      task: firstTask,
+      timestamp: Date.now(),
+      escalation: "Low"
+    });
+
+    // save new user and the new group made for the user
+    await newUser.save()
 
     firstTask.save().then(async (res) => {
       await User.findByIdAndUpdate(user_id, {
@@ -107,6 +125,7 @@ app.post("/signup", async (req, res) => {
 
       await newOrg.save();
     })
+
 
     // generate email content
     const mail_options = {
