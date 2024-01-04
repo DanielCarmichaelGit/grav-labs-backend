@@ -123,12 +123,11 @@ app.post("/signup", async (req, res) => {
     // save new user and the new group made for the user
     await newUser.save();
 
-    firstTask.save().then(async (res) => {
-      await User.findByIdAndUpdate(user_id, {
-        $push: { tasks: res },
-      });
+    const user_task = await firstTask.save()
+    await newOrg.save();
 
-      await newOrg.save();
+    await User.findByIdAndUpdate(user_id, {
+      $push: { tasks: user_task },
     });
 
     // generate email content
