@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const sprintSchema = new mongoose.Schema({
+  sprint_id: { type: String, required: true },
   title: {type: String, required: true},
   owner: {type: Object, required: true},
   members: {type: Array, required: true},

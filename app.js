@@ -62,6 +62,9 @@ app.post("/signup", async (req, res) => {
     }
 
     const user_id = uuidv4();
+    const org_id = uuid_v4();
+    const task_id = uuidv4();
+    const alert_id = uuidv4();
 
     // Hash the password before saving it
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -83,6 +86,7 @@ app.post("/signup", async (req, res) => {
 
     // create new org
     const newOrg = new Organization({
+      org_id,
       name: organization,
       admins: [newUser.email],
       seats: 2,
@@ -96,6 +100,7 @@ app.post("/signup", async (req, res) => {
 
     // create first task
     const firstTask = new Task({
+      task_id,
       title: "Getting Started",
       assigned_by: {
         email: "danielfcarmichael@gmail.com",
@@ -110,6 +115,7 @@ app.post("/signup", async (req, res) => {
     });
 
     const newAlert = new Alert({
+      alert_id,
       to_user: newUser,
       created_by: {
         name: "Kamari",
@@ -128,6 +134,8 @@ app.post("/signup", async (req, res) => {
 
     await User.findByIdAndUpdate(user_id, {
       $push: { tasks: user_task },
+    }).then(async (res) => {
+      await newAlert.save()
     });
 
     // generate email content
