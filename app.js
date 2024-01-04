@@ -81,6 +81,7 @@ app.post("/signup", async (req, res) => {
     const org_id = uuidv4();
     const task_id = uuidv4();
     const alert_id = uuidv4();
+    const sprint_id = uuidv4();
 
     //Create a jam group for this new user
     const newUser = new User({
@@ -95,6 +96,8 @@ app.post("/signup", async (req, res) => {
       kpi_data: {},
       tasks: [],
       type,
+      sprints: [sprint_id],
+      marketable: true
     });
 
     // create new org
@@ -109,6 +112,7 @@ app.post("/signup", async (req, res) => {
         user_id: newUser.user_id,
       },
       billing: {},
+      sprints: [sprint_id]
     });
 
     // create first task
@@ -125,6 +129,23 @@ app.post("/signup", async (req, res) => {
       duration: 5,
       hard_limit: false,
       requires_authorization: false,
+      sprint_id
+    });
+
+    const newSprint = new Sprint({
+      sprint_id,
+      title: `${first_name}'s First Sprint`,
+      owner: newUser,
+      members: [...newOrg.members],
+      viewers: [],
+      status: {
+        time_allocated: 0,
+        time_over,
+        active_status: "Not Started"
+      },
+      start_date_time: Date.now(),
+      duration: "1209600000",
+      kpi_data: {}
     });
 
     const newAlert = new Alert({
@@ -144,6 +165,7 @@ app.post("/signup", async (req, res) => {
 
     const created_task = await firstTask.save();
     const created_org = await newOrg.save();
+    await newSprint.save()
 
     await User.findOneAndUpdate(
       { user_id },
@@ -238,19 +260,19 @@ app.post("/signup", async (req, res) => {
       <body>
         <div class="container">
           <div class="header">
-            <h1>Welcome to Jam Manager</h1>
+            <h1>Welcome to Kamari</h1>
           </div>
           <div class="content">
-            <img src="https://jammanager.s3.us-east-2.amazonaws.com/DALL%C2%B7E+2023-12-15+01.44.30+-+Create+a+logo+for+'Jam+Manager'+without+any+text%2C+focusing+purely+on+visual+elements.+The+logo+should+feature+a+stylized%2C+colorful+jar+of+jam%2C+represe.png" alt="Jam Manager Logo">
+            <img src="https://jammanager.s3.us-east-2.amazonaws.com/kamari.png" alt="Jam Manager Logo">
             <div class="button">
               <a href="https://jam-manager.netlify.app/" style="background-color: #007BFF; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Visit Jam Manager</a>
             </div>
           </div>
           <div class="unsubscribe">
-            <a href="#">Unsubscribe</a>
+            <a href="https://jam-manager.netlify.app/unsubscribe/${email}">Unsubscribe</a>
           </div>
           <div class="footer">
-            <a href="#">Terms</a>
+            <a href="https://jam-manager.netlify.app/terms-and-conditions">Terms</a>
           </div>
         </div>
       </body>
