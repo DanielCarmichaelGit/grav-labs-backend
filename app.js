@@ -288,7 +288,7 @@ app.get("/alerts", authenticateJWT, async (req, res) => {
     await dbConnect(process.env.GEN_AUTH);
 
     console.log(req)
-    res.status(200).json({message: req})
+    res.status(200).json({message: req.user})
   }
   catch (error) {
     res.status(500).json({message: error})
