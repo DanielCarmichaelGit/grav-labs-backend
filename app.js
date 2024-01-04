@@ -67,6 +67,7 @@ app.post("/signup", async (req, res) => {
 
     //Create a jam group for this new user
     const newUser = new User({
+      _id: user_id,
       user_id,
       email,
       password,
