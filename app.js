@@ -321,6 +321,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
     res.status(200).json({
       status: 200,
       tasks,
+      user
     });
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
