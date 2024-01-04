@@ -6,7 +6,6 @@ const dbConnect = require("./src/utils/dbConnect");
 
 // import packages
 const { v4: uuidv4 } = require("uuid");
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const sgTransport = require("nodemailer-sendgrid-transport");
@@ -46,12 +45,12 @@ app.get("/", (req, res) => {
 app.post("/signup", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
-    const { password, email, organization, type, first_name, last_name } =
-      req.body; // Add jam_group
+    const { password, email, organization, type, first_name, last_name } = req.body; // Add jam_group
 
     // Check if the username already exists
     const existingUser = await User.findOne({ email });
 
+    // if existing user, early return
     if (existingUser) {
       return res
         .status(409)
@@ -66,18 +65,15 @@ app.post("/signup", async (req, res) => {
     const task_id = uuidv4();
     const alert_id = uuidv4();
 
-    // Hash the password before saving it
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     //Create a jam group for this new user
     const newUser = new User({
       user_id,
-      password: hashedPassword,
+      email,
+      password,
       name: {
         first: first_name,
         last: last_name,
       },
-      email,
       organization: {},
       kpi_data: {},
       tasks: [],
