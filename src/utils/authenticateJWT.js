@@ -1,4 +1,4 @@
-export default function authenticateJWT(req, res, next) {
+function authenticateJWT(req, res, next) {
   const token = req.header("Authorization");
 
   if (!token) {
@@ -13,4 +13,6 @@ export default function authenticateJWT(req, res, next) {
     req.user = user;
     next();
   });
-}
+};
+
+module.exports = authenticateJWT;
