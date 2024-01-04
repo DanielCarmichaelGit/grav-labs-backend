@@ -129,7 +129,7 @@ app.post("/signup", async (req, res) => {
     const user_task = await firstTask.save()
     await newOrg.save();
 
-    await User.findByIdAndUpdate(user_id, {
+    await User.findOneAndUpdate({user_id}, {
       $push: { tasks: user_task },
     }).then(async (res) => {
       await newAlert.save()
