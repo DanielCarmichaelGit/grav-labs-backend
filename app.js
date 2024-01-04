@@ -19,6 +19,7 @@ const Organization = require("./src/models/organization");
 const Task = require("./src/models/task");
 const Sprint = require("./src/models/sprint");
 const Alert = require("./src/models/alerts");
+const { default: authenticateJWT } = require("./src/utils/authenticateJWT");
 
 const app = express();
 app.use(cors());
@@ -123,16 +124,23 @@ app.post("/signup", async (req, res) => {
     });
 
     // save new user and the new group made for the user
-    await newUser.save();
+    const created_user = await newUser.save();
 
-    const user_task = await firstTask.save()
-    await newOrg.save();
+    const created_task = await firstTask.save()
+    const created_org = await newOrg.save();
 
     await User.findOneAndUpdate({user_id}, {
-      $push: { tasks: user_task },
+      $push: { tasks: created_task },
     }).then(async (res) => {
       await newAlert.save()
     });
+
+    await Organization.findOneAndUpdate({org_id}, {
+      $push: {
+        members: created_user,
+        admins: created_user
+      }
+    })
 
     // generate email content
     const mail_options = {
@@ -248,8 +256,8 @@ app.post("/signup", async (req, res) => {
 
     res.status(200).json({
       message: "User Registered",
-      user: newUser,
-      organization: newOrg,
+      user: created_user,
+      organization: created_org,
       token,
     });
   } catch (error) {
@@ -257,6 +265,19 @@ app.post("/signup", async (req, res) => {
     res.status(500).json({ message: "Internal server error", error });
   }
 });
+
+app.get("/alerts", authenticateJWT, (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const user = req.user;
+    console.log("user", user);
+    res.status(200).json({message: user})
+  }
+  catch (error) => {
+    res.status(500).json({message: error})
+  }
+})
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
