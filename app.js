@@ -62,7 +62,7 @@ app.post("/signup", async (req, res) => {
     }
 
     const user_id = uuidv4();
-    const org_id = uuid_v4();
+    const org_id = uuidv4();
     const task_id = uuidv4();
     const alert_id = uuidv4();
 
