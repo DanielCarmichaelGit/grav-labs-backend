@@ -45,7 +45,7 @@ app.get("/", (req, res) => {
 // Add a POST endpoint for user registration (signup)
 app.post("/signup", async (req, res) => {
   try {
-    dbConnect(process.env.GEN_AUTH);
+    await dbConnect(process.env.GEN_AUTH);
     const { password, email, organization, type, first_name, last_name } = req.body; // Add jam_group
 
     // Check if the username already exists
@@ -266,9 +266,9 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.get("/alerts", authenticateJWT, (req, res) => {
+app.get("/alerts", authenticateJWT, async (req, res) => {
   try {
-    dbConnect(process.env.GEN_AUTH);
+    await dbConnect(process.env.GEN_AUTH);
 
     const user = req.user;
     console.log("user", user);
