@@ -270,14 +270,13 @@ app.get("/alerts", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
 
-    const user = req.user;
-    console.log("user", user);
-    res.status(200).json({message: user})
+    console.log(req)
+    res.status(200).json({message: req})
   }
   catch (error) {
     res.status(500).json({message: error})
   }
-})
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
