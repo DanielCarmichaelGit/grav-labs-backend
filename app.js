@@ -309,7 +309,7 @@ app.get("/alerts", authenticateJWT, async (req, res) => {
   }
 });
 
-app.get("/tasks/:task_id", authenticateJWT, async (req, res) => {
+app.get("/tasks/:task_id?", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
