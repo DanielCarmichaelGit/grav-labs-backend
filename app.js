@@ -35,6 +35,23 @@ const transporter = nodemailer.createTransport(
   })
 );
 
+function authenticateJWT(req, res, next) {
+  const token = req.header("Authorization");
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  jwt.verify(token, SECRET_JWT, (error, user) => {
+    if (error) {
+      return res.status(403).json({ message: "Token is invalid" });
+    }
+
+    req.user = user;
+    next();
+  });
+};
+
 // test endpoint to verify server status
 app.get("/", (req, res) => {
   console.log("received home");
@@ -266,7 +283,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.get("/alerts", async (req, res) => {
+app.get("/alerts", authenticateJWT(), async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
 
