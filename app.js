@@ -19,7 +19,6 @@ const Organization = require("./src/models/organization");
 const Task = require("./src/models/task");
 const Sprint = require("./src/models/sprint");
 const Alert = require("./src/models/alerts");
-const { default: authenticateJWT } = require("./src/utils/authenticateJWT");
 
 const app = express();
 app.use(cors());
