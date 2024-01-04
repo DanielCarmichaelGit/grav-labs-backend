@@ -316,12 +316,11 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
     const user_id = req.user.userId;
 
     let user = await User.find({ user_id });
-    const tasks = await Task.find({ assignees: { $in: [user.email] } });
+    const tasks = await Task.find({ assignees: { $in: [user[0].email] } });
 
     res.status(200).json({
       status: 200,
-      tasks,
-      user
+      tasks
     });
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
