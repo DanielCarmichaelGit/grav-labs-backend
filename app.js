@@ -35,7 +35,7 @@ const transporter = nodemailer.createTransport(
 );
 
 function authenticateJWT(req, res, next) {
-  console.log("Request!",req)
+  console.log("Request!", req);
   const token = req.header("Authorization");
 
   if (!token) {
@@ -50,7 +50,7 @@ function authenticateJWT(req, res, next) {
     req.user = user;
     next();
   });
-};
+}
 
 // test endpoint to verify server status
 app.get("/", (req, res) => {
@@ -63,19 +63,18 @@ app.get("/", (req, res) => {
 app.post("/signup", async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
-    const { password, email, organization, type, first_name, last_name } = req.body; // Add jam_group
+    const { password, email, organization, type, first_name, last_name } =
+      req.body; // Add jam_group
 
     // Check if the username already exists
     const existingUser = await User.findOne({ email });
 
     // if existing user, early return
     if (existingUser) {
-      return res
-        .status(409)
-        .json({
-          message: "Username already exists",
-          redirect: { url: "google.com" },
-        });
+      return res.status(409).json({
+        message: "Username already exists",
+        redirect: { url: "google.com" },
+      });
     }
 
     const user_id = uuidv4();
@@ -143,21 +142,27 @@ app.post("/signup", async (req, res) => {
     // save new user and the new group made for the user
     const created_user = await newUser.save();
 
-    const created_task = await firstTask.save()
+    const created_task = await firstTask.save();
     const created_org = await newOrg.save();
 
-    await User.findOneAndUpdate({user_id}, {
-      $push: { tasks: created_task },
-    }).then(async (res) => {
-      await newAlert.save()
+    await User.findOneAndUpdate(
+      { user_id },
+      {
+        $push: { tasks: created_task },
+      }
+    ).then(async (res) => {
+      await newAlert.save();
     });
 
-    await Organization.findOneAndUpdate({org_id}, {
-      $push: {
-        members: created_user,
-        admins: created_user
+    await Organization.findOneAndUpdate(
+      { org_id },
+      {
+        $push: {
+          members: created_user,
+          admins: created_user,
+        },
       }
-    })
+    );
 
     // generate email content
     const mail_options = {
@@ -263,13 +268,9 @@ app.post("/signup", async (req, res) => {
     });
 
     // sign the first token provided to the user
-    const token = jwt.sign(
-      { userId: user_id },
-      SECRET_JWT,
-      {
-        expiresIn: "30d",
-      }
-    );
+    const token = jwt.sign({ userId: user_id }, SECRET_JWT, {
+      expiresIn: "30d",
+    });
 
     res.status(200).json({
       message: "User Registered",
@@ -287,11 +288,24 @@ app.get("/alerts", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
 
-    console.log(req)
-    res.status(200).json({message: req.user})
-  }
-  catch (error) {
-    res.status(500).json({message: error})
+    const user_id = req.user.userId;
+
+    // Pagination parameters
+    const pageSize = parseInt(req.query.pageSize) || 10; // Default page size
+    const page = parseInt(req.query.page) || 1; // Default to first page
+
+    // Calculate the number of documents to skip
+    const skip = (page - 1) * pageSize;
+
+    // Query with limit and skip for pagination
+    const user_alerts = await Alert.find({ "to_user.user_id": user_id })
+      .limit(pageSize)
+      .skip(skip);
+
+    res.status(200).json({ alerts: user_alerts });
+  } catch (error) {
+    console.error("Error fetching alerts:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
