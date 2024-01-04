@@ -236,7 +236,7 @@ app.post("/signup", async (req, res) => {
 
     // sign the first token provided to the user
     const token = jwt.sign(
-      { userId: new_user_id, jamGroup: new_jam_id },
+      { userId: user_id },
       SECRET_JWT,
       {
         expiresIn: "30d",
