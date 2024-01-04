@@ -274,7 +274,7 @@ app.get("/alerts", authenticateJWT, (req, res) => {
     console.log("user", user);
     res.status(200).json({message: user})
   }
-  catch (error) => {
+  catch (error) {
     res.status(500).json({message: error})
   }
 })
