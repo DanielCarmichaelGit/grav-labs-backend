@@ -283,7 +283,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.get("/alerts", authenticateJWT(), async (req, res) => {
+app.get("/alerts", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
 
