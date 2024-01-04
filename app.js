@@ -35,6 +35,7 @@ const transporter = nodemailer.createTransport(
 );
 
 function authenticateJWT(req, res, next) {
+  console.log("Request!",req)
   const token = req.header("Authorization");
 
   if (!token) {
