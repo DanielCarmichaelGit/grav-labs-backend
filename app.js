@@ -140,7 +140,7 @@ app.post("/signup", async (req, res) => {
       viewers: [],
       status: {
         time_allocated: 0,
-        time_over,
+        time_over: 0,
         active_status: "Not Started"
       },
       start_date_time: Date.now(),
