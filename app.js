@@ -325,7 +325,11 @@ app.post("/login", async (req, res) => {
       res.status(500).json({message: "User not found"});
     }
 
+    else console.log("user: ", existing_user);
+
+    console.log("starting hash compare");
     const hash_compare = await comparePassword(password, existing_user[0].password);
+    console.log("hash compare complete");
 
     console.log(hash_compare);
 
