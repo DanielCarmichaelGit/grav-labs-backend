@@ -313,12 +313,12 @@ app.post("/login", async (req, res) => {
 
     const { email, hashed_password } = req.body;
 
-    const existing_user = User.find({ email });
+    const existing_user = await User.find({ email });
 
     console.log(existing_user)
     console.log(existing_user[0])
 
-    console.log(existing_user.password, hashed_password)
+    console.log(existing_user[0].password, hashed_password)
 
     if (existing_user.password === hashed_password) {
       res.status(200).json({
