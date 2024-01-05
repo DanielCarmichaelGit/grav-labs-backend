@@ -313,7 +313,10 @@ app.post("/login", async (req, res) => {
 
     const { email, hashed_password } = req.body;
 
-    const existing_user = User.find({ email })[0];
+    const existing_user = User.find({ email });
+
+    console.log(existing_user)
+    console.log(existing_user[0])
 
     console.log(existing_user.password, hashed_password)
 
