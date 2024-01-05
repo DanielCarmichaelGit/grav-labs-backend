@@ -315,6 +315,8 @@ app.post("/login", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
+    console.log(req)
+
     const { email, password } = req.body;
 
     const existing_user = await User.find({ email });
@@ -333,7 +335,7 @@ app.post("/login", async (req, res) => {
         token: jwt.sign(user, process.env.SECRET_JWT),
       });
     }
-    
+
     res.status(500).json({message: "User not authorized. Incorrect password"});
     
   } catch (error) {
