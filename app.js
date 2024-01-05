@@ -341,7 +341,7 @@ app.post("/login", async (req, res) => {
       });
     }
 
-    res.status(500).json({message: "User not authorized. Incorrect password"});
+    res.status(400).json({message: "User not authorized. Incorrect password"});
     
   } catch (error) {
     res.status(500).json({ message: error });
