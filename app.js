@@ -52,6 +52,10 @@ function authenticateJWT(req, res, next) {
   });
 }
 
+async function comparePassword(providedPassword, storedHash) {
+  return bcrypt.compare(providedPassword, storedHash);
+}
+
 // test endpoint to verify server status
 app.get("/", (req, res) => {
   console.log("received home");
@@ -314,14 +318,10 @@ app.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     const existing_user = await User.find({ email });
-
-    console.log("user",existing_user)
-    console.log("user 0th",existing_user[0])
-
-    console.log(existing_user[0].password, password)
+    const hash_compare = await comparePassword(password, existing_user[0].password);
 
     if (existing_user) {
-      if (existing_user[0].password === password) {
+      if (hash_compare) {
         res.status(200).json({
           user: existing_user,
           token: jwt.sign(user, process.env.SECRET_JWT),
