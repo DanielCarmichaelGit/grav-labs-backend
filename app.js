@@ -97,7 +97,7 @@ app.post("/signup", async (req, res) => {
       tasks: [],
       type,
       sprints: [sprint_id],
-      marketable: true
+      marketable: true,
     });
 
     // create new org
@@ -113,7 +113,7 @@ app.post("/signup", async (req, res) => {
         user_id: newUser.user_id,
       },
       billing: {},
-      sprints: [sprint_id]
+      sprints: [sprint_id],
     });
 
     // create first task
@@ -130,7 +130,7 @@ app.post("/signup", async (req, res) => {
       duration: 5,
       hard_limit: false,
       requires_authorization: false,
-      sprint_id
+      sprint_id,
     });
 
     const newSprint = new Sprint({
@@ -142,11 +142,11 @@ app.post("/signup", async (req, res) => {
       status: {
         time_allocated: 0,
         time_over: 0,
-        active_status: "Not Started"
+        active_status: "Not Started",
       },
       start_date_time: Date.now(),
       duration: "1209600000",
-      kpi_data: {}
+      kpi_data: {},
     });
 
     const newAlert = new Alert({
@@ -166,7 +166,7 @@ app.post("/signup", async (req, res) => {
 
     const created_task = await firstTask.save();
     const created_org = await newOrg.save();
-    await newSprint.save()
+    await newSprint.save();
 
     await User.findOneAndUpdate(
       { user_id },
@@ -307,6 +307,28 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+app.post("/login", async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { email, hashed_password } = req.body;
+
+    const existing_user = User.find({ password: hashed_password })[0];
+
+    if (existing_user) {
+      res.status(200).json({
+        user: existing_user,
+        token: jwt.sign(user, process.env.SECRET_JWT),
+      });
+    }
+    res.status(404).json({
+      message: "user not found",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+});
+
 app.get("/alerts", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
@@ -343,7 +365,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
 
     res.status(200).json({
       status: 200,
-      tasks
+      tasks,
     });
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
