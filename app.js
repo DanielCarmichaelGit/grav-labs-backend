@@ -53,8 +53,8 @@ function authenticateJWT(req, res, next) {
   });
 }
 
-async function comparePassword(providedPassword, storedHash) {
-  return bcrypt.compare(providedPassword, storedHash);
+async function comparePassword(plaintextPassword, hashedPassword) {
+  return bcrypt.compare(plaintextPassword, hashedPassword);
 }
 
 // test endpoint to verify server status
@@ -82,6 +82,8 @@ app.post("/signup", async (req, res) => {
       });
     }
 
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
     const user_id = uuidv4();
     const org_id = uuidv4();
     const task_id = uuidv4();
@@ -92,7 +94,7 @@ app.post("/signup", async (req, res) => {
     const newUser = new User({
       user_id,
       email,
-      password,
+      password: hashedPassword,
       name: {
         first: first_name,
         last: last_name,
