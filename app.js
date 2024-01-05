@@ -104,7 +104,8 @@ app.post("/signup", async (req, res) => {
     const newOrg = new Organization({
       org_id,
       name: organization,
-      admins: [newUser.email],
+      admins: [],
+      members: [],
       seats: 2,
       status: "active",
       billable_user: {
@@ -136,7 +137,7 @@ app.post("/signup", async (req, res) => {
       sprint_id,
       title: `${first_name}'s First Sprint`,
       owner: newUser,
-      members: [...newOrg.members],
+      members: [newUser],
       viewers: [],
       status: {
         time_allocated: 0,
