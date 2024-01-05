@@ -9,6 +9,7 @@ const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const sgTransport = require("nodemailer-sendgrid-transport");
+const bcrypt = require("bcrypt");
 
 // Secret key for JWT signing (change it to a strong, random value)
 const SECRET_JWT = process.env.SECRET_JWT;
