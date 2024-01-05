@@ -311,17 +311,17 @@ app.post("/login", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { email, hashed_password } = req.body;
+    const { email, password } = req.body;
 
     const existing_user = await User.find({ email });
 
     console.log("user",existing_user)
     console.log("user 0th",existing_user[0])
 
-    console.log(existing_user[0].password, hashed_password)
+    console.log(existing_user[0].password, password)
 
     if (existing_user) {
-      if (existing_user.password === hashed_password) {
+      if (existing_user[0].password === password) {
         res.status(200).json({
           user: existing_user,
           token: jwt.sign(user, process.env.SECRET_JWT),
