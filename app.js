@@ -318,24 +318,24 @@ app.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     const existing_user = await User.find({ email });
+
+    if (!existing_user[0]) {
+      res.status(500).json({message: "User not found"});
+    }
+
     const hash_compare = await comparePassword(password, existing_user[0].password);
 
     console.log(hash_compare);
 
-    if (existing_user) {
-      if (hash_compare) {
-        res.status(200).json({
-          user: existing_user,
-          token: jwt.sign(user, process.env.SECRET_JWT),
-        });
-      }
-      res.status(500).json({message: "User not authorized. Incorrect password"});
-    }
-    else {
-      res.status(404).json({
-        message: "user not found",
+    if (hash_compare) {
+      res.status(200).json({
+        user: existing_user,
+        token: jwt.sign(user, process.env.SECRET_JWT),
       });
     }
+    
+    res.status(500).json({message: "User not authorized. Incorrect password"});
+    
   } catch (error) {
     res.status(500).json({ message: error });
   }
