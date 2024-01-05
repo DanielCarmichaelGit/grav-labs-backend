@@ -315,8 +315,8 @@ app.post("/login", async (req, res) => {
 
     const existing_user = await User.find({ email });
 
-    console.log(existing_user)
-    console.log(existing_user[0])
+    console.log("user",existing_user)
+    console.log("user 0th",existing_user[0])
 
     console.log(existing_user[0].password, hashed_password)
 
