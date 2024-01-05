@@ -320,15 +320,20 @@ app.post("/login", async (req, res) => {
 
     console.log(existing_user[0].password, hashed_password)
 
-    if (existing_user.password === hashed_password) {
-      res.status(200).json({
-        user: existing_user,
-        token: jwt.sign(user, process.env.SECRET_JWT),
+    if (existing_user) {
+      if (existing_user.password === hashed_password) {
+        res.status(200).json({
+          user: existing_user,
+          token: jwt.sign(user, process.env.SECRET_JWT),
+        });
+      }
+      res.status(500).json({message: "User not authorized. Incorrect password"});
+    }
+    else {
+      res.status(404).json({
+        message: "user not found",
       });
     }
-    res.status(404).json({
-      message: "user not found",
-    });
   } catch (error) {
     res.status(500).json({ message: error });
   }
