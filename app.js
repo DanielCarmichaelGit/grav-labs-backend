@@ -313,9 +313,11 @@ app.post("/login", async (req, res) => {
 
     const { email, hashed_password } = req.body;
 
-    const existing_user = User.find({ password: hashed_password })[0];
+    const existing_user = User.find({ email })[0];
 
-    if (existing_user) {
+    console.log(existing_user.password, hashed_password)
+
+    if (existing_user.password === hashed_password) {
       res.status(200).json({
         user: existing_user,
         token: jwt.sign(user, process.env.SECRET_JWT),
