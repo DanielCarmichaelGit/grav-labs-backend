@@ -140,7 +140,7 @@ app.post("/signup", async (req, res) => {
       hard_limit: false,
       requires_authorization: false,
       sprint_id,
-      kanban: "To Do"
+      kanban: "To Do",
     });
 
     const newSprint = new Sprint({
@@ -161,7 +161,7 @@ app.post("/signup", async (req, res) => {
 
     const newProject = new Project({
       project_id,
-      title: `${newOrg}'s First Project`,
+      title: `${newOrg.name}'s First Project`,
       tasks: [firstTask],
       owner: newUser,
       owner_id: user_id,
@@ -170,12 +170,14 @@ app.post("/signup", async (req, res) => {
       status: {
         task_percentage_complete: 0,
         status: "Active",
-        percentage_backlogged: 0
+        percentage_backlogged: 0,
       },
       start_date_time: Date.now(),
-      end_date_time: new Date(new Date().setDate(new Date().getDate() + 7)).getTime(),
+      end_date_time: new Date(
+        new Date().setDate(new Date().getDate() + 7)
+      ).getTime(),
       kpi_data: {},
-      cost: {}
+      cost: {},
     });
 
     const newAlert = new Alert({
@@ -195,8 +197,11 @@ app.post("/signup", async (req, res) => {
 
     const created_task = await firstTask.save();
     const created_org = await newOrg.save();
-    
-    await newProject.save();
+
+    const created_project = await newProject.save();
+
+    console.log(created_project);
+
     await newSprint.save();
 
     await User.findOneAndUpdate(
@@ -322,9 +327,13 @@ app.post("/signup", async (req, res) => {
     });
 
     // sign the first token provided to the user
-    const token = jwt.sign({ user: created_user, userId: user_id }, process.env.SECRET_JWT, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      { user: created_user, userId: user_id },
+      process.env.SECRET_JWT,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     res.status(200).json({
       message: "User Registered",
@@ -350,7 +359,6 @@ app.post("/login", async (req, res) => {
       res.status(500).json({ message: "User not found" });
       console.log("user not found");
     } else {
-
       const hash_compare = await comparePassword(
         password,
         existing_user[0].password
@@ -359,17 +367,20 @@ app.post("/login", async (req, res) => {
       if (hash_compare) {
         console.log("hash compare true");
 
-        const signed_user = jwt.sign({ user: existing_user[0], userId: existing_user[0].user_id }, process.env.SECRET_JWT, {
-          expiresIn: "7d"
-        });
+        const signed_user = jwt.sign(
+          { user: existing_user[0], userId: existing_user[0].user_id },
+          process.env.SECRET_JWT,
+          {
+            expiresIn: "7d",
+          }
+        );
 
         const result = {
           user: existing_user[0],
-          token: signed_user
+          token: signed_user,
         };
 
         res.status(200).json(result);
-
       } else {
         console.log("hash compare false");
         res
@@ -389,7 +400,7 @@ app.get("/alerts", authenticateJWT, async (req, res) => {
     const user_id = req.user.userId;
 
     // Query with limit and skip for pagination
-    const user_alerts = await Alert.find({ "to_user.user_id": user_id })
+    const user_alerts = await Alert.find({ "to_user.user_id": user_id });
 
     res.status(200).json({ alerts: user_alerts });
   } catch (error) {
@@ -425,20 +436,27 @@ app.get("/projects", authenticateJWT, async (req, res) => {
     let user = await User.find({ user_id });
 
     const owned_projects = await Project.find({ owner_id: user_id });
-    const member_projects = await Project.find({ members: { $in: [user[0].email] } });
-    const viewer_projects = await Project.find({ viewers: { $in: [user[0].email] } });
+    const member_projects = await Project.find({
+      members: { $in: [user[0].email] },
+    });
+    const viewer_projects = await Project.find({
+      viewers: { $in: [user[0].email] },
+    });
 
-    const projects = [...owned_projects, ...member_projects, ...viewer_projects];
+    const projects = [
+      ...owned_projects,
+      ...member_projects,
+      ...viewer_projects,
+    ];
 
     res.status(200).json({
       count: projects.length,
-      projects
-    })
-  }
-  catch (error) {
+      projects,
+    });
+  } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
-})
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
