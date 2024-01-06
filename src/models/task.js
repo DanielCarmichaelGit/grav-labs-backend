@@ -13,8 +13,9 @@ const taskSchema = new mongoose.Schema({
   hard_limit: { type: Boolean, required: true },
   requires_authorization: { type: Boolean, required: true },
   authorized_by: { type: Boolean, required: false },
-  completed_on: {type: String, required: false},
-  sprint_id: {type: String, required: true}
+  completed_on: { type: String, required: false },
+  sprint_id: { type: String, required: true },
+  kanban: { type: String, required: true },
 });
 
 module.exports = mongoose.model("Task", taskSchema);

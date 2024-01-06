@@ -140,6 +140,7 @@ app.post("/signup", async (req, res) => {
       hard_limit: false,
       requires_authorization: false,
       sprint_id,
+      kanban: "To Do"
     });
 
     const newSprint = new Sprint({
@@ -194,8 +195,8 @@ app.post("/signup", async (req, res) => {
 
     const created_task = await firstTask.save();
     const created_org = await newOrg.save();
-    const crated_project = await newProject.save();
     
+    await newProject.save();
     await newSprint.save();
 
     await User.findOneAndUpdate(
