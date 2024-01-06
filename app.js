@@ -342,9 +342,9 @@ app.post("/login", async (req, res) => {
         token: jwt.sign(user, process.env.SECRET_JWT),
       });
     }
-
-    res.status(400).json({message: "User not authorized. Incorrect password"});
-    
+    else {
+      res.status(400).json({message: "User not authorized. Incorrect password"});
+    }
   } catch (error) {
     res.status(500).json({ message: error });
   }
