@@ -321,8 +321,11 @@ app.post("/login", async (req, res) => {
     console.log(req.body);
 
     const { email, password } = req.body;
+    console.log(email, password)
 
     const existing_user = await User.find({ email });
+
+    console.log(existing_user)
 
     if (Object.keys(existing_user[0]).length === 0) {
       res.status(500).json({ message: "User not found" });
