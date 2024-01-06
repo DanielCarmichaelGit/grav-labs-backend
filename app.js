@@ -343,7 +343,7 @@ app.post("/login", async (req, res) => {
         console.log("hash compare true");
         res.status(200).json({
           user: existing_user,
-          token: jwt.sign(user, process.env.SECRET_JWT),
+          token: jwt.sign(existing_user, process.env.SECRET_JWT),
         });
       } else {
         console.log("hash compare false");
