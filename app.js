@@ -341,7 +341,7 @@ app.post("/login", async (req, res) => {
 
       if (hash_compare) {
         console.log("hash compare true");
-        const signed_user = jwt.sign(existing_user, process.env.SECRET_JWT);
+        const signed_user = jwt.sign(existing_user[0], process.env.SECRET_JWT);
         const result = {
           user: existing_user,
           token: signed_user
