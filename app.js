@@ -318,29 +318,19 @@ app.post("/login", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    console.log(req.body);
-
     const { email, password } = req.body;
-    console.log(email, password);
 
     const existing_user = await User.find({ email });
-
-    console.log(existing_user);
 
     if (Object.keys(existing_user[0]).length === 0) {
       res.status(500).json({ message: "User not found" });
       console.log("user not found");
     } else {
-      console.log("user found");
-
-      console.log("starting hash compare");
 
       const hash_compare = await comparePassword(
         password,
         existing_user[0].password
       );
-
-      console.log("hash compare complete");
 
       if (hash_compare) {
         console.log("hash compare true");
@@ -349,18 +339,13 @@ app.post("/login", async (req, res) => {
           expiresIn: "7d"
         });
 
-        console.log("#### signed user ####", signed_user)
-
         const result = {
           user: existing_user[0],
           token: signed_user
         };
 
-        console.log(result)
-
         res.status(200).json(result);
-
-        console.log
+        
       } else {
         console.log("hash compare false");
         res
