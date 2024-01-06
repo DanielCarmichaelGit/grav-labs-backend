@@ -323,11 +323,11 @@ app.post("/login", async (req, res) => {
     const { email, password } = req.body;
     console.log(email, password);
 
-    const existing_user = await User.find({ email })[0];
+    const existing_user = await User.find({ email });
 
     console.log(existing_user);
 
-    if (Object.keys(existing_user).length === 0) {
+    if (Object.keys(existing_user[0]).length === 0) {
       res.status(500).json({ message: "User not found" });
       console.log("user not found");
     } else {
@@ -337,7 +337,7 @@ app.post("/login", async (req, res) => {
 
       const hash_compare = await comparePassword(
         password,
-        existing_user.password
+        existing_user[0].password
       );
 
       console.log("hash compare complete");
@@ -345,14 +345,14 @@ app.post("/login", async (req, res) => {
       if (hash_compare) {
         console.log("hash compare true");
 
-        const signed_user = jwt.sign({ user: existing_user, userId: existing_user.user_id }, process.env.SECRET_JWT, {
+        const signed_user = jwt.sign({ user: existing_user[0], userId: existing_user[0].user_id }, process.env.SECRET_JWT, {
           expiresIn: "7d"
         });
 
         console.log("#### signed user ####", signed_user)
 
         const result = {
-          user: existing_user,
+          user: existing_user[0],
           token: signed_user
         };
 
