@@ -20,6 +20,7 @@ const Organization = require("./src/models/organization");
 const Task = require("./src/models/task");
 const Sprint = require("./src/models/sprint");
 const Alert = require("./src/models/alerts");
+const Project = require("./src/models/project");
 
 const app = express();
 app.use(cors());
@@ -89,6 +90,7 @@ app.post("/signup", async (req, res) => {
     const task_id = uuidv4();
     const alert_id = uuidv4();
     const sprint_id = uuidv4();
+    const project_id = uuidv4();
 
     //Create a jam group for this new user
     const newUser = new User({
@@ -156,6 +158,25 @@ app.post("/signup", async (req, res) => {
       kpi_data: {},
     });
 
+    const newProject = new Project({
+      project_id,
+      title: `${newOrg}'s First Project`,
+      tasks: [firstTask],
+      owner: newUser,
+      owner_id: user_id,
+      members: [],
+      viewers: [],
+      status: {
+        task_percentage_complete: 0,
+        status: "Active",
+        percentage_backlogged: 0
+      },
+      start_date_time: Date.now(),
+      end_date_time: new Date(new Date().setDate(new Date().getDate() + 7)).getTime(),
+      kpi_data: {},
+      cost: {}
+    });
+
     const newAlert = new Alert({
       alert_id,
       to_user: newUser,
@@ -173,6 +194,8 @@ app.post("/signup", async (req, res) => {
 
     const created_task = await firstTask.save();
     const created_org = await newOrg.save();
+    const crated_project = await newProject.save();
+    
     await newSprint.save();
 
     await User.findOneAndUpdate(
@@ -345,7 +368,7 @@ app.post("/login", async (req, res) => {
         };
 
         res.status(200).json(result);
-        
+
       } else {
         console.log("hash compare false");
         res
@@ -364,17 +387,8 @@ app.get("/alerts", authenticateJWT, async (req, res) => {
 
     const user_id = req.user.userId;
 
-    // Pagination parameters
-    const pageSize = parseInt(req.query.pageSize) || 10; // Default page size
-    const page = parseInt(req.query.page) || 1; // Default to first page
-
-    // Calculate the number of documents to skip
-    const skip = (page - 1) * pageSize;
-
     // Query with limit and skip for pagination
     const user_alerts = await Alert.find({ "to_user.user_id": user_id })
-      .limit(pageSize)
-      .skip(skip);
 
     res.status(200).json({ alerts: user_alerts });
   } catch (error) {
@@ -400,6 +414,30 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
     res.status(500).json({ status: 500, message: error });
   }
 });
+
+app.get("/projects", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const user_id = req.user.userId;
+
+    let user = await User.find({ user_id });
+
+    const owned_projects = await Project.find({ owner_id: user_id });
+    const member_projects = await Project.find({ members: { $in: [user[0].email] } });
+    const viewer_projects = await Project.find({ viewers: { $in: [user[0].email] } });
+
+    const projects = [...owned_projects, ...member_projects, ...viewer_projects];
+
+    res.status(200).json({
+      count: projects.length,
+      projects
+    })
+  }
+  catch (error) {
+    res.status(500).json({ status: 500, message: error });
+  }
+})
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
