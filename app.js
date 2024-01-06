@@ -298,8 +298,8 @@ app.post("/signup", async (req, res) => {
     });
 
     // sign the first token provided to the user
-    const token = jwt.sign({ userId: user_id }, SECRET_JWT, {
-      expiresIn: "30d",
+    const token = jwt.sign({ user: created_user, userId: user_id }, process.env.SECRET_JWT, {
+      expiresIn: "7d",
     });
 
     res.status(200).json({
