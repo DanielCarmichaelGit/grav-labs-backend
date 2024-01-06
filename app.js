@@ -321,11 +321,11 @@ app.post("/login", async (req, res) => {
     console.log(req.body);
 
     const { email, password } = req.body;
-    console.log(email, password)
+    console.log(email, password);
 
     const existing_user = await User.find({ email });
 
-    console.log(existing_user)
+    console.log(existing_user);
 
     if (Object.keys(existing_user[0]).length === 0) {
       res.status(500).json({ message: "User not found" });
@@ -341,10 +341,17 @@ app.post("/login", async (req, res) => {
 
       if (hash_compare) {
         console.log("hash compare true");
-        res.status(200).json({
+        const signed_user = jwt.sign(existing_user, process.env.SECRET_JWT);
+        const result = {
           user: existing_user,
-          token: jwt.sign(existing_user, process.env.SECRET_JWT),
-        });
+          token: signed_user
+        };
+
+        console.log(signed_user);
+
+        res.status(200).json(result);
+
+        console.log
       } else {
         console.log("hash compare false");
         res
