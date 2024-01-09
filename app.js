@@ -504,5 +504,50 @@ app.get("/objectiveed/:method/:resource", async (req, res) => {
   }
 });
 
+app.post("/objectiveed/:method/:resource", async (req, res) => {
+  try {
+    const { method, resource } = req.params;
+    const headers = {
+      "Access-Token": process.env.O_ED_TOKEN,
+    };
+    const url = `https://dev-game-services.objectiveed.com/boards/9206728921179140004/${resource}`;
+    if (method === "get") {
+      const result = await axios.get(url, { headers }).then((res) => {
+        return res.data;
+      });
+
+      res.status(200).json({
+        data: result,
+      });
+    } else if (method === "post") {
+      const body = req.body;
+      const result = await axios.post(url, body, { headers }).then((res) => {
+        console.log(res);
+        return res.data;
+      });
+      res.status(200).json({ data: result });
+    } else if (method === "put") {
+      const body = req.body;
+      const result = await axios.put(url, body, { headers }).then((res) => {
+        return res.data;
+      });
+      res.status(200).json({ data: result });
+    } else if (method === "delete") {
+      const body = req.body;
+      await axios
+        .delete(url, { data: body, headers: headers })
+        .then((response) => {
+          console.log("Response:", response.data);
+        });
+
+      res.status(200).json({ data: "delete" });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error,
+    });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
