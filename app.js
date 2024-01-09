@@ -459,7 +459,7 @@ app.get("/projects", authenticateJWT, async (req, res) => {
   }
 });
 
-app.get("objectiveed/method/:resource", async (req, res) => {
+app.get("/objectiveed/method/:resource", async (req, res) => {
   try {
     const {method, resource} = req.params;
     if (method === "get") {
