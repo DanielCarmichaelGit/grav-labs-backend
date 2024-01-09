@@ -474,6 +474,7 @@ app.get("/objectiveed/:method/:resource", async (req, res) => {
           },
         })
         .then((res) => {
+          console.log(res)
           return res;
         });
 
