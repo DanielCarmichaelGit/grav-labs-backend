@@ -478,7 +478,7 @@ app.get("/objectiveed/:method/:resource", async (req, res) => {
       const body = req.body;
       const result = await axios.post(url, body, { headers }).then((res) => {
         console.log(res);
-        return res;
+        return res.data;
       });
       res.status(200).json({ data: result });
     } else if (method === "put") {
