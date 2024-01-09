@@ -522,7 +522,7 @@ app.post("/objectiveed/:method/:resource", async (req, res) => {
     } else if (method === "post") {
       const body = req.body;
       console.log(body)
-      const result = await axios.post(url, body.data, { headers }).then((res) => {
+      const result = await axios.post(url, body, { headers }).then((res) => {
         console.log(res);
         return res.data;
       });
