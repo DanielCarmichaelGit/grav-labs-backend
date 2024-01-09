@@ -461,30 +461,31 @@ app.get("/projects", authenticateJWT, async (req, res) => {
 
 app.get("/objectiveed/method/:resource", async (req, res) => {
   try {
-    const {method, resource} = req.params;
+    const { method, resource } = req.params;
+    console.log(method, resource);
     if (method === "get") {
       const url = `https://dev-game-services.objectiveed.com/boards/9206728921179140004/${resource}`;
       console.log(url);
-      const result = await axios.get(url, {
-        headers: {
-          "Access-Token": `a4468a4d-85ae-432d-b552-7dfd9d40ac67`,
-        }
-      }
-      ).then((res) => {
-        return res;
-      })
+      const result = await axios
+        .get(url, {
+          headers: {
+            "Access-Token": `a4468a4d-85ae-432d-b552-7dfd9d40ac67`,
+          },
+        })
+        .then((res) => {
+          return res;
+        });
 
       res.status(200).json({
-        data: result
-      })
+        data: result,
+      });
     }
-  }
-  catch (error) {
+  } catch (error) {
     res.status(500).json({
-      message: error
-    })
+      message: error,
+    });
   }
-})
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
