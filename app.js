@@ -459,9 +459,9 @@ app.get("/projects", authenticateJWT, async (req, res) => {
   }
 });
 
-app.get("objectiveed/:method/:resource", async (req, res) => {
+app.get("objectiveed/method/:resource", async (req, res) => {
   try {
-    const {method, resource} = req.query.params;
+    const {method, resource} = req.params;
     if (method === "get") {
       const url = `https://dev-game-services.objectiveed.com/boards/9206728921179140004/${resource}`;
       console.log(url);
