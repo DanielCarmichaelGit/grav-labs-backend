@@ -482,10 +482,19 @@ app.get("/objectiveed/:method/:resource", async (req, res) => {
       });
       res.status(200).json({ data: result });
     } else if (method === "put") {
-      console.log("PUT");
-      res.status(200).json({ data: "put" });
+      const body = req.body;
+      const result = await axios.put(url, body, { headers }).then((res) => {
+        return res.data;
+      });
+      res.status(200).json({ data: result });
     } else if (method === "delete") {
-      console.log("DELETE");
+      const body = req.body;
+      await axios
+        .delete(url, { data: body, headers: headers })
+        .then((response) => {
+          console.log("Response:", response.data);
+        });
+
       res.status(200).json({ data: "delete" });
     }
   } catch (error) {
