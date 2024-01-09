@@ -460,27 +460,33 @@ app.get("/projects", authenticateJWT, async (req, res) => {
 });
 
 app.get("/objectiveed/:method/:resource", async (req, res) => {
-  console.log("req received")
   try {
     const { method, resource } = req.params;
-    console.log(method, resource);
+    const headers = {
+      "Access-Token": "a4468a4d-85ae-432d-b552-7dfd9d40ac67",
+    };
+    const url = `https://dev-game-services.objectiveed.com/boards/9206728921179140004/${resource}`;
     if (method === "get") {
-      const url = `https://dev-game-services.objectiveed.com/boards/9206728921179140004/${resource}`;
-      console.log(url);
-      const result = await axios
-        .get(url, {
-          headers: {
-            "Access-Token": `a4468a4d-85ae-432d-b552-7dfd9d40ac67`,
-          },
-        })
-        .then((res) => {
-          console.log(res)
-          return res.data;
-        });
+      const result = await axios.get(url, { headers }).then((res) => {
+        return res.data;
+      });
 
       res.status(200).json({
         data: result,
       });
+    } else if (method === "post") {
+      const body = req.body;
+      const result = await axios.post(url, body, { headers }).then((res) => {
+        console.log(res);
+        return res;
+      });
+      res.status(200).json({ data: result });
+    } else if (method === "put") {
+      console.log("PUT");
+      res.status(200).json({ data: "put" });
+    } else if (method === "delete") {
+      console.log("DELETE");
+      res.status(200).json({ data: "delete" });
     }
   } catch (error) {
     res.status(500).json({
