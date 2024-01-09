@@ -463,7 +463,7 @@ app.get("/objectiveed/:method/:resource", async (req, res) => {
   try {
     const { method, resource } = req.params;
     const headers = {
-      "Access-Token": "a4468a4d-85ae-432d-b552-7dfd9d40ac67",
+      "Access-Token": process.env.O_ED_TOKEN,
     };
     const url = `https://dev-game-services.objectiveed.com/boards/9206728921179140004/${resource}`;
     if (method === "get") {
