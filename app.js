@@ -21,6 +21,7 @@ const Task = require("./src/models/task");
 const Sprint = require("./src/models/sprint");
 const Alert = require("./src/models/alerts");
 const Project = require("./src/models/project");
+const axios = require("axios");
 
 const app = express();
 app.use(cors());
@@ -457,6 +458,31 @@ app.get("/projects", authenticateJWT, async (req, res) => {
     res.status(500).json({ status: 500, message: error });
   }
 });
+
+app.get("objectiveed/:method/:resource", async (req, res) => {
+  try {
+    const {method, resource} = req.query.params;
+    if (method === "get") {
+      const result = await axios.get(`https://dev-game-services.objectiveed.com/boards/9206728921179140004/${resource}`, {
+        headers: {
+          "Access-Token": `a4468a4d-85ae-432d-b552-7dfd9d40ac67`,
+        }
+      }
+      ).then((res) => {
+        return res;
+      })
+
+      res.status(200).json({
+        data: result
+      })
+    }
+  }
+  catch (error) {
+    res.status(500).json({
+      message: error
+    })
+  }
+})
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
