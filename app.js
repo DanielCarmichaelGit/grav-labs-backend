@@ -463,7 +463,9 @@ app.get("objectiveed/:method/:resource", async (req, res) => {
   try {
     const {method, resource} = req.query.params;
     if (method === "get") {
-      const result = await axios.get(`https://dev-game-services.objectiveed.com/boards/9206728921179140004/${resource}`, {
+      const url = `https://dev-game-services.objectiveed.com/boards/9206728921179140004/${resource}`;
+      console.log(url);
+      const result = await axios.get(url, {
         headers: {
           "Access-Token": `a4468a4d-85ae-432d-b552-7dfd9d40ac67`,
         }
