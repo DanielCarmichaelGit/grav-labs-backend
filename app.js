@@ -70,8 +70,10 @@ app.get("/", (req, res) => {
 app.post("/signup", async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
-    const { password, email, organization, type, first_name, last_name } =
+    const { password, email, organization, type, name } =
       req.body; // Add jam_group
+
+      const { first_name, last_name } = name;
 
       console.log("full name", first_name, last_name);
 
