@@ -193,11 +193,13 @@ app.post("/signup", async (req, res) => {
       escalation: "Low",
     });
 
+    const created_org = await newOrg.save();
+
     // save new user and the new group made for the user
+    newUser.organization = created_org;
     const created_user = await newUser.save();
 
     const created_task = await firstTask.save();
-    const created_org = await newOrg.save();
 
     const created_project = await newProject.save();
 
@@ -456,97 +458,6 @@ app.get("/projects", authenticateJWT, async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
-  }
-});
-
-app.get("/objectiveed/:method/:resource", async (req, res) => {
-  try {
-    const { method, resource } = req.params;
-    const headers = {
-      "Access-Token": process.env.O_ED_TOKEN,
-    };
-    const url = `https://dev-game-services.objectiveed.com/boards/9206728921179140004/${resource}`;
-    if (method === "get") {
-      const result = await axios.get(url, { headers }).then((res) => {
-        return res.data;
-      });
-
-      res.status(200).json({
-        data: result,
-      });
-    } else if (method === "post") {
-      const body = req.body;
-      const result = await axios.post(url, body, { headers }).then((res) => {
-        console.log(res);
-        return res.data;
-      });
-      res.status(200).json({ data: result });
-    } else if (method === "put") {
-      const body = req.body;
-      const result = await axios.put(url, body, { headers }).then((res) => {
-        return res.data;
-      });
-      res.status(200).json({ data: result });
-    } else if (method === "delete") {
-      const body = req.body;
-      await axios
-        .delete(url, { data: body, headers: headers })
-        .then((response) => {
-          console.log("Response:", response.data);
-        });
-
-      res.status(200).json({ data: "delete" });
-    }
-  } catch (error) {
-    res.status(500).json({
-      message: error,
-    });
-  }
-});
-
-app.post("/objectiveed/:method/:resource", async (req, res) => {
-  try {
-    const { method, resource } = req.params;
-    const headers = {
-      "Access-Token": process.env.O_ED_TOKEN,
-    };
-    const url = `https://dev-game-services.objectiveed.com/boards/9206728921179140004/${resource}`;
-    if (method === "get") {
-      const result = await axios.get(url, { headers }).then((res) => {
-        return res.data;
-      });
-
-      res.status(200).json({
-        data: result,
-      });
-    } else if (method === "post") {
-      const body = req.body;
-      console.log(body)
-      const result = await axios.post(url, body, { headers }).then((res) => {
-        console.log(res);
-        return res.data;
-      });
-      res.status(200).json({ data: result });
-    } else if (method === "put") {
-      const body = req.body;
-      const result = await axios.put(url, body, { headers }).then((res) => {
-        return res.data;
-      });
-      res.status(200).json({ data: result });
-    } else if (method === "delete") {
-      const body = req.body;
-      await axios
-        .delete(url, { data: body, headers: headers })
-        .then((response) => {
-          console.log("Response:", response.data);
-        });
-
-      res.status(200).json({ data: "delete" });
-    }
-  } catch (error) {
-    res.status(500).json({
-      message: error,
-    });
   }
 });
 
