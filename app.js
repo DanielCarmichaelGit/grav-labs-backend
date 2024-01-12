@@ -73,6 +73,8 @@ app.post("/signup", async (req, res) => {
     const { password, email, organization, type, first_name, last_name } =
       req.body; // Add jam_group
 
+      console.log("full name", first_name, last_name);
+
     // Check if the username already exists
     const existingUser = await User.findOne({ email });
 
