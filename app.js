@@ -21,7 +21,7 @@ const Task = require("./src/models/task");
 const Sprint = require("./src/models/sprint");
 const Alert = require("./src/models/alerts");
 const Project = require("./src/models/project");
-const axios = require("axios");
+const Document = require("./src/models/document");
 
 const app = express();
 app.use(cors());
@@ -128,6 +128,7 @@ app.post("/signup", async (req, res) => {
       },
       billing: {},
       sprints: [sprint_id],
+      client_invitations: []
     });
 
     // create first task
@@ -415,6 +416,132 @@ app.get("/alerts", authenticateJWT, async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+app.post("/documents", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { document_name, client, folder, content } = req.body;
+    const user_id = req.user.userId;
+    const user = await User.find({ user_id });
+    const document_id = uuidv4();
+
+
+    const newDocument = new Document({
+      document_id,
+      associated_org: user.organization,
+      contributors: [user],
+      client,
+      updates: [],
+      folder,
+      document_name,
+      creator: user,
+      content,
+      create_timestamp: Date.now() 
+    });
+
+    const created_document = await newDocument.save();
+
+    res.status(200).json({
+      message: success,
+      created_resource: created_document
+    })
+  }
+  catch (error) {
+    res.status(500).json({
+      message: error
+    })
+  }
+});
+
+app.get("/documents", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    // Assuming req.user.organization holds the user's organization details
+    const org_id = req.user.organization.org_id;
+
+    // Use the org_id to find documents
+    const documents = await Document.find({ 'associated_org.org_id': org_id });
+
+    // Send the documents as a response
+    res.status(200).json({
+      count: documents.length,
+      documents
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+});
+
+app.post("/folders", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+    const folder_id = uuidv4;
+    const { name, client, documents, description } = req.body;
+    const associated_org = req.user.organization;
+
+    const newFolder = new Folder({
+      folder_id,
+      associated_org,
+      documents: [...documents],
+      name,
+      created_by: req.user,
+      client,
+      description
+    });
+
+    const created_folder = await newFolder.save();
+
+    res.status(200).json({
+      message: "Folder Created",
+      created_resource: created_folder
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+});
+
+app.get("/folders", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    // Assuming req.user.organization holds the user's organization details
+    const org_id = req.user.organization.org_id;
+
+    // Use the org_id to find documents
+    const folders = await Folder.find({ 'associated_org.org_id': org_id });
+
+    // Send the documents as a response
+    res.status(200).json({
+      count: folders.length,
+      folders
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+});
+
+// app.post("/clients", authenticateJWT, async (req, res) => {
+//   try {
+//     dbConnect(process.env.GEN_AUTH);
+//     const client_id = uuidv4();
+//     const associated_org = req.user.organization;
+//     const user = req.user;
+//     const {  } = req.body;
+
+//   } catch (error) {
+//     res.status(500).json({
+//       message: error.message
+//     });
+//   }
+// })
 
 app.get("/tasks", authenticateJWT, async (req, res) => {
   try {
