@@ -22,6 +22,7 @@ const Sprint = require("./src/models/sprint");
 const Alert = require("./src/models/alerts");
 const Project = require("./src/models/project");
 const Document = require("./src/models/document");
+const Folder = require("./src/models/folder");
 
 const app = express();
 app.use(cors());
