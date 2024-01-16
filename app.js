@@ -485,7 +485,7 @@ app.post("/folders", authenticateJWT, async (req, res) => {
     console.log("request stuff", name, client, documents, description)
     const associated_org = req.user.organization;
 
-    console.log(req.user)
+    console.log(req.user.user)
 
     console.log("org", associated_org)
 
