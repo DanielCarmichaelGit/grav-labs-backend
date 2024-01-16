@@ -481,7 +481,11 @@ app.post("/folders", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
     const folder_id = uuidv4();
     const { name, client, documents, description } = req.body;
+
+    console.log("request stuff", name, client, documents, description)
     const associated_org = req.user.organization;
+
+    console.log("org", associated_org)
 
     const newFolder = new Folder({
       folder_id,
@@ -493,7 +497,11 @@ app.post("/folders", authenticateJWT, async (req, res) => {
       description
     });
 
+    console.log("New Folder", newFolder)
+
     const created_folder = await newFolder.save();
+
+    console.log("Created Folder")
 
     res.status(200).json({
       message: "Folder Created",
