@@ -483,6 +483,9 @@ app.post("/folders", authenticateJWT, async (req, res) => {
     const { name, client, documents, description } = req.body;
     const user = req.user.user;
 
+    console.log("logging user", user);
+
+
     const newFolder = new Folder({
       folder_id,
       associated_org: user.organization,
