@@ -9,7 +9,8 @@ const organizationSchema = new mongoose.Schema({
   status: { type: String, required: true },
   billable_user: { type: Object, required: true },
   billing: { type: Object, required: true },
-  sprints: {type: Array, required: true}
+  sprints: {type: Array, required: true},
+  client_invitations: { type: Array, required: true}
 });
 
 module.exports = mongoose.model("Organization", organizationSchema);
