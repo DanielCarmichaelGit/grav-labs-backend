@@ -479,7 +479,7 @@ app.get("/documents", authenticateJWT, async (req, res) => {
 app.post("/folders", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
-    const folder_id = uuidv4;
+    const folder_id = uuidv4();
     const { name, client, documents, description } = req.body;
     const associated_org = req.user.organization;
 
