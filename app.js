@@ -422,7 +422,7 @@ app.post("/documents", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { document_name, client, folder, content } = req.body;
+    const { document_name, client, folder, content, title } = req.body;
     const user_id = req.user.userId;
     const user = await User.find({ user_id });
     const document_id = uuidv4();
@@ -438,7 +438,8 @@ app.post("/documents", authenticateJWT, async (req, res) => {
       document_name,
       creator: user,
       content,
-      create_timestamp: Date.now() 
+      create_timestamp: Date.now() ,
+      title
     });
 
     const created_document = await newDocument.save();

@@ -9,8 +9,9 @@ const documentSchema = new mongoose.Schema({
   folder: { type: Object, required: true },
   document_name: { type: String, required: true },
   creator: { type: Object, required: true },
-  content: { type: Array, required: true},
-  created_timestamp: { type: String, required: true }
+  content: { type: Array, required: true },
+  title: { type: String, required: true },
+  created_timestamp: { type: String, required: true },
 });
 
 module.exports = mongoose.model("Document", documentSchema);
