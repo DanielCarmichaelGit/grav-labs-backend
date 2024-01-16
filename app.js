@@ -460,7 +460,7 @@ app.get("/documents", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     // Assuming req.user.organization holds the user's organization details
-    const org_id = req.user.organization.org_id;
+    const org_id = req.user.user.organization.org_id;
 
     // Use the org_id to find documents
     const documents = await Document.find({ 'associated_org.org_id': org_id });
@@ -524,7 +524,7 @@ app.get("/folders", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     // Assuming req.user.organization holds the user's organization details
-    const org_id = req.user.organization.org_id;
+    const org_id = req.user.user.organization.org_id;
 
     // Use the org_id to find documents
     const folders = await Folder.find({ 'associated_org.org_id': org_id });
