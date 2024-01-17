@@ -23,6 +23,7 @@ const Alert = require("./src/models/alerts");
 const Project = require("./src/models/project");
 const Document = require("./src/models/document");
 const Folder = require("./src/models/folder");
+const ClientInvitation = require("./src/models/clientInvitation");
 
 const app = express();
 app.use(cors());
@@ -30,13 +31,18 @@ app.options("*", cors()); // Enable CORS pre-flight request for all routes
 app.use(express.json());
 
 // create utility transporter for email service
-const transporter = nodemailer.createTransport(
-  sgTransport({
-    auth: {
-      api_key: process.env.SG_API_KEY, // Replace with your SendGrid API key
-    },
-  })
-);
+const transporter = nodemailer.createTransport({
+  host: "smtp-mail.outlook.com",
+  port: 587,
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: 'contact@kamariteams.com', // your Outlook account email
+    pass: process.env.EMAIL_AUTH, // your Outlook account password
+  },
+  tls: {
+    ciphers: 'SSLv3'
+  }
+});
 
 function authenticateJWT(req, res, next) {
   console.log("Request!", req);
@@ -234,7 +240,7 @@ app.post("/signup", async (req, res) => {
 
     // generate email content
     const mail_options = {
-      from: "jammanager.io@gmail.com",
+      from: "contact@kamariteams.com",
       to: email, // The user's email address
       subject: "Welcome to Kamari",
       html: `
@@ -311,14 +317,14 @@ app.post("/signup", async (req, res) => {
           <div class="content">
             <img src="https://jammanager.s3.us-east-2.amazonaws.com/kamari.png" alt="Jam Manager Logo">
             <div class="button">
-              <a href="https://jam-manager.netlify.app/" style="background-color: #007BFF; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Visit Jam Manager</a>
+              <a href="kamariteams.com/home" style="background-color: #007BFF; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Visit Jam Manager</a>
             </div>
           </div>
           <div class="unsubscribe">
-            <a href="https://jam-manager.netlify.app/unsubscribe/${email}">Unsubscribe</a>
+            <a href="https://kamariteams.com/unsubscribe/${email}">Unsubscribe</a>
           </div>
           <div class="footer">
-            <a href="https://jam-manager.netlify.app/terms-and-conditions">Terms</a>
+            <a href="https://kamariteams.com/terms-and-conditions">Terms</a>
           </div>
         </div>
       </body>
@@ -556,6 +562,131 @@ app.get("/folders", authenticateJWT, async (req, res) => {
 //     });
 //   }
 // })
+
+app.post("/client-invitation", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const associated_org = req.user.user.organization;
+    const invitation_id = uuidv4();
+    const { client_email } = req.body;
+
+    newClientInvitation = new ClientInvitation({
+      invitation_id,
+      associated_org,
+      status: "unaccepted",
+      client_email
+    });
+
+    const created_client_invitation = await newClientInvitation.save();
+
+    // generate email content
+    const mail_options = {
+      from: "contact@kamariteams.com",
+      to: client_email, // The user's email address
+      subject: "Welcome to Kamari",
+      html: `
+      <html>
+      <head>
+        <style>
+          /* Add inline styles here for your email */
+          body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            text-align: center;
+            background-color: #007BFF;
+            color: #ffffff;
+            padding: 20px 0;
+            border-radius: 10px 10px 0 0;
+          }
+          .header h1 {
+            font-size: 24px;
+            margin: 0;
+          }
+          .content {
+            padding: 20px;
+          }
+          .content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+          }
+          .button {
+            text-align: center;
+            margin-top: 20px;
+          }
+          .button a {
+            display: inline-block;
+            background-color: #007BFF;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+          }
+          .unsubscribe {
+            text-align: center;
+            margin-top: 20px;
+          }
+          .unsubscribe a {
+            color: #007BFF;
+            text-decoration: none;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Welcome to Kamari: ${associated_org.name} sent an invite</h1>
+          </div>
+          <div class="content">
+            <img src="https://jammanager.s3.us-east-2.amazonaws.com/kamari.png" alt="Kamari Logo">
+            <div class="button">
+              <a href="https://kamariteams.com/home" style="background-color: #007BFF; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Visit Jam Manager</a>
+            </div>
+          </div>
+          <div class="unsubscribe">
+            <a href="https://jamariteams.com/unsubscribe/${email}">Unsubscribe</a>
+          </div>
+          <div class="footer">
+            <a href="https://kamariteams.com/terms-and-conditions">Terms</a>
+          </div>
+        </div>
+      </body>
+      </html>
+      `,
+    };
+
+    // call transporter to send email
+    transporter.sendMail(mail_options, (error, info) => {
+      if (error) {
+        console.error("Email sending error:", error);
+      } else {
+        console.log("Email sent:", info);
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ status: 500, message: error });
+  }
+})
 
 app.get("/tasks", authenticateJWT, async (req, res) => {
   try {
