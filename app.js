@@ -663,11 +663,11 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
           <div class="content">
             <img src="https://jammanager.s3.us-east-2.amazonaws.com/kamari.png" alt="Kamari Logo">
             <div class="button">
-              <a href="https://kamariteams.com/home" style="background-color: #007BFF; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Visit Jam Manager</a>
+              <a href="https://kamariteams.com/home" style="background-color: #007BFF; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Visit Kamari</a>
             </div>
           </div>
           <div class="unsubscribe">
-            <a href="https://jamariteams.com/unsubscribe/${email}">Unsubscribe</a>
+            <a href="https://jamariteams.com/unsubscribe/${client_email}">Unsubscribe</a>
           </div>
           <div class="footer">
             <a href="https://kamariteams.com/terms-and-conditions">Terms</a>
