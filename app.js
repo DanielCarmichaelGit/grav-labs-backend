@@ -571,7 +571,9 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
     const invitation_id = uuidv4();
     const { client_email } = req.body;
 
-    newClientInvitation = new ClientInvitation({
+    console.log(client_email, invitation_id, associated_org);
+
+    const newClientInvitation = new ClientInvitation({
       invitation_id,
       associated_org,
       status: "unaccepted",
@@ -579,6 +581,8 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
     });
 
     const created_client_invitation = await newClientInvitation.save();
+
+    console.log(created_client_invitation)
 
     // generate email content
     const mail_options = {
@@ -682,6 +686,8 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
         console.log("Email sent:", info);
       }
     });
+
+    console.log("email sent")
 
     res.status(200).json({
       message: "Client Invite Sent",
