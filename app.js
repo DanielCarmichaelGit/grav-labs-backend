@@ -683,6 +683,11 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
       }
     });
 
+    res.status(200).json({
+      message: "Client Invite Sent",
+      mail_options: mail_options
+    })
+
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
