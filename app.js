@@ -668,7 +668,7 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
             </div>
           </div>
           <div class="unsubscribe">
-            <a href="https://jamariteams.com/unsubscribe/${client_email}">Unsubscribe</a>
+            <a href="https://kamariteams.com/unsubscribe/${client_email}">Unsubscribe</a>
           </div>
           <div class="footer">
             <a href="https://kamariteams.com/terms-and-conditions">Terms</a>
