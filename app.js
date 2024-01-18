@@ -819,13 +819,9 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
             </center>
           </body>
         </html>`,
-        list: {
-          help: 'contact@kamariteams.com',
-          unsubscribe: {
-              url: `https://kamariteams.com/unsubscribe?email=${client_email}`,
-              comment: 'Unsubscribe from all Kamari marketing emails'
-          },
-      }
+      headers: {
+        "List-Unsubscribe": `<mailto:contact@kamariteams.com>, <https://kamariteams.com/unsubscribe?email=${client_email}>`,
+      },
     };
 
     console.log("calling transporter");
