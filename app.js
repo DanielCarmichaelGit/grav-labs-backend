@@ -34,14 +34,14 @@ app.use(express.json());
 const transporter = nodemailer.createTransport({
   host: "smtp-mail.outlook.com",
   port: 587,
-  secure: false, // true for 465, false for other ports
+  secureConnection: false, // true for 465, false for other ports
   auth: {
-    user: 'contact@kamariteams.com', // your Outlook account email
+    user: "contact@kamariteams.com", // your Outlook account email
     pass: process.env.EMAIL_AUTH, // your Outlook account password
   },
   tls: {
-    ciphers: 'SSLv3'
-  }
+    ciphers: "SSLv3",
+  },
 });
 
 function authenticateJWT(req, res, next) {
@@ -77,12 +77,11 @@ app.get("/", (req, res) => {
 app.post("/signup", async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
-    const { password, email, organization, type, name } =
-      req.body; // Add jam_group
+    const { password, email, organization, type, name } = req.body; // Add jam_group
 
-      const { first_name, last_name } = name;
+    const { first_name, last_name } = name;
 
-      console.log("full name", first_name, last_name);
+    console.log("full name", first_name, last_name);
 
     // Check if the username already exists
     const existingUser = await User.findOne({ email });
@@ -135,7 +134,7 @@ app.post("/signup", async (req, res) => {
       },
       billing: {},
       sprints: [sprint_id],
-      client_invitations: []
+      client_invitations: [],
     });
 
     // create first task
@@ -433,7 +432,6 @@ app.post("/documents", authenticateJWT, async (req, res) => {
     const user = await User.find({ user_id });
     const document_id = uuidv4();
 
-
     const newDocument = new Document({
       document_id,
       associated_org: user.organization,
@@ -444,21 +442,20 @@ app.post("/documents", authenticateJWT, async (req, res) => {
       document_name,
       creator: user,
       content,
-      create_timestamp: Date.now() ,
-      title
+      create_timestamp: Date.now(),
+      title,
     });
 
     const created_document = await newDocument.save();
 
     res.status(200).json({
       message: success,
-      created_resource: created_document
-    })
-  }
-  catch (error) {
+      created_resource: created_document,
+    });
+  } catch (error) {
     res.status(500).json({
-      message: error
-    })
+      message: error,
+    });
   }
 });
 
@@ -470,16 +467,16 @@ app.get("/documents", authenticateJWT, async (req, res) => {
     const org_id = req.user.user.organization.org_id;
 
     // Use the org_id to find documents
-    const documents = await Document.find({ 'associated_org.org_id': org_id });
+    const documents = await Document.find({ "associated_org.org_id": org_id });
 
     // Send the documents as a response
     res.status(200).json({
       count: documents.length,
-      documents
+      documents,
     });
   } catch (error) {
     res.status(500).json({
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -493,11 +490,11 @@ app.post("/folders", authenticateJWT, async (req, res) => {
 
     console.log("logging user", user);
 
-    console.log("xx123xx_client", client)
-    console.log("xx123xx_name", name)
-    console.log("xx123xx_documents", documents)
-    console.log('xx123xx_description', description)
-    console.log("xx123xx_organization", user.organization)
+    console.log("xx123xx_client", client);
+    console.log("xx123xx_name", name);
+    console.log("xx123xx_documents", documents);
+    console.log("xx123xx_description", description);
+    console.log("xx123xx_organization", user.organization);
 
     const newFolder = new Folder({
       folder_id,
@@ -506,22 +503,22 @@ app.post("/folders", authenticateJWT, async (req, res) => {
       name,
       created_by: user,
       client,
-      description
+      description,
     });
 
-    console.log("New Folder", newFolder)
+    console.log("New Folder", newFolder);
 
     const created_folder = await newFolder.save();
 
-    console.log("Created Folder")
+    console.log("Created Folder");
 
     res.status(200).json({
       message: "Folder Created",
-      created_resource: created_folder
-    })
+      created_resource: created_folder,
+    });
   } catch (error) {
     res.status(500).json({
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -534,16 +531,16 @@ app.get("/folders", authenticateJWT, async (req, res) => {
     const org_id = req.user.user.organization.org_id;
 
     // Use the org_id to find documents
-    const folders = await Folder.find({ 'associated_org.org_id': org_id });
+    const folders = await Folder.find({ "associated_org.org_id": org_id });
 
     // Send the documents as a response
     res.status(200).json({
       count: folders.length,
-      folders
+      folders,
     });
   } catch (error) {
     res.status(500).json({
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -577,12 +574,12 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
       invitation_id,
       associated_org,
       status: "unaccepted",
-      client_email
+      client_email,
     });
 
     const created_client_invitation = await newClientInvitation.save();
 
-    console.log(created_client_invitation)
+    console.log(created_client_invitation);
 
     // generate email content
     const mail_options = {
@@ -678,6 +675,7 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
       `,
     };
 
+    console.log("calling transporter");
     // call transporter to send email
     transporter.sendMail(mail_options, (error, info) => {
       if (error) {
@@ -686,18 +684,18 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
         console.log("Email sent:", info);
       }
     });
+    console.log("transporter called");
 
-    console.log("email sent")
+    console.log("email sent");
 
     res.status(200).json({
       message: "Client Invite Sent",
-      mail_options: mail_options
-    })
-
+      mail_options: mail_options,
+    });
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
-})
+});
 
 app.get("/tasks", authenticateJWT, async (req, res) => {
   try {
