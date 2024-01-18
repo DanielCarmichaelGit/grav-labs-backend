@@ -31,19 +31,11 @@ app.options("*", cors()); // Enable CORS pre-flight request for all routes
 app.use(express.json());
 
 // create utility transporter for email service
-const transporter = nodemailer.createTransport({
-  host: "smtp-mail.outlook.com",
-  port: 587,
-  secureConnection: false, // true for 465, false for other ports
+const transporter = nodemailer.createTransport(sgTransport({
   auth: {
-    user: "contact@kamariteams.com", // your Outlook account email
-    pass: process.env.EMAIL_AUTH, // your Outlook account password
-  },
-  tls: {
-    ciphers: "SSLv3",
-  },
-  from: "contact@kamariteams.com",
-});
+    api_key: process.env.SG_API_KEY
+  }
+}));
 
 function authenticateJWT(req, res, next) {
   console.log("Request!", req);
