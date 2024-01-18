@@ -590,6 +590,93 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
       text: `${associated_org.name} sent you an invite to join Kamari. 
       Manage your product pipeline without having to send a million emails. 
       To get started click the "Create Account" button below!`,
+      html: `
+      <html>
+      <head>
+        <style>
+          /* Add inline styles here for your email */
+          body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+          }
+          .header {
+            text-align: center;
+            background-color: #007BFF;
+            color: #ffffff;
+            padding: 20px 0;
+            border-radius: 10px 10px 0 0;
+          }
+          .header h1 {
+            font-size: 24px;
+            margin: 0;
+          }
+          .content {
+            padding: 20px;
+          }
+          .content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+          }
+          .button {
+            text-align: center;
+            margin-top: 20px;
+          }
+          .button a {
+            display: inline-block;
+            background-color: #007BFF;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+          }
+          .unsubscribe {
+            text-align: center;
+            margin-top: 20px;
+          }
+          .unsubscribe a {
+            color: #007BFF;
+            text-decoration: none;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Welcome to Kamari: ${associated_org.name} sent an invite</h1>
+          </div>
+          <div class="content">
+            <img src="https://jammanager.s3.us-east-2.amazonaws.com/kamari.png" alt="Kamari Logo">
+            <div class="button">
+              <a href="https://kamariteams.com" style="background-color: #007BFF; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Visit Kamari</a>
+            </div>
+          </div>
+          <div class="unsubscribe">
+            <a href="https://jamariteams.com/unsubscribe/${client_email}">Unsubscribe</a>
+          </div>
+          <div class="footer">
+            <a href="https://kamariteams.com/terms-and-conditions">Terms</a>
+          </div>
+        </div>
+      </body>
+      </html>
+      `,
     };
 
     console.log("calling transporter");
