@@ -42,6 +42,7 @@ const transporter = nodemailer.createTransport({
   tls: {
     ciphers: "SSLv3",
   },
+  from: "contact@kamariteams.com"
 });
 
 function authenticateJWT(req, res, next) {
