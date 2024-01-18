@@ -583,9 +583,12 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
 
     // generate email content
     const mail_options = {
-      from: "contact@kamariteams.com",
+      from: `"Kamari" <contact@kamariteams.com>`,
       to: client_email, // The user's email address
       subject: "Welcome to Kamari",
+      text: `${associated_org.name} sent you an invite to join Kamari. 
+      Manage your product pipeline without having to send a million emails. 
+      To get started click the "Create Account" button below!`,
       html: `
       <html>
       <head>
