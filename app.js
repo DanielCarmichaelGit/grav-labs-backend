@@ -771,7 +771,7 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
                     <tbody>
                       <tr>
                       <td align="center" bgcolor="#be4bff" class="inner-td" style="border-radius:6px; font-size:16px; text-align:right; background-color:inherit;">
-                        <a href="https://kamariteams.com/signup" style="background-color:#be4bff; border:0px solid #333333; border-color:#333333; border-radius:6px; border-width:0px; color:#ffffff; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; width:600px;" target="_blank">Get Kamari for Free</a>
+                        <a href="https://kamariteams.com/signup?email=${client_email}&type=client" style="background-color:#be4bff; border:0px solid #333333; border-color:#333333; border-radius:6px; border-width:0px; color:#ffffff; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; width:600px;" target="_blank">Get Kamari for Free</a>
                       </td>
                       </tr>
                     </tbody>
