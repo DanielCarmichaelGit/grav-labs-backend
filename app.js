@@ -964,7 +964,8 @@ app.post("/client-user", async (req, res) => {
       client_admin_password: hashedPassword,
       associated_org: organization,
       type: "Client",
-      marketable: true
+      marketable: true,
+      client: newClient
     });
 
     console.log("6", newClientUser)
