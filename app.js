@@ -970,7 +970,7 @@ app.post("/client-user", async (req, res) => {
 
     console.log("6", newClientUser)
 
-    const created_client_user = newClientUser.save();
+    const created_client_user = await newClientUser.save();
     newClient.client_poc = created_client_user;
     const created_client = await newClient.save();
 
