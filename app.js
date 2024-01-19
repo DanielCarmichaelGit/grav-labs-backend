@@ -24,6 +24,8 @@ const Project = require("./src/models/project");
 const Document = require("./src/models/document");
 const Folder = require("./src/models/folder");
 const ClientInvitation = require("./src/models/clientInvitation");
+const ClientUser = require("./src/models/clientUser");
+const Client = require("./src/models/client");
 
 const app = express();
 app.use(cors());
@@ -31,11 +33,13 @@ app.options("*", cors()); // Enable CORS pre-flight request for all routes
 app.use(express.json());
 
 // create utility transporter for email service
-const transporter = nodemailer.createTransport(sgTransport({
-  auth: {
-    api_key: process.env.SG_API_KEY
-  }
-}));
+const transporter = nodemailer.createTransport(
+  sgTransport({
+    auth: {
+      api_key: process.env.SG_API_KEY,
+    },
+  })
+);
 
 function authenticateJWT(req, res, next) {
   console.log("Request!", req);
@@ -771,7 +775,7 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
                     <tbody>
                       <tr>
                       <td align="center" bgcolor="#be4bff" class="inner-td" style="border-radius:6px; font-size:16px; text-align:right; background-color:inherit;">
-                        <a href="https://kamariteams.com/signup?email=${client_email}&type=client" style="background-color:#be4bff; border:0px solid #333333; border-color:#333333; border-radius:6px; border-width:0px; color:#ffffff; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; width:600px;" target="_blank">Get Kamari for Free</a>
+                        <a href="https://kamariteams.com/signup?email=${client_email}&type=client&org_id=${associated_org.org_id}" style="background-color:#be4bff; border:0px solid #333333; border-color:#333333; border-radius:6px; border-width:0px; color:#ffffff; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; width:600px;" target="_blank">Get Kamari for Free</a>
                       </td>
                       </tr>
                     </tbody>
@@ -782,7 +786,7 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
           </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="f424383d-0101-4b99-b99a-8d428a219037" data-mc-module-version="2019-10-22">
           <tbody>
             <tr>
-              <td style="padding:18px 0px 18px 0px; line-height:22px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: inherit">Someone sent you a client invite.</div>
+              <td style="padding:18px 0px 18px 0px; line-height:22px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: inherit">${associated_org.name} sent you an invite to Kamari.</div>
       <div style="font-family: inherit; text-align: inherit"><br></div>
       <div style="font-family: inherit; text-align: inherit">Join Kamari Client for free and manage your product pipeline from ideation to delivery.</div>
       <div style="font-family: inherit; text-align: inherit"><br></div>
@@ -882,6 +886,99 @@ app.get("/projects", authenticateJWT, async (req, res) => {
       count: projects.length,
       projects,
     });
+  } catch (error) {
+    res.status(500).json({ status: 500, message: error });
+  }
+});
+
+app.post("/client-user", async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const client_user_id = uuidv4();
+    const client_id = uuidv4();
+
+    const { client_name, client_admin_email, password, associated_org_id } =
+      req.body;
+
+    const organization = await Organization.findOne({
+      org_id: associated_org_id,
+    });
+
+    if (!organization) {
+      res.status(404).json({
+        message: `No organization with the id of ${associated_org_id} was found. Please ask the team to resend the invite or reach out to us at "contact@kamariteams.com"`
+      })
+    }
+
+    // Check if the username already exists
+    const existingClientUser = await ClientUser.findOne({ client_admin_email });
+
+    // if existing user, early return
+    if (existingClientUser) {
+      return res.status(409).json({
+        message: "CLient already exists",
+        redirect: { url: `kamariteams.com/client-signup?email=${client_admin_email}&org_id=${associated_org_id}` },
+      });
+    }
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const newClient = new Client({
+      client_id,
+      associated_org: organization,
+      client_users: [],
+      client_poc: {},
+      org_poc: organization.billable_user,
+      client_name
+    });
+
+    const newClientUser = new ClientUser({
+      client_user_id,
+      client_name,
+      client_admin_email,
+      client_admin_password: hashedPassword,
+      associated_org: organization,
+      type: "Client",
+      marketable: true
+    });
+
+    const created_client_user = newClientUser.save();
+    newClient.client_poc = created_client_user;
+    const created_client = await newClient.save();
+
+    await ClientInvitation.findOneAndUpdate({
+      client_email: client_admin_email
+    },
+    {
+      status: "accepted"
+    })
+
+    await Organization.findOneAndUpdate(
+      { org_id: associated_org_id },
+      {
+        $push: {
+          clients: created_client,
+        },
+      }
+    );
+
+    // sign the first token provided to the user
+    const token = jwt.sign(
+      { user: created_client_user, userId: client_user_id },
+      process.env.SECRET_JWT,
+      {
+        expiresIn: "30d",
+      }
+    );
+
+    res.status(200).json({
+      message: "Client was created",
+      client: created_client,
+      client_admin_user: created_client_user,
+      token
+    })
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
