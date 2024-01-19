@@ -895,6 +895,8 @@ app.post("/client-user", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
+    let existing_client_bool = false;
+
     const client_user_id = uuidv4();
     const client_id = uuidv4();
 
@@ -940,7 +942,8 @@ app.post("/client-user", async (req, res) => {
 
     if (existing_client?.associated_org.org_id === associated_org_id) {
       console.log("if else: if")
-      newClient = existing_client
+      newClient = existing_client;
+      existing_client_bool = true;
     }
     else {
       console.log("if else: else")
@@ -950,7 +953,8 @@ app.post("/client-user", async (req, res) => {
         client_users: [],
         client_poc: {},
         org_poc: organization.billable_user,
-        client_name
+        client_name,
+        client_admin: {}
       });
     }
 
@@ -960,8 +964,8 @@ app.post("/client-user", async (req, res) => {
     const newClientUser = new ClientUser({
       client_user_id,
       client_name,
-      client_admin_email,
-      client_admin_password: hashedPassword,
+      client_user_email,
+      client_user_password: hashedPassword,
       associated_org: organization,
       type: "Client",
       marketable: true,
@@ -991,6 +995,12 @@ app.post("/client-user", async (req, res) => {
         },
       }
     );
+
+    if (!existing_client_bool) {
+      await Client.findOneAndUpdate({ client_name, "associated_org.org_id":associated_org_id }, {
+        client_admin: created_client_user
+      })
+    }
 
     console.log("updated associated org")
 

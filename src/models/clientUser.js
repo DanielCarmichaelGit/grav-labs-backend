@@ -10,11 +10,11 @@ const clientUserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  client_admin_email: {
+  client_user_email: {
     type: String,
     required: true,
   },
-  client_admin_password: {
+  client_user_password: {
     type: String,
     required: true,
   },
