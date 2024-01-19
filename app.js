@@ -925,14 +925,24 @@ app.post("/client-user", async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const newClient = new Client({
-      client_id,
-      associated_org: organization,
-      client_users: [],
-      client_poc: {},
-      org_poc: organization.billable_user,
-      client_name
-    });
+    const existing_client = await Client.find({ client_name });
+
+    let newClient = {};
+
+    if (existing_client?.associated_org.org_id === associated_org_id) {
+      newClient = existing_client
+    }
+    else {
+      newClient = new Client({
+        client_id,
+        associated_org: organization,
+        client_users: [],
+        client_poc: {},
+        org_poc: organization.billable_user,
+        client_name
+      });
+    }
+
 
     const newClientUser = new ClientUser({
       client_user_id,
