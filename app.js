@@ -901,13 +901,13 @@ app.post("/client-user", async (req, res) => {
     const { client_name, client_admin_email, password, associated_org_id } =
       req.body;
 
-    console.log(req.body)
+    console.log("1", req.body)
 
     const organization = await Organization.findOne({
       org_id: associated_org_id,
     });
 
-    console.log(organization)
+    console.log("2", organization)
 
     if (!organization) {
       res.status(404).json({
@@ -929,11 +929,11 @@ app.post("/client-user", async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    console.log(hashedPassword)
+    console.log("3", hashedPassword)
 
     const existing_client = await Client.find({ client_name });
 
-    console.log(existing_client)
+    console.log("4", existing_client)
 
     let newClient = {};
 
@@ -951,7 +951,7 @@ app.post("/client-user", async (req, res) => {
       });
     }
 
-    console.log(newClient)
+    console.log("5", newClient)
 
 
     const newClientUser = new ClientUser({
@@ -964,7 +964,7 @@ app.post("/client-user", async (req, res) => {
       marketable: true
     });
 
-    console.log(newClientUser)
+    console.log("6", newClientUser)
 
     const created_client_user = newClientUser.save();
     newClient.client_poc = created_client_user;
