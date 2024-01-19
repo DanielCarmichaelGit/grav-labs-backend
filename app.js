@@ -938,9 +938,11 @@ app.post("/client-user", async (req, res) => {
     let newClient = {};
 
     if (existing_client?.associated_org.org_id === associated_org_id) {
+      console.log("if else: if")
       newClient = existing_client
     }
     else {
+      console.log("if else: else")
       newClient = new Client({
         client_id,
         associated_org: organization,
