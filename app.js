@@ -907,6 +907,8 @@ app.post("/client-user", async (req, res) => {
       org_id: associated_org_id,
     });
 
+    console.log(organization)
+
     if (!organization) {
       res.status(404).json({
         message: `No organization with the id of ${associated_org_id} was found. Please ask the team to resend the invite or reach out to us at "contact@kamariteams.com"`
@@ -927,7 +929,11 @@ app.post("/client-user", async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+    console.log(hashedPassword)
+
     const existing_client = await Client.find({ client_name });
+
+    console.log(existing_client)
 
     let newClient = {};
 
