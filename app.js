@@ -901,6 +901,8 @@ app.post("/client-user", async (req, res) => {
     const { client_name, client_admin_email, password, associated_org_id } =
       req.body;
 
+    console.log(req.body)
+
     const organization = await Organization.findOne({
       org_id: associated_org_id,
     });
