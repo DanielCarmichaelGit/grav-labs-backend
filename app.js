@@ -931,13 +931,14 @@ app.post("/client-user", async (req, res) => {
 
     console.log("3", hashedPassword)
 
-    const existing_client = await Client.find({ client_name });
+    const existing_client = await Client.findOne({ client_name });
 
     console.log("4", existing_client)
 
     let newClient = {};
+    console.log("logging client init", newClient)
 
-    if (existing_client?.associated_org.org_id === associated_org_id) {
+    if (existing_client.associated_org.org_id === associated_org_id) {
       console.log("if else: if")
       newClient = existing_client
     }
