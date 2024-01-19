@@ -943,6 +943,8 @@ app.post("/client-user", async (req, res) => {
       });
     }
 
+    console.log(newClient)
+
 
     const newClientUser = new ClientUser({
       client_user_id,
@@ -953,6 +955,8 @@ app.post("/client-user", async (req, res) => {
       type: "Client",
       marketable: true
     });
+
+    console.log(newClientUser)
 
     const created_client_user = newClientUser.save();
     newClient.client_poc = created_client_user;
@@ -965,6 +969,8 @@ app.post("/client-user", async (req, res) => {
       status: "accepted"
     })
 
+    console.log("updated client invitation")
+
     await Organization.findOneAndUpdate(
       { org_id: associated_org_id },
       {
@@ -974,6 +980,8 @@ app.post("/client-user", async (req, res) => {
       }
     );
 
+    console.log("updated associated org")
+
     // sign the first token provided to the user
     const token = jwt.sign(
       { user: created_client_user, userId: client_user_id },
@@ -982,6 +990,8 @@ app.post("/client-user", async (req, res) => {
         expiresIn: "30d",
       }
     );
+
+    console.log("created token")
 
     res.status(200).json({
       message: "Client was created",
