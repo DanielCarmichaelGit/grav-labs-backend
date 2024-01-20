@@ -977,6 +977,11 @@ app.post("/client", async (req, res) => {
         });
 
         const created_client = await new_client.save();
+        await Organization.findOneAndUpdate({org_id: associated_org_id},{
+          $push: {
+            clients: new_client
+          }
+        })
         res.status(200).json({
           message: "Client created",
           client: created_client,
