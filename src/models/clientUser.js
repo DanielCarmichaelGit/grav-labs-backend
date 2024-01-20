@@ -6,7 +6,7 @@ const clientUserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  client_name: {
+  client_user_name: {
     type: String,
     required: true
   },
@@ -16,10 +16,6 @@ const clientUserSchema = new mongoose.Schema({
   },
   client_user_password: {
     type: String,
-    required: true,
-  },
-  associated_org: {
-    type: Object,
     required: true,
   },
   type: {

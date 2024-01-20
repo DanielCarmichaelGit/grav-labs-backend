@@ -891,136 +891,102 @@ app.get("/projects", authenticateJWT, async (req, res) => {
   }
 });
 
-app.post("/client-user", async (req, res) => {
+app.post("/client_user", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    let existing_client_bool = false;
+    const {
+      client,
+      client_user_name,
+      client_user_email,
+      client_user_password,
+    } = req.body;
 
-    const client_user_id = uuidv4();
+    const existing_client = Client.findOne({ client_id: client.client_id });
+
+    if (existing_client.client_users.length < 5) {
+      const client_user_id = uuidv4();
+      const client_user = new ClientUser({
+        client_user_id,
+        client_user_name,
+        client_user_email,
+        client_user_password,
+        type: "client user",
+        marketable: true,
+        client,
+      });
+
+      const created_client_user = await client_user.save();
+
+      await Client.findOneAndUpdate(
+        { client_id: client.client_id },
+        {
+          $push: { client_users: client_user },
+          client_poc:
+            Object.keys(existing_client.client_poc).length === 0
+              ? client_user
+              : existing_client.client_poc,
+        }
+      );
+
+      res.status(200).json({
+        message: "Client User Created",
+        client_user: created_client_user,
+      });
+    } else {
+      res.status(200).json({
+        message: "client has exceeded allowed users",
+        client_users: existing_client.client_users,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ status: 500, message: error });
+  }
+});
+
+app.post("/client", async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
     const client_id = uuidv4();
 
-    const { client_name, client_admin_email, password, associated_org_id } =
-      req.body;
+    const { client_name, associated_org_id } = req.body;
 
-    console.log("1", req.body)
-
-    const organization = await Organization.findOne({
-      org_id: associated_org_id,
-    });
-
-    console.log("2", organization)
-
-    if (!organization) {
-      res.status(404).json({
-        message: `No organization with the id of ${associated_org_id} was found. Please ask the team to resend the invite or reach out to us at "contact@kamariteams.com"`
-      })
-    }
-
-    // Check if the username already exists
-    const existingClientUser = await ClientUser.findOne({ client_admin_email });
-
-    // if existing user, early return
-    if (existingClientUser) {
-      return res.status(409).json({
-        message: "CLient already exists",
-        redirect: { url: `kamariteams.com/client-signup?email=${client_admin_email}&org_id=${associated_org_id}` },
-      });
-    }
-
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    console.log("3", hashedPassword)
-
-    const existing_client = await Client.findOne({ client_name });
-
-    console.log("4", existing_client)
-
-    let newClient = {};
-    console.log("logging client init", newClient)
-
-    if (existing_client?.associated_org.org_id === associated_org_id) {
-      console.log("if else: if")
-      newClient = existing_client;
-      existing_client_bool = true;
-    }
-    else {
-      console.log("if else: else")
-      newClient = new Client({
-        client_id,
-        associated_org: organization,
-        client_users: [],
-        client_poc: {},
-        org_poc: organization.billable_user,
-        client_name,
-        client_admin: {}
-      });
-    }
-
-    console.log("5", newClient)
-
-
-    const newClientUser = new ClientUser({
-      client_user_id,
+    const existing_client = await Client.findOne({
       client_name,
-      client_user_email,
-      client_user_password: hashedPassword,
-      associated_org: organization,
-      type: "Client",
-      marketable: true,
-      client: newClient
+      "associated_org.org_id": associated_org_id,
     });
 
-    console.log("6", newClientUser)
+    if (existing_client) {
+      res.status(409).message({
+        message: "Client already exists. Please log in.",
+        client: existing_client,
+      });
+    } else {
+      const organization = await Organization.findOne({
+        org_id: associated_org_id,
+      });
+      if (organization) {
+        const new_client = new Client({
+          client_id,
+          associated_org: organization,
+          client_users: [],
+          client_poc: {},
+          org_poc: organization.billable_user,
+          client_name,
+          client_admin: {},
+        });
 
-    const created_client_user = await newClientUser.save();
-    newClient.client_poc = created_client_user;
-    const created_client = await newClient.save();
-
-    await ClientInvitation.findOneAndUpdate({
-      client_email: client_admin_email
-    },
-    {
-      status: "accepted"
-    })
-
-    console.log("updated client invitation")
-
-    await Organization.findOneAndUpdate(
-      { org_id: associated_org_id },
-      {
-        $push: {
-          clients: created_client,
-        },
+        const created_client = await new_client.save();
+        res.status(200).json({
+          message: "Client created",
+          client: created_client,
+        });
+      } else {
+        res.status(404).json({
+          message: `Organization associated with the id of "${associated_org_id}" does not exist`,
+        });
       }
-    );
-
-    if (!existing_client_bool) {
-      await Client.findOneAndUpdate({ client_name, "associated_org.org_id":associated_org_id }, {
-        client_admin: created_client_user
-      })
     }
-
-    console.log("updated associated org")
-
-    // sign the first token provided to the user
-    const token = jwt.sign(
-      { user: created_client_user, userId: client_user_id },
-      process.env.SECRET_JWT,
-      {
-        expiresIn: "30d",
-      }
-    );
-
-    console.log("created token")
-
-    res.status(200).json({
-      message: "Client was created",
-      client: created_client,
-      client_admin_user: created_client_user,
-      token
-    })
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
