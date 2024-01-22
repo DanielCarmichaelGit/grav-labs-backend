@@ -905,7 +905,7 @@ app.post("/client-user", async (req, res) => {
 
     console.log("1",req.body)
 
-    const existing_client = Client.findOne({ client_id: client.client_id });
+    const existing_client = await Client.findOne({ client_id: client.client_id });
 
     console.log("2",existing_client)
 
