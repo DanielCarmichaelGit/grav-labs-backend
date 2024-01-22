@@ -902,9 +902,14 @@ app.post("/client-user", async (req, res) => {
       client_user_password,
     } = req.body;
 
+    console.log("1",req.body)
+
     const existing_client = Client.findOne({ client_id: client.client_id });
 
+    console.log("2",existing_client)
+
     if (existing_client.client_users.length < 5) {
+      console.log("3")
       const client_user_id = uuidv4();
       const client_user = new ClientUser({
         client_user_id,
@@ -918,6 +923,8 @@ app.post("/client-user", async (req, res) => {
 
       const created_client_user = await client_user.save();
 
+      console.log("4")
+
       await Client.findOneAndUpdate(
         { client_id: client.client_id },
         {
@@ -928,6 +935,8 @@ app.post("/client-user", async (req, res) => {
               : existing_client.client_poc,
         }
       );
+
+      console.log("5")
 
       res.status(200).json({
         message: "Client User Created",
