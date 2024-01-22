@@ -894,7 +894,7 @@ app.get("/projects", authenticateJWT, async (req, res) => {
 app.post("/client-user", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
-    console.log("connected")
+    console.log("connected");
 
     const {
       client,
@@ -903,14 +903,16 @@ app.post("/client-user", async (req, res) => {
       client_user_password,
     } = req.body;
 
-    console.log("1",req.body)
+    console.log("1", req.body);
 
-    const existing_client = await Client.findOne({ client_id: client.client_id });
+    const existing_client = await Client.findOne({
+      client_id: client.client_id,
+    });
 
-    console.log("2",existing_client)
+    console.log("2", existing_client);
 
     if (existing_client.client_users.length < 5) {
-      console.log("3")
+      console.log("3");
       const client_user_id = uuidv4();
       const client_user = new ClientUser({
         client_user_id,
@@ -924,25 +926,28 @@ app.post("/client-user", async (req, res) => {
 
       const created_client_user = await client_user.save();
 
-      console.log("4")
+      console.log("4");
+      try {
+        await Client.findOneAndUpdate(
+          { client_id: client.client_id },
+          {
+            $push: { client_users: client_user },
+            client_poc:
+              Object.keys(existing_client.client_poc).length === 0
+                ? client_user
+                : existing_client.client_poc,
+          }
+        );
+      } catch (error) {
+        console.error("Update failed:", error);
+      }
 
-      await Client.findOneAndUpdate(
-        { client_id: client.client_id },
-        {
-          $push: { client_users: client_user },
-          client_poc:
-            Object.keys(existing_client.client_poc).length === 0
-              ? client_user
-              : existing_client.client_poc,
-        }
-      );
-
-      console.log("5")
+      console.log("5");
 
       res.status(200).json({
         message: "Client User Created",
         client_user: created_client_user,
-        client
+        client,
       });
     } else {
       res.status(200).json({
@@ -988,11 +993,14 @@ app.post("/client", async (req, res) => {
         });
 
         const created_client = await new_client.save();
-        await Organization.findOneAndUpdate({org_id: associated_org_id},{
-          $push: {
-            clients: new_client
+        await Organization.findOneAndUpdate(
+          { org_id: associated_org_id },
+          {
+            $push: {
+              clients: new_client,
+            },
           }
-        })
+        );
         res.status(200).json({
           message: "Client created",
           client: created_client,
