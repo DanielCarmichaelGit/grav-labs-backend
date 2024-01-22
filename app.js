@@ -891,7 +891,7 @@ app.get("/projects", authenticateJWT, async (req, res) => {
   }
 });
 
-app.post("/client_user", async (req, res) => {
+app.post("/client-user", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
@@ -932,6 +932,7 @@ app.post("/client_user", async (req, res) => {
       res.status(200).json({
         message: "Client User Created",
         client_user: created_client_user,
+        client
       });
     } else {
       res.status(200).json({

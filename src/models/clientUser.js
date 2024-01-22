@@ -7,7 +7,7 @@ const clientUserSchema = new mongoose.Schema({
     required: true,
   },
   client_user_name: {
-    type: String,
+    type: Object,
     required: true
   },
   client_user_email: {
