@@ -927,19 +927,21 @@ app.post("/client-user", async (req, res) => {
       const created_client_user = await client_user.save();
 
       console.log("4");
+
       try {
         await Client.findOneAndUpdate(
           { client_id: client.client_id },
           {
             $push: { client_users: client_user },
             client_poc:
-              Object.keys(existing_client.client_poc).length === 0
+              Object.keys(existing_client?.client_poc ?? {}).length === 0
                 ? client_user
                 : existing_client.client_poc,
           }
         );
       } catch (error) {
-        console.error("Update failed:", error);
+        console.error("An error occurred:", error);
+        // Handle the error appropriately
       }
 
       console.log("5");
