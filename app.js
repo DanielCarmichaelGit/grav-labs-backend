@@ -894,6 +894,7 @@ app.get("/projects", authenticateJWT, async (req, res) => {
 app.post("/client-user", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
+    console.log("connected")
 
     const {
       client,
