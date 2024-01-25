@@ -967,7 +967,7 @@ app.post("/client", async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
     const client_id = uuidv4();
 
-    const { client_name, associated_org_id } = req.body;
+    const { client_name, associated_org_id, invitation_id } = req.body;
 
     const existing_client = await Client.findOne({
       client_name,
@@ -995,6 +995,14 @@ app.post("/client", async (req, res) => {
         });
 
         const created_client = await new_client.save();
+
+        await ClientInvitation.findOneAndUpdate({
+          invitation_id
+        },
+        {
+          status: "accepted"
+        });
+
         await Organization.findOneAndUpdate(
           { org_id: associated_org_id },
           {
@@ -1003,6 +1011,7 @@ app.post("/client", async (req, res) => {
             },
           }
         );
+        
         res.status(200).json({
           message: "Client created",
           client: created_client,
