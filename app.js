@@ -572,6 +572,7 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
       associated_org,
       status: "unaccepted",
       client_email,
+      invite_url: `https://kamariteams.com/client-signup?email=${client_email}&type=client&org_id=${associated_org.org_id}&invitation_id=${invitation_id}`
     });
 
     const created_client_invitation = await newClientInvitation.save();
