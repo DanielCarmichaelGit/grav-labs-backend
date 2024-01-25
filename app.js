@@ -582,7 +582,7 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
     const mail_options = {
       from: `"Kamari" <contact@kamariteams.com>`,
       to: client_email, // The user's email address
-      subject: "Welcome to Kamari",
+      subject: "You're Invited to Kamari",
       text: `${associated_org.name} sent you an invite to join Kamari. 
       Manage your product pipeline without having to send a million emails. 
       To get started click the "Create Account" button below!`,
@@ -775,7 +775,7 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
                     <tbody>
                       <tr>
                       <td align="center" bgcolor="#be4bff" class="inner-td" style="border-radius:6px; font-size:16px; text-align:right; background-color:inherit;">
-                        <a href="https://kamariteams.com/signup?email=${client_email}&type=client&org_id=${associated_org.org_id}" style="background-color:#be4bff; border:0px solid #333333; border-color:#333333; border-radius:6px; border-width:0px; color:#ffffff; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; width:600px;" target="_blank">Get Kamari for Free</a>
+                        <a href="https://kamariteams.com/signup?email=${client_email}&type=client&org_id=${associated_org.org_id}&invitation_id=${invitation_id}" style="background-color:#be4bff; border:0px solid #333333; border-color:#333333; border-radius:6px; border-width:0px; color:#ffffff; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; width:600px;" target="_blank">Get Kamari for Free</a>
                       </td>
                       </tr>
                     </tbody>
@@ -1011,7 +1011,7 @@ app.post("/client", async (req, res) => {
             },
           }
         );
-        
+
         res.status(200).json({
           message: "Client created",
           client: created_client,
