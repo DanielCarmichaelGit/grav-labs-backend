@@ -1028,5 +1028,32 @@ app.post("/client", async (req, res) => {
   }
 });
 
+app.get("/client", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const user = req.user.user;
+    const organization = user.organization;
+
+    if (user && organization) {
+      const clients = await Client.find({ "associated_org.org_id": organization.org_id });
+      const client_invitations = await ClientInvitation.find({ "associated_org.org_id": organization.org_id });
+      res.status(200).json({
+        message: "success",
+        clients,
+        client_invitations
+      })
+    }
+    else {
+      res.status(500).json({
+        message: "something went wrong"
+      })
+    }
+
+  } catch (error) {
+    res.status(500).json({ status: 500, message: error });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
