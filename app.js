@@ -1078,13 +1078,14 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
     if (document_id) {
       // Update existing document
       console.log("3", "document found");
-      document = await Document.findOneAndUpdate(
+      const existing_document = await Document.findOneAndUpdate(
         { document_id },
         { $set: document_data },
         { new: true } // Return the updated document
       );
-      console.log(document);
+      console.log("existing document", existing_document);
       console.log("4", "document updated");
+      document = existing_document;
     }
 
     console.log("5", document);
