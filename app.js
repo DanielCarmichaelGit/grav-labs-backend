@@ -1073,8 +1073,6 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
     console.log("1", document_data);
     console.log("2", document_id);
 
-    console.log(client, folder)
-
     let document;
     if (document_id) {
       // Update existing document
