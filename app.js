@@ -1096,9 +1096,9 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
         document_id: uuidv4(),
         associated_org: req.body.document_data.associated_org,
         contributors: req.body.document_data.contributors,
-        client: req.body.client, // Assign client from the request body
+        document_client: req.body.client, // Assign client from the request body
         updates: req.body.document_data.updates,
-        folder: req.body.folder, // Assign folder from the request body
+        document_folder: req.body.folder, // Assign folder from the request body
         creator: req.body.document_data.creator,
         content: req.body.document_data.content,
         blocks: req.body.document_data.blocks,
@@ -1110,7 +1110,12 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
 
       console.log("7", "preparing to save document", newDocument);
 
-      document = await newDocument.save();
+      try {
+        document = await newDocument.save();
+      }
+      catch (error) {
+        console.log(error)
+      }
 
       console.log("8", "document saved");
     }
@@ -1129,14 +1134,3 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-// let document;
-
-// if (document_id) {
-//   document = await Document.findOneAndUpdate({
-//     document_id,
-//     {
-//       $set: altered_document
-//     }
-//   })
-// }
