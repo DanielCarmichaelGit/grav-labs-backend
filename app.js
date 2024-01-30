@@ -572,7 +572,7 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
       associated_org,
       status: "unaccepted",
       client_email,
-      invite_url: `https://kamariteams.com/client-signup?email=${client_email}&type=client&org_id=${associated_org.org_id}&invitation_id=${invitation_id}`
+      invite_url: `https://kamariteams.com/client-signup?email=${client_email}&type=client&org_id=${associated_org.org_id}&invitation_id=${invitation_id}`,
     });
 
     const created_client_invitation = await newClientInvitation.save();
@@ -997,12 +997,14 @@ app.post("/client", async (req, res) => {
 
         const created_client = await new_client.save();
 
-        await ClientInvitation.findOneAndUpdate({
-          invitation_id
-        },
-        {
-          status: "accepted"
-        });
+        await ClientInvitation.findOneAndUpdate(
+          {
+            invitation_id,
+          },
+          {
+            status: "accepted",
+          }
+        );
 
         await Organization.findOneAndUpdate(
           { org_id: associated_org_id },
@@ -1036,20 +1038,22 @@ app.get("/client", authenticateJWT, async (req, res) => {
     const organization = user.organization;
 
     if (user && organization) {
-      const clients = await Client.find({ "associated_org.org_id": organization.org_id });
-      const client_invitations = await ClientInvitation.find({ "associated_org.org_id": organization.org_id });
+      const clients = await Client.find({
+        "associated_org.org_id": organization.org_id,
+      });
+      const client_invitations = await ClientInvitation.find({
+        "associated_org.org_id": organization.org_id,
+      });
       res.status(200).json({
         message: "success",
         clients,
-        client_invitations
-      })
-    }
-    else {
+        client_invitations,
+      });
+    } else {
       res.status(500).json({
-        message: "something went wrong"
-      })
+        message: "something went wrong",
+      });
     }
-
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
@@ -1059,12 +1063,12 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { document_id, document_data } = req.body; // include other necessary fields
+    const { document_id, document_data, client, folder } = req.body; // include other necessary fields
     const user = req.user;
 
-    console.log(req.body)
+    console.log(req.body);
 
-    console.log(user)
+    console.log(user);
 
     console.log("1", document_data);
     console.log("2", document_id);
@@ -1072,33 +1076,35 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
     let document;
     if (document_id) {
       // Update existing document
-      console.log("3", "document found")
+      console.log("3", "document found");
       document = await Document.findOneAndUpdate(
         { document_id },
         { $set: document_data },
         { new: true } // Return the updated document
       );
-      console.log("4", "document updated")
-    } 
+      console.log("4", "document updated");
+    }
 
-    console.log("5", document)
+    console.log("5", document);
 
     if (!document) {
-      console.log("6", "no document found")
+      console.log("6", "no document found");
       // Create new document
       const newDocument = new Document({
         ...document_data, // spread the document data
+        client: client ? client : {},
+        folder: folder ? folder : {},
         document_id: uuidv4(),
         creator: user.user,
         create_timestamp: Date.now(),
         // other fields as necessary
       });
 
-      console.log("7", "preparing to save document", newDocument)
+      console.log("7", "preparing to save document", newDocument);
 
       document = await newDocument.save();
 
-      console.log("8", "document saved")
+      console.log("8", "document saved");
     }
 
     res.status(200).json({
@@ -1113,11 +1119,8 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
   }
 });
 
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
 
 // let document;
 
