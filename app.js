@@ -1089,7 +1089,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
       const newDocument = new Document({
         ...document_data, // spread the document data
         document_id: uuidv4(),
-        creator: user,
+        creator: user.user,
         create_timestamp: Date.now(),
         // other fields as necessary
       });
