@@ -1094,7 +1094,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
         // other fields as necessary
       });
 
-      console.log("7", "preparing to save document")
+      console.log("7", "preparing to save document", newDocument)
 
       document = await newDocument.save();
 
