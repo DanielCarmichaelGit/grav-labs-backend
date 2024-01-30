@@ -1062,17 +1062,25 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
     const { document_id, document_data } = req.body; // include other necessary fields
     const user = req.user;
 
+    console.log("1", document_data);
+    console.log("2", document_id);
+
     let document;
     if (document_id) {
       // Update existing document
+      console.log("3", "document found")
       document = await Document.findOneAndUpdate(
         { document_id },
         { $set: document_data },
         { new: true } // Return the updated document
       );
+      console.log("4", "document updated")
     } 
 
+    console.log("5", document)
+
     if (!document) {
+      console.log("6", "no document found")
       // Create new document
       const newDocument = new Document({
         ...document_data, // spread the document data
@@ -1082,7 +1090,11 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
         // other fields as necessary
       });
 
+      console.log("7", "preparing to save document")
+
       document = await newDocument.save();
+
+      console.log("8", "document saved")
     }
 
     res.status(200).json({
