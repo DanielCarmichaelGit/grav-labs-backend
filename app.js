@@ -1063,7 +1063,8 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { document_id, document_data, document_client, document_folder } = req.body; // include other necessary fields
+    const { document_id, document_data, document_client, document_folder } =
+      req.body; // include other necessary fields
     const user = req.user;
 
     console.log(req.body);
@@ -1090,29 +1091,28 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
     if (!document) {
       console.log("6", "no document found");
       // Create new document
-      const newDocument = new Document({
-        document_id: uuidv4(),
-        associated_org: req.body.document_data.associated_org,
-        contributors: req.body.document_data.contributors,
-        document_client: req.body.document_client, // Assign client from the request body
-        updates: req.body.document_data.updates,
-        document_folder: req.body.document_folder, // Assign folder from the request body
-        creator: user.user,
-        content: req.body.document_data.content,
-        blocks: req.body.document_data.blocks,
-        last_block_timestamp: req.body.document_data.last_block_timestamp,
-        last_block_version: req.body.document_data.last_block_version,
-        title: req.body.document_data.title,
-        created_timestamp: Date.now(), // You can use Date.now() to set the current timestamp
-      });
-
-      console.log("7", "preparing to save document", newDocument);
-
       try {
+        const newDocument = new Document({
+          document_id: uuidv4(),
+          associated_org: req.body.document_data.associated_org,
+          contributors: req.body.document_data.contributors,
+          document_client: req.body.document_client, // Assign client from the request body
+          updates: req.body.document_data.updates,
+          document_folder: req.body.document_folder, // Assign folder from the request body
+          creator: user.user,
+          content: req.body.document_data.content,
+          blocks: req.body.document_data.blocks,
+          last_block_timestamp: req.body.document_data.last_block_timestamp,
+          last_block_version: req.body.document_data.last_block_version,
+          title: req.body.document_data.title,
+          created_timestamp: Date.now(), // You can use Date.now() to set the current timestamp
+        });
+
+        console.log("7", "preparing to save document", newDocument);
+
         document = await newDocument.save();
-      }
-      catch (error) {
-        console.log(error)
+      } catch (error) {
+        console.log(error);
       }
 
       console.log("8", "document saved");
