@@ -9,6 +9,9 @@ const documentSchema = new mongoose.Schema({
   folder: { type: Object, required: true },
   creator: { type: Object, required: true },
   content: { type: Object, required: true },
+  blocks: { type: Array, required: true },
+  last_block_timestamp: { type: String, required: true },
+  last_block_version: { type: String, required: true },
   title: { type: String, required: true },
   created_timestamp: { type: String, required: true }
 });
