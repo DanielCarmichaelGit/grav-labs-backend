@@ -1062,6 +1062,10 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
     const { document_id, document_data } = req.body; // include other necessary fields
     const user = req.user;
 
+    console.log(req.body)
+
+    console.log(user)
+
     console.log("1", document_data);
     console.log("2", document_id);
 
