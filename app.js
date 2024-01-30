@@ -1099,7 +1099,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
         document_client: req.body.client, // Assign client from the request body
         updates: req.body.document_data.updates,
         document_folder: req.body.folder, // Assign folder from the request body
-        creator: req.body.document_data.creator,
+        creator: user.user,
         content: req.body.document_data.content,
         blocks: req.body.document_data.blocks,
         last_block_timestamp: req.body.document_data.last_block_timestamp,
