@@ -7,7 +7,10 @@ const folderSchema = new mongoose.Schema({
   description: { type: String, required: true },
   name: { type: String, required: true },
   created_by: { type: Object, required: true },
-  client: { type: Object, required: true }
+  client: { type: Object, required: true },
+  contributors: { type: Array, required: true},
+  sprints: { type: Array, required: false },
+  project: { type: Object, required: true },
 });
 
 module.exports = mongoose.model("Folder", folderSchema);

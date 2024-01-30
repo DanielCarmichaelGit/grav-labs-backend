@@ -1055,5 +1055,61 @@ app.get("/client", authenticateJWT, async (req, res) => {
   }
 });
 
+app.post("/autosave-document", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { document_id, document_data } = req.body; // include other necessary fields
+    const user = req.user;
+
+    let document;
+    if (document_id) {
+      // Update existing document
+      document = await Document.findOneAndUpdate(
+        { document_id },
+        { $set: document_data },
+        { new: true } // Return the updated document
+      );
+    } 
+
+    if (!document) {
+      // Create new document
+      const newDocument = new Document({
+        ...document_data, // spread the document data
+        document_id: uuidv4(),
+        creator: user,
+        create_timestamp: Date.now(),
+        // other fields as necessary
+      });
+
+      document = await newDocument.save();
+    }
+
+    res.status(200).json({
+      message: "Document auto-saved successfully",
+      document,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error auto-saving document",
+      error: error.message,
+    });
+  }
+});
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+
+// let document;
+
+// if (document_id) {
+//   document = await Document.findOneAndUpdate({
+//     document_id,
+//     {
+//       $set: altered_document
+//     }
+//   })
+// }
