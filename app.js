@@ -1146,59 +1146,61 @@ app.delete("/document", authenticateJWT, async (req, res) => {
 app.post("/autosave-document", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
-
-    const { document_id, document_data, document_client, document_folder } =
-      req.body; // include other necessary fields
+    const { document_id, document_data, document_client, document_folder } = req.body;
     const user = req.user;
 
     let document;
+
     if (document_id) {
-      // Update existing document
-      const existing_document = await Document.findOneAndUpdate(
+      // Attempt to update existing document
+      document = await Document.findOneAndUpdate(
         { document_id },
         { $set: document_data },
         { new: true } // Return the updated document
       );
-      console.log("document updated")
-      document = existing_document;
-    }
 
-    if (!document) {
-      // Create new document
+      if (document) {
+        console.log("Document updated:", document);
+      } else {
+        return res.status(404).json({ message: "Document not found" });
+      }
+    } else {
+      // Attempt to create new document
       try {
         const newDocument = new Document({
+          // Assuming uuidv4 is called elsewhere to generate document_id for new docs
           document_id: uuidv4(),
-          associated_org: req.body.document_data.associated_org,
-          contributors: req.body.document_data.contributors,
-          document_client: req.body.document_client, // Assign client from the request body
-          updates: req.body.document_data.updates,
-          document_folder: req.body.document_folder, // Assign folder from the request body
+          // Include other document fields as necessary
+          ...req.body,
           creator: user.user,
-          content: req.body.document_data.content,
-          blocks: req.body.document_data.blocks,
-          last_block_timestamp: req.body.document_data.last_block_timestamp,
-          last_block_version: req.body.document_data.last_block_version,
-          title: req.body.document_data.title,
-          created_timestamp: Date.now(), // You can use Date.now() to set the current timestamp
+          created_timestamp: Date.now(),
         });
 
         document = await newDocument.save();
+        console.log("New document created:", document);
       } catch (error) {
-        console.log(error);
+        console.error("Error creating document:", error);
+        return res.status(500).json({
+          message: "Error creating new document",
+          error: error.message,
+        });
       }
     }
 
+    // Return success response
     res.status(200).json({
       message: "Document auto-saved successfully",
       document,
     });
   } catch (error) {
+    console.error("Error auto-saving document:", error);
     res.status(500).json({
       message: "Error auto-saving document",
       error: error.message,
     });
   }
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
