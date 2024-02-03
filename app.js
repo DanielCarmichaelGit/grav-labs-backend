@@ -1062,7 +1062,7 @@ app.get("/client", authenticateJWT, async (req, res) => {
 
 app.delete("/document", authenticateJWT, async (req, res) => {
   try {
-    dbConnect(process.env.GEN_AUTH);
+    await dbConnect(process.env.GEN_AUTH);
 
     const { document_id } = req.body;
     const user = req.user;
@@ -1075,8 +1075,11 @@ app.delete("/document", authenticateJWT, async (req, res) => {
     console.log("document", document)
 
     if (document) {
+      console.log("document found")
       if (document.associated_org.org_id === user.organization.org_id) {
+        console.log("document passed comparison.. attempting delete")
         await Document.deleteOne({ document_id })
+        console.log("successful delete")
         res.status(200).json({
           message: "document deleted"
         })
@@ -1092,6 +1095,7 @@ app.delete("/document", authenticateJWT, async (req, res) => {
         message: "no document with the given id was found"
       })
     }
+    console.log('nothing happened')
 
   } catch (error) {
     res.status(500).json({
