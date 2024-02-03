@@ -1085,7 +1085,7 @@ app.delete("/folder", authenticateJWT, async (req, res) => {
       res.status(404).json({
         message: "no folder with the associated folder id was found"
       })
-    
+    }
   } catch (error) {
     res.status(500).json({
       message: "Error auto-saving document",
