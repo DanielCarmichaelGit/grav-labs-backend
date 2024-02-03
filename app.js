@@ -993,6 +993,7 @@ app.post("/client", async (req, res) => {
           org_poc: organization.billable_user,
           client_name,
           client_admin: {},
+          documents: [],
         });
 
         const created_client = await new_client.save();
@@ -1059,6 +1060,42 @@ app.get("/client", authenticateJWT, async (req, res) => {
   }
 });
 
+app.delete("/document", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { document_id } = req.body;
+    const user = req.user;
+    
+    const document = await Document.findOne({ document_id });
+
+    if (document) {
+      if (document.associated_org.org_id === user.associated_org.org_id) {
+        Document.deleteOne({ document_id })
+        res.status(200).json({
+          message: "document deleted"
+        })
+      }
+      else {
+        res.status(409).json({
+          message: "user does not have access to this resource"
+        })
+      }
+    }
+    else {
+      res.status(404).json({
+        message: "no document with the given id was found"
+      })
+    }
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Error auto-saving document",
+      error: error.message,
+    });
+  }
+});
+
 app.post("/autosave-document", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
@@ -1067,31 +1104,18 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
       req.body; // include other necessary fields
     const user = req.user;
 
-    console.log(req.body);
-
-    console.log(user);
-
-    console.log("1", document_data);
-    console.log("2", document_id);
-
     let document;
     if (document_id) {
       // Update existing document
-      console.log("3", "document found");
       const existing_document = await Document.findOneAndUpdate(
         { document_id },
         { $set: document_data },
         { new: true } // Return the updated document
       );
-      console.log("existing document", existing_document);
-      console.log("4", "document updated");
       document = existing_document;
     }
 
-    console.log("5", document);
-
     if (!document) {
-      console.log("6", "no document found");
       // Create new document
       try {
         const newDocument = new Document({
@@ -1110,14 +1134,10 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
           created_timestamp: Date.now(), // You can use Date.now() to set the current timestamp
         });
 
-        console.log("7", "preparing to save document", newDocument);
-
         document = await newDocument.save();
       } catch (error) {
         console.log(error);
       }
-
-      console.log("8", "document saved");
     }
 
     res.status(200).json({
