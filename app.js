@@ -1076,8 +1076,8 @@ app.delete("/document", authenticateJWT, async (req, res) => {
 
     if (document) {
       console.log("document found")
-      console.log(document.associated_org.org_id)
-      console.log(user.organization.org_id)
+      console.log("document org", document.associated_org.org_id)
+      console.log("user org", user.organization.org_id)
       if (document.associated_org.org_id === user.organization.org_id) {
         console.log("document passed comparison.. attempting delete")
         await Document.deleteOne({ document_id })
