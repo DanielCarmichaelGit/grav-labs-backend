@@ -1060,6 +1060,40 @@ app.get("/client", authenticateJWT, async (req, res) => {
   }
 });
 
+app.delete("/folder", authenticateJWT, async (req, res) => {
+  try {
+    await dbConnect(process.env.GEN_AUTH);
+
+    const user = req.user.user;
+
+    const { folder_id } = req.body;
+
+    const folder = await Folder.findOne({ folder_id });
+
+    if (folder) {
+      if (folder.associated_org.org_id === user.organization.org_id) {
+        await Folder.deleteOne({ folder_id })
+        res.status(200).json({
+          message: "folder successfully deleted"
+        })
+      }
+      res.status(409).json({
+        message: "user does not have access to edit this resource"
+      })
+    }
+    else {
+      res.status(404).json({
+        message: "no folder with the associated folder id was found"
+      })
+    
+  } catch (error) {
+    res.status(500).json({
+      message: "Error auto-saving document",
+      error: error.message,
+    });
+  }
+})
+
 app.delete("/document", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
