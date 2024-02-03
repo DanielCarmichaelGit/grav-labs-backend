@@ -1064,35 +1064,40 @@ app.delete("/folder", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
 
-    const user = req.user.user;
+    const user = req.user.user; // Ensure this is the correct path to the user object
 
     const { folder_id } = req.body;
 
-    const folder = await Folder.findOne({ folder_id });
+    const folder = await Folder.findOne({ folder_id: folder_id });
 
     if (folder) {
       if (folder.associated_org.org_id === user.organization.org_id) {
-        await Folder.deleteOne({ folder_id })
-        res.status(200).json({
-          message: "folder successfully deleted"
-        })
+        await Folder.deleteOne({ folder_id: folder_id });
+        return res.status(200).json({
+          // Add return here
+          message: "folder successfully deleted",
+        });
+      } else {
+        // This else block ensures that the 409 response is only sent if the user lacks access
+        return res.status(409).json({
+          // Add return here
+          message: "user does not have access to edit this resource",
+        });
       }
-      res.status(409).json({
-        message: "user does not have access to edit this resource"
-      })
-    }
-    else {
-      res.status(404).json({
-        message: "no folder with the associated folder id was found"
-      })
+    } else {
+      return res.status(404).json({
+        // Add return here
+        message: "no folder with the associated folder id was found",
+      });
     }
   } catch (error) {
-    res.status(500).json({
-      message: "Error auto-saving document",
+    console.error("Error deleting folder:", error); // Added error logging for debugging
+    return res.status(500).json({
+      message: "Error deleting folder",
       error: error.message,
     });
   }
-})
+});
 
 app.delete("/document", authenticateJWT, async (req, res) => {
   try {
@@ -1101,38 +1106,35 @@ app.delete("/document", authenticateJWT, async (req, res) => {
     const { document_id } = req.body;
     const user = req.user.user;
 
-    console.log("body", req.body)
-    console.log("user", user)
-    
+    console.log("body", req.body);
+    console.log("user", user);
+
     const document = await Document.findOne({ document_id });
 
-    console.log("document", document)
+    console.log("document", document);
 
     if (document) {
-      console.log("document found")
-      console.log("document org", document.associated_org.org_id)
-      console.log("user org", user.organization.org_id)
+      console.log("document found");
+      console.log("document org", document.associated_org.org_id);
+      console.log("user org", user.organization.org_id);
       if (document.associated_org.org_id === user.organization.org_id) {
-        console.log("document passed comparison.. attempting delete")
-        await Document.deleteOne({ document_id })
-        console.log("successful delete")
+        console.log("document passed comparison.. attempting delete");
+        await Document.deleteOne({ document_id });
+        console.log("successful delete");
         res.status(200).json({
-          message: "document deleted"
-        })
-      }
-      else {
+          message: "document deleted",
+        });
+      } else {
         res.status(409).json({
-          message: "user does not have access to this resource"
-        })
+          message: "user does not have access to this resource",
+        });
       }
-    }
-    else {
+    } else {
       res.status(404).json({
-        message: "no document with the given id was found"
-      })
+        message: "no document with the given id was found",
+      });
     }
-    console.log('nothing happened')
-
+    console.log("nothing happened");
   } catch (error) {
     res.status(500).json({
       message: "Error auto-saving document",
