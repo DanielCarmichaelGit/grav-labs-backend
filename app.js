@@ -1155,6 +1155,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
       const document = await Document.findOne({ document_id });
       res.status(200).json({
         document,
+        status: "old"
       });
     } else {
       const newDocument = new Document({
@@ -1176,7 +1177,8 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
       const savedDocument = await newDocument.save();
       res.status(200).json({
         message: "document saved",
-        document: savedDocument
+        document: savedDocument,
+        status: "new"
       });
     }
 
