@@ -1076,7 +1076,7 @@ app.delete("/document", authenticateJWT, async (req, res) => {
 
     if (document) {
       if (document.associated_org.org_id === user.organization.org_id) {
-        Document.deleteOne({ document_id })
+        await Document.deleteOne({ document_id })
         res.status(200).json({
           message: "document deleted"
         })
