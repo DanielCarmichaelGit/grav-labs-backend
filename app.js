@@ -1066,6 +1066,9 @@ app.delete("/document", authenticateJWT, async (req, res) => {
 
     const { document_id } = req.body;
     const user = req.user;
+
+    console.log("body", req.body)
+    console.log("user", user)
     
     const document = await Document.findOne({ document_id });
 
