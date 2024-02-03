@@ -1159,6 +1159,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
         { $set: document_data },
         { new: true } // Return the updated document
       );
+      console.log("document updated")
       document = existing_document;
     }
 
