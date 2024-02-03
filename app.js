@@ -1103,7 +1103,7 @@ app.delete("/document", authenticateJWT, async (req, res) => {
 
 app.post("/autosave-document", authenticateJWT, async (req, res) => {
   try {
-    dbConnect(process.env.GEN_AUTH);
+    await dbConnect(process.env.GEN_AUTH);
 
     const { document_id, document_data, document_client, document_folder } =
       req.body; // include other necessary fields
