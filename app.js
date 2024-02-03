@@ -1060,44 +1060,44 @@ app.get("/client", authenticateJWT, async (req, res) => {
   }
 });
 
-app.delete("/folder", authenticateJWT, async (req, res) => {
-  try {
-    await dbConnect(process.env.GEN_AUTH);
+// app.delete("/folder", authenticateJWT, async (req, res) => {
+//   try {
+//     await dbConnect(process.env.GEN_AUTH);
 
-    const user = req.user.user; // Ensure this is the correct path to the user object
+//     const user = req.user.user; // Ensure this is the correct path to the user object
 
-    const { folder_id } = req.body;
+//     const { folder_id } = req.body;
 
-    const folder = await Folder.findOne({ folder_id: folder_id });
+//     const folder = await Folder.findOne({ folder_id: folder_id });
 
-    if (folder) {
-      if (folder.associated_org.org_id === user.organization.org_id) {
-        await Folder.deleteOne({ folder_id: folder_id });
-        return res.status(200).json({
-          // Add return here
-          message: "folder successfully deleted",
-        });
-      } else {
-        // This else block ensures that the 409 response is only sent if the user lacks access
-        return res.status(409).json({
-          // Add return here
-          message: "user does not have access to edit this resource",
-        });
-      }
-    } else {
-      return res.status(404).json({
-        // Add return here
-        message: "no folder with the associated folder id was found",
-      });
-    }
-  } catch (error) {
-    console.error("Error deleting folder:", error); // Added error logging for debugging
-    return res.status(500).json({
-      message: "Error deleting folder",
-      error: error.message,
-    });
-  }
-});
+//     if (folder) {
+//       if (folder.associated_org.org_id === user.organization.org_id) {
+//         await Folder.deleteOne({ folder_id: folder_id });
+//         return res.status(200).json({
+//           // Add return here
+//           message: "folder successfully deleted",
+//         });
+//       } else {
+//         // This else block ensures that the 409 response is only sent if the user lacks access
+//         return res.status(409).json({
+//           // Add return here
+//           message: "user does not have access to edit this resource",
+//         });
+//       }
+//     } else {
+//       return res.status(404).json({
+//         // Add return here
+//         message: "no folder with the associated folder id was found",
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error deleting folder:", error); // Added error logging for debugging
+//     return res.status(500).json({
+//       message: "Error deleting folder",
+//       error: error.message,
+//     });
+//   }
+// });
 
 app.delete("/document", authenticateJWT, async (req, res) => {
   try {
