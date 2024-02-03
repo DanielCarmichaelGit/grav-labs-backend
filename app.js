@@ -1065,7 +1065,7 @@ app.delete("/document", authenticateJWT, async (req, res) => {
     await dbConnect(process.env.GEN_AUTH);
 
     const { document_id } = req.body;
-    const user = req.user;
+    const user = req.user.user;
 
     console.log("body", req.body)
     console.log("user", user)
