@@ -1146,61 +1146,66 @@ app.delete("/document", authenticateJWT, async (req, res) => {
 app.post("/autosave-document", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
+
     const { document_id, document_data, document_client, document_folder } = req.body;
     const user = req.user;
 
-    let document;
-
+    // Attempt to update existing document if document_id is provided
     if (document_id) {
-      // Attempt to update existing document
-      document = await Document.findOneAndUpdate(
-        { document_id },
-        { $set: document_data },
-        { new: true } // Return the updated document
+      const updateData = {
+        ...document_data,
+        document_client: document_client, // Ensure these are updated correctly
+        document_folder: document_folder,
+        // Add any additional fields that need to be updated
+      };
+
+      const existingDocument = await Document.findOneAndUpdate(
+        { document_id: document_id },
+        { $set: updateData },
+        { new: true, upsert: false } // Return the updated document, do not create a new one if it doesn't exist
       );
 
-      if (document) {
-        console.log("Document updated:", document);
-      } else {
-        return res.status(404).json({ message: "Document not found" });
-      }
-    } else {
-      // Attempt to create new document
-      try {
-        const newDocument = new Document({
-          // Assuming uuidv4 is called elsewhere to generate document_id for new docs
-          document_id: uuidv4(),
-          // Include other document fields as necessary
-          ...req.body,
-          creator: user.user,
-          created_timestamp: Date.now(),
-        });
-
-        document = await newDocument.save();
-        console.log("New document created:", document);
-      } catch (error) {
-        console.error("Error creating document:", error);
-        return res.status(500).json({
-          message: "Error creating new document",
-          error: error.message,
+      if (existingDocument) {
+        console.log("Document updated", existingDocument);
+        return res.status(200).json({
+          message: "Document auto-saved successfully",
+          document: existingDocument,
         });
       }
     }
 
-    // Return success response
+    // If document does not exist or document_id is not provided, create a new document
+    const newDocument = new Document({
+      document_id: uuidv4(), // Generate a new UUID for the document
+      associated_org: document_data.associated_org,
+      contributors: document_data.contributors,
+      document_client: document_client,
+      updates: document_data.updates,
+      document_folder: document_folder,
+      creator: user.user, // Assuming user object has a nested user object
+      content: document_data.content,
+      blocks: document_data.blocks,
+      last_block_timestamp: document_data.last_block_timestamp,
+      last_block_version: document_data.last_block_version,
+      title: document_data.title,
+      created_timestamp: Date.now(),
+    });
+
+    const savedDocument = await newDocument.save();
+    console.log("New document created", savedDocument);
+
     res.status(200).json({
-      message: "Document auto-saved successfully",
-      document,
+      message: "New document created successfully",
+      document: savedDocument,
     });
   } catch (error) {
-    console.error("Error auto-saving document:", error);
+    console.error("Error auto-saving document", error);
     res.status(500).json({
       message: "Error auto-saving document",
       error: error.message,
     });
   }
 });
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
