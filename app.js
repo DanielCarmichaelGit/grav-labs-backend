@@ -1153,10 +1153,12 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
 
     if (document_id) {
       const document = await Document.findOne({ document_id });
-      res.status(200).json({
-        document,
-        status: "old"
-      });
+      if (document) {
+        res.status(200).json({
+          document,
+          status: "old"
+        });
+      }
     } else {
       const newDocument = new Document({
         document_id: uuidv4(), // Generate a new UUID for the document
