@@ -1154,17 +1154,17 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
     if (document_id) {
       const document = await Document.findOne({ document_id });
       if (document) {
-        const updated_document = await Document.findOneAndUpdate({
-          document_id
-        },{
-          $set: {...document_data, document_id}
-        },
-        {
-          new: true
-        })
+        // const updated_document = await Document.findOneAndUpdate({
+        //   document_id
+        // },{
+        //   $set: {...document_data, document_id}
+        // },
+        // {
+        //   new: true
+        // })
 
         res.status(200).json({
-          document: updated_document,
+          document,
           status: "old"
         });
       }
@@ -1192,55 +1192,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
         status: "new"
       });
     }
-
-    // // Attempt to update existing document if document_id is provided
-    // if (document_id) {
-    //   const updateData = {
-    //     ...document_data,
-    //     document_client: document_client, // Ensure these are updated correctly
-    //     document_folder: document_folder,
-    //     // Add any additional fields that need to be updated
-    //   };
-
-    //   const existingDocument = await Document.findOneAndUpdate(
-    //     { document_id: document_id },
-    //     { $set: updateData },
-    //     { new: true, upsert: false } // Return the updated document, do not create a new one if it doesn't exist
-    //   );
-
-    //   if (existingDocument) {
-    //     console.log("Document updated", existingDocument);
-    //     return res.status(200).json({
-    //       message: "Document auto-saved successfully",
-    //       document: existingDocument,
-    //     });
-    //   }
-    // }
-
-    // // If document does not exist or document_id is not provided, create a new document
-    // const newDocument = new Document({
-    //   document_id: uuidv4(), // Generate a new UUID for the document
-    //   associated_org: document_data.associated_org,
-    //   contributors: document_data.contributors,
-    //   document_client: document_client,
-    //   updates: document_data.updates,
-    //   document_folder: document_folder,
-    //   creator: user.user, // Assuming user object has a nested user object
-    //   content: document_data.content,
-    //   blocks: document_data.blocks,
-    //   last_block_timestamp: document_data.last_block_timestamp,
-    //   last_block_version: document_data.last_block_version,
-    //   title: document_data.title,
-    //   created_timestamp: Date.now(),
-    // });
-
-    // const savedDocument = await newDocument.save();
-    // console.log("New document created", savedDocument);
-
-    // res.status(200).json({
-    //   message: "New document created successfully",
-    //   document: savedDocument,
-    // });
+  
   } catch (error) {
     console.error("Error auto-saving document", error);
     res.status(500).json({
