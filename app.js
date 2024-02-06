@@ -1154,14 +1154,14 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
     if (document_id) {
       const document = await Document.findOne({ document_id });
       if (document) {
-        // const updated_document = await Document.findOneAndUpdate({
-        //   document_id
-        // },{
-        //   $set: {...document_data, document_id}
-        // },
-        // {
-        //   new: true
-        // })
+        const updated_document = await Document.findOneAndUpdate({
+          document_id
+        },{
+          $set: {...document_data, document_id}
+        },
+        {
+          new: true
+        })
 
         res.status(200).json({
           document,
