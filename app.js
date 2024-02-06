@@ -1147,7 +1147,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
 
-    const { document_id, document_data, document_client, document_folder } =
+    const { document_id, document_data, document_client, document_folder, temporary_id } =
       req.body;
     const user = req.user;
 
@@ -1189,6 +1189,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
       res.status(200).json({
         message: "document saved",
         document: savedDocument,
+        temporary_id,
         status: "new"
       });
     }
