@@ -1185,11 +1185,13 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
         created_timestamp: Date.now(),
       });
 
+      console.log("temporary id",temporary_id)
+
       const savedDocument = await newDocument.save();
       res.status(200).json({
         message: "document saved",
         document: savedDocument,
-        temporary_id,
+        temporary_id: `${temporary_id ? temporary_id : ""}`,
         status: "new"
       });
     }
