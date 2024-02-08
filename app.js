@@ -521,7 +521,7 @@ app.get("/organization", authenticateJWT, async (req, res) => {
 
     console.log("1", user);
 
-    const organization = await Organization.findOne({ "organization.org_id": user.organization.org_id});
+    const organization = await Organization.findOne({ org_id: user.organization.org_id});
 
     console.log("2", organization)
 
