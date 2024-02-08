@@ -166,6 +166,7 @@ app.post("/signup", async (req, res) => {
       start_date_time: Date.now(),
       duration: "1209600000",
       kpi_data: {},
+      organization: newOrg,
     });
 
     const newProject = new Project({
@@ -455,6 +456,88 @@ app.post("/documents", authenticateJWT, async (req, res) => {
     });
   }
 });
+
+app.post("/sprints", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const user = req.user.user;
+    const { title, members, viewers, status, start_date_time, duration, kpi_data } = req.body;
+    const sprint_id = uuidv4();
+
+
+    const newSprint = new Sprint({
+      sprint_id,
+      title,
+      owner: newUser,
+      members,
+      viewers,
+      status,
+      start_date_time,
+      duration,
+      kpi_data: {},
+      organization: user.organization
+    });
+
+    const saved_sprint = await newSprint.save();
+
+    res.status(200).json({
+      message: "Sprint Created",
+      sprint: saved_sprint
+    })
+
+  } catch (error) {
+    res.status(500).json({
+      message: error,
+    });
+  }
+});
+
+app.get("/sprints", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const user = req.user.user;
+
+    const sprints = await Sprint.find({ 'organization.org_id': user.org_id});
+
+    res.status(200).json({
+      message: 'Sprints Retrieved',
+      count: sprints.length,
+      sprints
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: error,
+    });
+  }
+});
+
+app.get("/organization", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const user = req.user.user;
+
+    const organization = await Organization.findOne({ "organization.org_id": user.organization.org_id});
+
+    if (organization) {
+      res.status(200).json({
+        message: "Organization Found",
+        organization
+      })
+    } else {
+      res.status(404).json({
+        message: "No organization found associated with the authenticating user"
+      })
+    }
+
+  } catch (error) {
+    res.status(500).json({
+      message: error,
+    });
+  }
+})
 
 app.get("/documents", authenticateJWT, async (req, res) => {
   try {
@@ -1147,25 +1230,33 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
 
-    const { document_id, document_data, document_client, document_folder, temporary_id } =
-      req.body;
+    const {
+      document_id,
+      document_data,
+      document_client,
+      document_folder,
+      temporary_id,
+    } = req.body;
     const user = req.user;
 
     if (document_id) {
       const document = await Document.findOne({ document_id });
       if (document) {
-        const updated_document = await Document.findOneAndUpdate({
-          document_id
-        },{
-          $set: {...document_data, document_id}
-        },
-        {
-          new: true
-        })
+        const updated_document = await Document.findOneAndUpdate(
+          {
+            document_id,
+          },
+          {
+            $set: { ...document_data, document_id },
+          },
+          {
+            new: true,
+          }
+        );
 
         res.status(200).json({
           document: updated_document,
-          status: "old"
+          status: "old",
         });
       }
     } else {
@@ -1185,17 +1276,16 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
         created_timestamp: Date.now(),
       });
 
-      console.log("temporary id",temporary_id)
+      console.log("temporary id", temporary_id);
 
       const savedDocument = await newDocument.save();
       res.status(200).json({
         message: "document saved",
         document: savedDocument,
         temporary_id: `${temporary_id ? temporary_id : ""}`,
-        status: "new"
+        status: "new",
       });
     }
-  
   } catch (error) {
     console.error("Error auto-saving document", error);
     res.status(500).json({
