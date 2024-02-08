@@ -935,9 +935,12 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const user = req.user.user;
+    const { email } = req.body;
 
-    const tasks = await Task.find({ assignees: { $in: [user.email] } });
+    // add authenticating user correlation check
+    const authenticating_user = req.user.user;
+
+    const tasks = await Task.find({ assignees: { $in: [email] } });
 
     res.status(200).json({
       status: 200,
