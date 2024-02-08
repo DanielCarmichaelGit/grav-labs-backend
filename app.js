@@ -531,8 +531,9 @@ app.get("/organization", authenticateJWT, async (req, res) => {
         organization
       })
     } else {
-      res.status(400).json({
-        message: "No organization found associated with the authenticating user"
+      res.status(404).json({
+        message: "No organization found associated with the authenticating user",
+        organization: user.organization
       })
     }
 
