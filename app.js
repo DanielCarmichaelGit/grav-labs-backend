@@ -935,10 +935,9 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const user_id = req.user.userId;
+    const user = req.user.user;
 
-    let user = await User.find({ user_id });
-    const tasks = await Task.find({ assignees: { $in: [user[0].email] } });
+    const tasks = await Task.find({ assignees: { $in: [user.email] } });
 
     res.status(200).json({
       status: 200,
