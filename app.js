@@ -151,6 +151,7 @@ app.post("/signup", async (req, res) => {
       assigned_by: {
         email: "danielfcarmichael@gmail.com",
       },
+      description: "Get acquainted with the app",
       assignees: [newUser.email],
       status: {status_title: "Backlog"},
       escalation: {
