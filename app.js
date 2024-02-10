@@ -117,12 +117,22 @@ app.post("/signup", async (req, res) => {
       marketable: true,
     });
 
+    const org_user = {
+      user_id,
+      email,
+      name: {
+        first: first_name,
+        last: last_name,
+      },
+      type,
+    };
+
     // create new org
     const newOrg = new Organization({
       org_id,
       name: organization,
-      admins: [],
-      members: [],
+      admins: [org_user],
+      members: [org_user],
       seats: 2,
       status: "active",
       billable_user: {
@@ -142,14 +152,17 @@ app.post("/signup", async (req, res) => {
         email: "danielfcarmichael@gmail.com",
       },
       assignees: [newUser.email],
-      status: "Not Started",
-      escalation: "Low",
+      status: {status_title: "Backlog"},
+      escalation: {
+        title: "Low",
+        color: "#2EC4B6",
+        softerColor: "rgba(46, 196, 182, 0.3)", // Softer color with reduced opacity
+      },
       start_time: Date.now(),
       duration: 5,
       hard_limit: false,
       requires_authorization: false,
       sprint_id,
-      kanban: "To Do",
     });
 
     const newSprint = new Sprint({
@@ -225,15 +238,15 @@ app.post("/signup", async (req, res) => {
       await newAlert.save();
     });
 
-    await Organization.findOneAndUpdate(
-      { org_id },
-      {
-        $push: {
-          members: created_user,
-          admins: created_user,
-        },
-      }
-    );
+    // await Organization.findOneAndUpdate(
+    //   { org_id },
+    //   {
+    //     $push: {
+    //       members: created_user,
+    //       admins: created_user,
+    //     },
+    //   }
+    // );
 
     // generate email content
     const mail_options = {
