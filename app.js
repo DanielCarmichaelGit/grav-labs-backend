@@ -105,12 +105,17 @@ app.post("/signup", async (req, res) => {
     if (existing_org_id) {
       console.log("Signing up a user for existing org")
       try {
+        console.log("1")
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const user_id = uuidv4();
         const org_id = existing_org_id;
 
+        console.log("2", org_id);
+
         const organization = Organization.findOne({ org_id });
+
+        console.log("3", organization)
 
         const newUser = new User({
           user_id,
@@ -128,7 +133,11 @@ app.post("/signup", async (req, res) => {
           marketable: true,
         });
 
+        console.log("4", newUser)
+
         const created_user = await newUser.save();
+
+        console.log("5", created_user)
 
         const org_user = {
           user_id,
@@ -140,13 +149,21 @@ app.post("/signup", async (req, res) => {
           role,
         };
 
+        console.log("6", org_user)
+
         if (role.toLowerCase() === "Admin") {
+          console.log("7", "admin")
           organization.admins.push(org_user);
         } else {
+          console.log("8", "standard")
           organization.members.push(org_user);
         }
 
+        console.log("9", organization.seats)
+
         organization.seats = organization.seats + 1;
+
+        console.log("10", organization.seats)
 
         const updated_org = await Organization.findOneAndUpdate(
           { org_id },
@@ -154,6 +171,8 @@ app.post("/signup", async (req, res) => {
             $set: { ...organization },
           }
         );
+
+        console.log("11", updated_org)
 
         // sign the first token provided to the user
         const token = jwt.sign(
@@ -164,12 +183,16 @@ app.post("/signup", async (req, res) => {
           }
         );
 
+        console.log("12", token)
+
         await TeamInvitation.findOneAndUpdate(
           { invitation_id },
           {
             status: "accepted",
           }
         );
+
+        console.log("13")
 
         res.status(200).json({
           message: "User Registered",
