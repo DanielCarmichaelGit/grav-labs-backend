@@ -547,18 +547,18 @@ app.post("/permission", authenticateJWT, async (req, res) => {
 
     const target_user = await User.findOne({ user_id });
 
-    console.log("1")
+    console.log("1", user)
 
     if (!organization) {
       return res.status(404).json({ message: "Organization not found" });
     }
 
-    console.log("2")
+    console.log("2", organization)
 
     // Check if user is an admin
     const isAdmin = organization.admins.some(admin => admin.user_id === user_id);
 
-    console.log("3")
+    console.log("3", isAdmin)
 
     if (new_type === "Admin" && !isAdmin) {
       console.log("4")
@@ -566,12 +566,12 @@ app.post("/permission", authenticateJWT, async (req, res) => {
       organization.admins.push(target_user);
       console.log("5")
     } else if (new_type === "Standard" && isAdmin) {
-      console.log("6")
+      console.log("6", isAdmin)
       // Remove from admins if currently an admin
       organization.admins = organization.admins.filter(admin => admin.user_id !== user_id);
     }
 
-    console.log("7")
+    console.log("7", organization)
 
     await Organization.findOneAndUpdate({ org_id: organization.org_id }, {
       $set: { organization }
