@@ -16,6 +16,7 @@ const taskSchema = new mongoose.Schema({
   authorized_by: { type: Boolean, required: false },
   completed_on: { type: String, required: false },
   sprint_id: { type: String, required: true },
+  organization: { type: Object, required: true },
 });
 
 module.exports = mongoose.model("Task", taskSchema);

@@ -12,6 +12,7 @@ const sprintSchema = new mongoose.Schema({
   kpi_data: { type: Object, required: true },
   organization: { type: Object, required: true },
   objective: { type: String, required: true },
+  is_started: { type: Boolean, required: true }
 });
 
 module.exports = mongoose.model("Sprint", sprintSchema);

@@ -295,6 +295,7 @@ app.post("/signup", async (req, res) => {
         duration: "1209600000",
         kpi_data: {},
         organization: newOrg,
+        is_started: false
       });
 
       const newProject = new Project({
@@ -603,6 +604,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       duration,
       kpi_data: {},
       organization: user.organization,
+      is_started: false
     });
 
     const saved_sprint = await newSprint.save();
@@ -1426,6 +1428,8 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
     res.status(500).json({ status: 500, message: error });
   }
 });
+
+
 
 app.get("/projects", authenticateJWT, async (req, res) => {
   try {
