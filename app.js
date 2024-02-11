@@ -547,39 +547,49 @@ app.post("/permission", authenticateJWT, async (req, res) => {
 
     const target_user = await User.findOne({ user_id });
 
-    console.log("1", target_user)
+    console.log("1", target_user);
 
     if (!organization) {
       return res.status(404).json({ message: "Organization not found" });
     }
 
-    console.log("2", organization)
+    console.log("2", organization);
 
     // Check if user is an admin
-    const isAdmin = organization.admins.some(admin => admin.user_id === user_id);
+    const isAdmin = organization.admins.some(
+      (admin) => admin.user_id === user_id
+    );
 
-    console.log("3", isAdmin)
+    console.log("3", isAdmin);
 
     if (new_type === "Admin" && !isAdmin) {
-      console.log("4")
+      console.log("4");
       // Add to admins if not already an admin
       organization.admins.push(target_user);
-      console.log("5")
+      console.log("5");
     } else if (new_type === "Standard" && isAdmin) {
-      console.log("6", isAdmin)
+      console.log("6", isAdmin);
       // Remove from admins if currently an admin
-      organization.admins = organization.admins.filter(admin => admin.user_id !== user_id);
+      organization.admins = organization.admins.filter(
+        (admin) => admin.user_id !== user_id
+      );
     }
 
-    console.log("7", organization)
+    console.log("7", organization);
 
-    await Organization.findOneAndUpdate({ org_id: organization.org_id }, {
-      $set: { organization }
+    const new_organization = await Organization.findOneAndUpdate(
+      { org_id: organization.org_id },
+      {
+        $set: { ...organization },
+      }
+    );
+
+    console.log("8");
+
+    res.json({
+      message: "User role updated successfully.",
+      organization: new_organization,
     });
-
-    console.log("8")
-
-    res.json({ message: "User role updated successfully." });
   } catch (error) {
     res.status(500).json({
       message: error.message,
