@@ -1028,7 +1028,7 @@ app.post("/team-invitation", authenticateJWT, async (req, res) => {
       associated_org,
       status: "unaccepted",
       team_member_email,
-      invite_url: `https://kamariteams.com/team-signup?email=${client_email}&type=${type}&org_id=${associated_org.org_id}&invitation_id=${invitation_id}`,
+      invite_url: `https://kamariteams.com/team-signup?email=${team_member_email}&type=${type}&org_id=${associated_org.org_id}&invitation_id=${invitation_id}`,
     });
 
     console.log("2", newTeamInvitation)
