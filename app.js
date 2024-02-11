@@ -79,7 +79,7 @@ app.post("/signup", async (req, res) => {
 
     const { first, last } = name;
 
-    console.log("full name", first_name, last_name);
+    console.log("full name", first, last);
 
     // Check if the username already exists
     const existingUser = await User.findOne({ email });
@@ -122,8 +122,8 @@ app.post("/signup", async (req, res) => {
       user_id,
       email,
       name: {
-        first: first_name,
-        last: last_name,
+        first: first,
+        last: last,
       },
       type,
     };
@@ -169,7 +169,7 @@ app.post("/signup", async (req, res) => {
 
     const newSprint = new Sprint({
       sprint_id,
-      title: `${first_name}'s First Sprint`,
+      title: `${first}'s First Sprint`,
       owner: newUser,
       members: [newUser],
       objective: "Scale your documentation and business",
