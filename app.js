@@ -103,78 +103,83 @@ app.post("/signup", async (req, res) => {
     }
 
     if (existing_org_id) {
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-      const user_id = uuidv4();
-      const org_id = existing_org_id;
+      console.log("Signing up a user for existing org")
+      try {
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const user_id = uuidv4();
+        const org_id = existing_org_id;
 
-      const organization = Organization.findOne({ org_id });
+        const organization = Organization.findOne({ org_id });
 
-      const newUser = new User({
-        user_id,
-        email,
-        password: hashedPassword,
-        name: {
-          first,
-          last,
-        },
-        organization,
-        kpi_data: {},
-        tasks: [],
-        type: "Standard",
-        sprints: [],
-        marketable: true,
-      });
+        const newUser = new User({
+          user_id,
+          email,
+          password: hashedPassword,
+          name: {
+            first,
+            last,
+          },
+          organization,
+          kpi_data: {},
+          tasks: [],
+          type: "Standard",
+          sprints: [],
+          marketable: true,
+        });
 
-      const created_user = await newUser.save();
+        const created_user = await newUser.save();
 
-      const org_user = {
-        user_id,
-        email,
-        name: {
-          first,
-          last,
-        },
-        role,
-      };
+        const org_user = {
+          user_id,
+          email,
+          name: {
+            first,
+            last,
+          },
+          role,
+        };
 
-      if (role.toLowerCase() === "Admin") {
-        organization.admins.push(org_user);
-      } else {
-        organization.members.push(org_user);
+        if (role.toLowerCase() === "Admin") {
+          organization.admins.push(org_user);
+        } else {
+          organization.members.push(org_user);
+        }
+
+        organization.seats = organization.seats + 1;
+
+        const updated_org = await Organization.findOneAndUpdate(
+          { org_id },
+          {
+            $set: { ...organization },
+          }
+        );
+
+        // sign the first token provided to the user
+        const token = jwt.sign(
+          { user: created_user, userId: user_id },
+          process.env.SECRET_JWT,
+          {
+            expiresIn: "7d",
+          }
+        );
+
+        await TeamInvitation.findOneAndUpdate(
+          { invitation_id },
+          {
+            status: "accepted",
+          }
+        );
+
+        res.status(200).json({
+          message: "User Registered",
+          user: created_user,
+          organization: updated_org,
+          token,
+        });
+      } catch (error) {
+        res.status(500).json({ message: error });
       }
-
-      organization.seats = organization.seats + 1;
-
-      const updated_org = await Organization.findOneAndUpdate(
-        { org_id },
-        {
-          $set: { ...organization },
-        }
-      );
-
-      // sign the first token provided to the user
-      const token = jwt.sign(
-        { user: created_user, userId: user_id },
-        process.env.SECRET_JWT,
-        {
-          expiresIn: "7d",
-        }
-      );
-
-      await TeamInvitation.findOneAndUpdate(
-        { invitation_id },
-        {
-          status: "accepted",
-        }
-      );
-
-      res.status(200).json({
-        message: "User Registered",
-        user: created_user,
-        organization: updated_org,
-        token,
-      });
     } else {
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
