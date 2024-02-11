@@ -75,7 +75,16 @@ app.get("/", (req, res) => {
 app.post("/signup", async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
-    const { password, email, organization, type, name } = req.body;
+    const {
+      password,
+      email,
+      organization,
+      type,
+      role,
+      existing_org_id,
+      name,
+      invitation_id,
+    } = req.body;
     console.log(name);
 
     const { first, last } = name;
@@ -89,175 +98,239 @@ app.post("/signup", async (req, res) => {
     if (existingUser) {
       return res.status(409).json({
         message: "Username already exists",
-        redirect: { url: "google.com" },
+        redirect: { url: "kamariteams.com" },
       });
     }
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    const user_id = uuidv4();
-    const org_id = uuidv4();
-    const task_id = uuidv4();
-    const alert_id = uuidv4();
-    const sprint_id = uuidv4();
-    const project_id = uuidv4();
+    if (existing_org_id) {
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const user_id = uuidv4();
+      const org_id = existing_org_id;
 
-    //Create a jam group for this new user
-    const newUser = new User({
-      user_id,
-      email,
-      password: hashedPassword,
-      name: {
-        first,
-        last,
-      },
-      organization: {},
-      kpi_data: {},
-      tasks: [],
-      type,
-      sprints: [sprint_id],
-      marketable: true,
-    });
+      const organization = Organization.findOne({ org_id });
 
-    const org_user = {
-      user_id,
-      email,
-      name: {
-        first: first,
-        last: last,
-      },
-      type,
-    };
+      const newUser = new User({
+        user_id,
+        email,
+        password: hashedPassword,
+        name: {
+          first,
+          last,
+        },
+        organization,
+        kpi_data: {},
+        tasks: [],
+        type: "Standard",
+        sprints: [],
+        marketable: true,
+      });
 
-    // create new org
-    const newOrg = new Organization({
-      org_id,
-      name: organization,
-      admins: [org_user],
-      members: [org_user],
-      seats: 2,
-      status: "active",
-      billable_user: {
-        email: newUser.email,
-        user_id: newUser.user_id,
-      },
-      billing: {},
-      sprints: [sprint_id],
-      client_invitations: [],
-    });
+      const created_user = await newUser.save();
 
-    // create first task
-    const firstTask = new Task({
-      task_id,
-      title: "Getting Started",
-      assigned_by: {
-        email: "danielfcarmichael@gmail.com",
-      },
-      description: "Get acquainted with the app",
-      assignees: [newUser.email],
-      status: { status_title: "Backlog" },
-      escalation: {
-        title: "Low",
-        color: "#2EC4B6",
-        softerColor: "rgba(46, 196, 182, 0.3)", // Softer color with reduced opacity
-      },
-      start_time: Date.now(),
-      duration: 5,
-      hard_limit: false,
-      requires_authorization: false,
-      sprint_id,
-    });
+      const org_user = {
+        user_id,
+        email,
+        name: {
+          first,
+          last,
+        },
+        role,
+      };
 
-    const newSprint = new Sprint({
-      sprint_id,
-      title: `${first}'s First Sprint`,
-      owner: newUser,
-      members: [newUser],
-      objective: "Scale your documentation and business",
-      viewers: [],
-      status: {
-        time_allocated: 0,
-        time_over: 0,
-        active_status: "Not Started",
-      },
-      start_date_time: Date.now(),
-      duration: "1209600000",
-      kpi_data: {},
-      organization: newOrg,
-    });
-
-    const newProject = new Project({
-      project_id,
-      title: `${newOrg.name}'s First Project`,
-      tasks: [firstTask],
-      owner: newUser,
-      owner_id: user_id,
-      members: [],
-      viewers: [],
-      status: {
-        task_percentage_complete: 0,
-        status: "Active",
-        percentage_backlogged: 0,
-      },
-      start_date_time: Date.now(),
-      end_date_time: new Date(
-        new Date().setDate(new Date().getDate() + 7)
-      ).getTime(),
-      kpi_data: {},
-      cost: {},
-    });
-
-    const newAlert = new Alert({
-      alert_id,
-      to_user: newUser,
-      created_by: {
-        name: "Kamari",
-      },
-      text: "Welcome to Kamari. We are so excited you trust us as a sprint management tool! Check out your first task to get oriented around the platform.",
-      task: firstTask,
-      timestamp: Date.now(),
-      escalation: "Low",
-    });
-
-    const created_org = await newOrg.save();
-
-    // save new user and the new group made for the user
-    newUser.organization = created_org;
-    const created_user = await newUser.save();
-
-    const created_task = await firstTask.save();
-
-    const created_project = await newProject.save();
-
-    console.log(created_project);
-
-    await newSprint.save();
-
-    await User.findOneAndUpdate(
-      { user_id },
-      {
-        $push: { tasks: created_task },
+      if (role.toLowerCase() === "Admin") {
+        organization.admins.push(org_user);
+      } else {
+        organization.members.push(org_user);
       }
-    ).then(async (res) => {
-      await newAlert.save();
-    });
 
-    // await Organization.findOneAndUpdate(
-    //   { org_id },
-    //   {
-    //     $push: {
-    //       members: created_user,
-    //       admins: created_user,
-    //     },
-    //   }
-    // );
+      organization.seats = organization.seats + 1;
 
-    // generate email content
-    const mail_options = {
-      from: "contact@kamariteams.com",
-      to: email, // The user's email address
-      subject: "Welcome to Kamari",
-      html: `
+      const updated_org = await Organization.findOneAndUpdate(
+        { org_id },
+        {
+          $set: { ...organization },
+        }
+      );
+
+      // sign the first token provided to the user
+      const token = jwt.sign(
+        { user: created_user, userId: user_id },
+        process.env.SECRET_JWT,
+        {
+          expiresIn: "7d",
+        }
+      );
+
+      await TeamInvitation.findOneAndUpdate(
+        { invitation_id },
+        {
+          status: "accepted",
+        }
+      );
+
+      res.status(200).json({
+        message: "User Registered",
+        user: created_user,
+        organization: updated_org,
+        token,
+      });
+    } else {
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const user_id = uuidv4();
+      const org_id = uuidv4();
+      const task_id = uuidv4();
+      const alert_id = uuidv4();
+      const sprint_id = uuidv4();
+      const project_id = uuidv4();
+
+      //Create a jam group for this new user
+      const newUser = new User({
+        user_id,
+        email,
+        password: hashedPassword,
+        name: {
+          first,
+          last,
+        },
+        organization: {},
+        kpi_data: {},
+        tasks: [],
+        type: "Standard",
+        sprints: [sprint_id],
+        marketable: true,
+      });
+
+      const org_user = {
+        user_id,
+        email,
+        name: {
+          first: first,
+          last: last,
+        },
+        type,
+      };
+
+      // create new org
+      const newOrg = new Organization({
+        org_id,
+        name: organization,
+        admins: [org_user],
+        members: [org_user],
+        seats: 2,
+        status: "active",
+        billable_user: {
+          email: newUser.email,
+          user_id: newUser.user_id,
+        },
+        billing: {},
+        sprints: [sprint_id],
+        client_invitations: [],
+      });
+
+      // create first task
+      const firstTask = new Task({
+        task_id,
+        title: "Getting Started",
+        assigned_by: {
+          email: "danielfcarmichael@gmail.com",
+        },
+        description: "Get acquainted with the app",
+        assignees: [newUser.email],
+        status: { status_title: "Backlog" },
+        escalation: {
+          title: "Low",
+          color: "#2EC4B6",
+          softerColor: "rgba(46, 196, 182, 0.3)", // Softer color with reduced opacity
+        },
+        start_time: Date.now(),
+        duration: 5,
+        hard_limit: false,
+        requires_authorization: false,
+        sprint_id,
+      });
+
+      const newSprint = new Sprint({
+        sprint_id,
+        title: `${first}'s First Sprint`,
+        owner: newUser,
+        members: [newUser],
+        objective: "Scale your documentation and business",
+        viewers: [],
+        status: {
+          time_allocated: 0,
+          time_over: 0,
+          active_status: "Not Started",
+        },
+        start_date_time: Date.now(),
+        duration: "1209600000",
+        kpi_data: {},
+        organization: newOrg,
+      });
+
+      const newProject = new Project({
+        project_id,
+        title: `${newOrg.name}'s First Project`,
+        tasks: [firstTask],
+        owner: newUser,
+        owner_id: user_id,
+        members: [],
+        viewers: [],
+        status: {
+          task_percentage_complete: 0,
+          status: "Active",
+          percentage_backlogged: 0,
+        },
+        start_date_time: Date.now(),
+        end_date_time: new Date(
+          new Date().setDate(new Date().getDate() + 7)
+        ).getTime(),
+        kpi_data: {},
+        cost: {},
+      });
+
+      const newAlert = new Alert({
+        alert_id,
+        to_user: newUser,
+        created_by: {
+          name: "Kamari",
+        },
+        text: "Welcome to Kamari. We are so excited you trust us as a sprint management tool! Check out your first task to get oriented around the platform.",
+        task: firstTask,
+        timestamp: Date.now(),
+        escalation: "Low",
+      });
+
+      const created_org = await newOrg.save();
+
+      // save new user and the new group made for the user
+      newUser.organization = created_org;
+      const created_user = await newUser.save();
+
+      const created_task = await firstTask.save();
+
+      const created_project = await newProject.save();
+
+      console.log(created_project);
+
+      await newSprint.save();
+
+      await User.findOneAndUpdate(
+        { user_id },
+        {
+          $push: { tasks: created_task },
+        }
+      ).then(async (res) => {
+        await newAlert.save();
+      });
+
+      // generate email content
+      const mail_options = {
+        from: "contact@kamariteams.com",
+        to: email, // The user's email address
+        subject: "Welcome to Kamari",
+        html: `
       <html>
       <head>
         <style>
@@ -344,32 +417,33 @@ app.post("/signup", async (req, res) => {
       </body>
       </html>
       `,
-    };
+      };
 
-    // call transporter to send email
-    transporter.sendMail(mail_options, (error, info) => {
-      if (error) {
-        console.error("Email sending error:", error);
-      } else {
-        console.log("Email sent:", info);
-      }
-    });
+      // call transporter to send email
+      transporter.sendMail(mail_options, (error, info) => {
+        if (error) {
+          console.error("Email sending error:", error);
+        } else {
+          console.log("Email sent:", info);
+        }
+      });
 
-    // sign the first token provided to the user
-    const token = jwt.sign(
-      { user: created_user, userId: user_id },
-      process.env.SECRET_JWT,
-      {
-        expiresIn: "7d",
-      }
-    );
+      // sign the first token provided to the user
+      const token = jwt.sign(
+        { user: created_user, userId: user_id },
+        process.env.SECRET_JWT,
+        {
+          expiresIn: "7d",
+        }
+      );
 
-    res.status(200).json({
-      message: "User Registered",
-      user: created_user,
-      organization: created_org,
-      token,
-    });
+      res.status(200).json({
+        message: "User Registered",
+        user: created_user,
+        organization: created_org,
+        token,
+      });
+    }
   } catch (error) {
     console.error("Error during user registration:", error);
     res.status(500).json({ message: "Internal server error", error });
@@ -1031,7 +1105,7 @@ app.post("/team-invitation", authenticateJWT, async (req, res) => {
       invite_url: `https://kamariteams.com/team-signup?email=${team_member_email}&type=${type}&org_id=${associated_org.org_id}&invitation_id=${invitation_id}`,
     });
 
-    console.log("2", newTeamInvitation)
+    console.log("2", newTeamInvitation);
 
     const created_team_invitation = await newTeamInvitation.save();
 
