@@ -573,7 +573,9 @@ app.post("/permission", authenticateJWT, async (req, res) => {
 
     console.log("7")
 
-    await organization.save();
+    await Organization.findOneAndUpdate({ org_id: organization.org_id }, {
+      $set: { organization }
+    });
 
     console.log("8")
 
