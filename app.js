@@ -75,7 +75,7 @@ app.post("/signup", async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
     const { password, email, organization, type, name } = req.body;
-    console.log(name)
+    console.log(name);
 
     const { first, last } = name;
 
@@ -108,7 +108,7 @@ app.post("/signup", async (req, res) => {
       password: hashedPassword,
       name: {
         first,
-        last
+        last,
       },
       organization: {},
       kpi_data: {},
@@ -154,7 +154,7 @@ app.post("/signup", async (req, res) => {
       },
       description: "Get acquainted with the app",
       assignees: [newUser.email],
-      status: {status_title: "Backlog"},
+      status: { status_title: "Backlog" },
       escalation: {
         title: "Low",
         color: "#2EC4B6",
@@ -478,9 +478,16 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const user = req.user.user;
-    const { title, members, viewers, status, start_date_time, duration, kpi_data } = req.body;
+    const {
+      title,
+      members,
+      viewers,
+      status,
+      start_date_time,
+      duration,
+      kpi_data,
+    } = req.body;
     const sprint_id = uuidv4();
-
 
     const newSprint = new Sprint({
       sprint_id,
@@ -492,16 +499,15 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       start_date_time,
       duration,
       kpi_data: {},
-      organization: user.organization
+      organization: user.organization,
     });
 
     const saved_sprint = await newSprint.save();
 
     res.status(200).json({
       message: "Sprint Created",
-      sprint: saved_sprint
-    })
-
+      sprint: saved_sprint,
+    });
   } catch (error) {
     res.status(500).json({
       message: error,
@@ -515,16 +521,53 @@ app.get("/sprints", authenticateJWT, async (req, res) => {
 
     const user = req.user.user;
 
-    const sprints = await Sprint.find({ 'organization.org_id': user.org_id});
+    const sprints = await Sprint.find({ "organization.org_id": user.org_id });
 
     res.status(200).json({
-      message: 'Sprints Retrieved',
+      message: "Sprints Retrieved",
       count: sprints.length,
-      sprints
-    })
+      sprints,
+    });
   } catch (error) {
     res.status(500).json({
       message: error,
+    });
+  }
+});
+
+app.post("/permission", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { user_id, new_type } = req.body;
+    const organization = await Organization.findOne({
+      org_id: req.user.user.organization.org_id,
+    });
+
+    if (!organization) {
+      return res.status(404).json({ message: "Organization not found" });
+    }
+
+    // Check if user is an admin
+    const isAdmin = organization.admins.some(admin => admin.user_id === user_id);
+
+    if (new_type === "admin" && !isAdmin) {
+      // Add to admins if not already an admin
+      organization.admins.push({
+        user_id: user_id,
+        // Assuming other required fields are provided or default
+      });
+    } else if (new_type === "standard" && isAdmin) {
+      // Remove from admins if currently an admin
+      organization.admins = organization.admins.filter(admin => admin.user_id !== user_id);
+    }
+
+    await organization.save();
+
+    res.json({ message: "User role updated successfully." });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
     });
   }
 });
@@ -537,28 +580,30 @@ app.get("/organization", authenticateJWT, async (req, res) => {
 
     console.log("1", user);
 
-    const organization = await Organization.findOne({ org_id: user.organization.org_id});
+    const organization = await Organization.findOne({
+      org_id: user.organization.org_id,
+    });
 
-    console.log("2", organization)
+    console.log("2", organization);
 
     if (organization) {
       res.status(200).json({
         message: "Organization Found",
-        organization
-      })
+        organization,
+      });
     } else {
       res.status(404).json({
-        message: "No organization found associated with the authenticating user",
-        organization: user.organization
-      })
+        message:
+          "No organization found associated with the authenticating user",
+        organization: user.organization,
+      });
     }
-
   } catch (error) {
     res.status(500).json({
       message: error,
     });
   }
-})
+});
 
 app.get("/documents", authenticateJWT, async (req, res) => {
   try {
