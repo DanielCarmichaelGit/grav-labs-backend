@@ -77,7 +77,7 @@ app.post("/signup", async (req, res) => {
     const { password, email, organization, type, name } = req.body;
     console.log(name)
 
-    const { first_name, last_name } = name;
+    const { first, last } = name;
 
     console.log("full name", first_name, last_name);
 
