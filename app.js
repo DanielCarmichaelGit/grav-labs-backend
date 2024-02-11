@@ -113,7 +113,7 @@ app.post("/signup", async (req, res) => {
 
         console.log("2", org_id);
 
-        const organization = Organization.findOne({ org_id });
+        const organization = await Organization.findOne({ org_id });
 
         console.log("3", organization)
 
