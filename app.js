@@ -1021,6 +1021,8 @@ app.post("/team-invitation", authenticateJWT, async (req, res) => {
     const invitation_id = uuidv4();
     const { team_member_email, type } = req.body;
 
+    console.log("1", team_member_email, type, associated_org);
+
     const newTeamInvitation = new TeamInvitation({
       invitation_id,
       associated_org,
@@ -1028,6 +1030,8 @@ app.post("/team-invitation", authenticateJWT, async (req, res) => {
       team_member_email,
       invite_url: `https://kamariteams.com/team-signup?email=${client_email}&type=${type}&org_id=${associated_org.org_id}&invitation_id=${invitation_id}`,
     });
+
+    console.log("2", newTeamInvitation)
 
     const created_team_invitation = await newTeamInvitation.save();
 
