@@ -1408,12 +1408,20 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
     // add authenticating user correlation check
     const authenticating_user = req.user.user;
 
-    const tasks = await Task.find({ assignees: { $in: [email] } });
+    if (email) {
+      const tasks = await Task.find({ assignees: { $in: [email] } });
+      res.status(200).json({
+        status: 200,
+        tasks,
+      });
+    } else {
+      const tasks = await Task.find({ assignees: { $in: [authenticating_user.email] }});
+      res.status(200).json({
+        status: 200,
+        tasks,
+      });
+    }
 
-    res.status(200).json({
-      status: 200,
-      tasks,
-    });
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
