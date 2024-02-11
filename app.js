@@ -593,13 +593,9 @@ app.get("/organization", authenticateJWT, async (req, res) => {
 
     const user = req.user.user;
 
-    console.log("1", user);
-
     const organization = await Organization.findOne({
       org_id: user.organization.org_id,
     });
-
-    console.log("2", organization);
 
     if (organization) {
       res.status(200).json({
