@@ -172,6 +172,7 @@ app.post("/signup", async (req, res) => {
       title: `${first_name}'s First Sprint`,
       owner: newUser,
       members: [newUser],
+      objective: "Scale your documentation and business",
       viewers: [],
       status: {
         time_allocated: 0,
