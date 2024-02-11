@@ -545,6 +545,8 @@ app.post("/permission", authenticateJWT, async (req, res) => {
       org_id: req.user.user.organization.org_id,
     });
 
+    const target_user = await User.findOne({ user_id });
+
     console.log("1")
 
     if (!organization) {
@@ -558,15 +560,12 @@ app.post("/permission", authenticateJWT, async (req, res) => {
 
     console.log("3")
 
-    if (new_type === "admin" && !isAdmin) {
+    if (new_type === "Admin" && !isAdmin) {
       console.log("4")
       // Add to admins if not already an admin
-      organization.admins.push({
-        user_id: user_id,
-        // Assuming other required fields are provided or default
-      });
+      organization.admins.push(target_user);
       console.log("5")
-    } else if (new_type === "standard" && isAdmin) {
+    } else if (new_type === "Standard" && isAdmin) {
       console.log("6")
       // Remove from admins if currently an admin
       organization.admins = organization.admins.filter(admin => admin.user_id !== user_id);
