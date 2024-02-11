@@ -545,25 +545,38 @@ app.post("/permission", authenticateJWT, async (req, res) => {
       org_id: req.user.user.organization.org_id,
     });
 
+    console.log("1")
+
     if (!organization) {
       return res.status(404).json({ message: "Organization not found" });
     }
 
+    console.log("2")
+
     // Check if user is an admin
     const isAdmin = organization.admins.some(admin => admin.user_id === user_id);
 
+    console.log("3")
+
     if (new_type === "admin" && !isAdmin) {
+      console.log("4")
       // Add to admins if not already an admin
       organization.admins.push({
         user_id: user_id,
         // Assuming other required fields are provided or default
       });
+      console.log("5")
     } else if (new_type === "standard" && isAdmin) {
+      console.log("6")
       // Remove from admins if currently an admin
       organization.admins = organization.admins.filter(admin => admin.user_id !== user_id);
     }
 
+    console.log("7")
+
     await organization.save();
+
+    console.log("8")
 
     res.json({ message: "User role updated successfully." });
   } catch (error) {
