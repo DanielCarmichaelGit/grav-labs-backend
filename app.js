@@ -107,7 +107,7 @@ app.post("/signup", async (req, res) => {
       email,
       password: hashedPassword,
       name: {
-        first
+        first,
         last
       },
       organization: {},
