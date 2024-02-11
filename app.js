@@ -547,7 +547,7 @@ app.post("/permission", authenticateJWT, async (req, res) => {
 
     const target_user = await User.findOne({ user_id });
 
-    console.log("1", user)
+    console.log("1", target_user)
 
     if (!organization) {
       return res.status(404).json({ message: "Organization not found" });
