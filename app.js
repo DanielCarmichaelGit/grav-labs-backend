@@ -1019,14 +1019,14 @@ app.post("/team-invitation", authenticateJWT, async (req, res) => {
 
     const associated_org = req.user.user.organization;
     const invitation_id = uuidv4();
-    const { team_member_email } = req.body;
+    const { team_member_email, type } = req.body;
 
     const newTeamInvitation = new TeamInvitation({
       invitation_id,
       associated_org,
       status: "unaccepted",
       team_member_email,
-      invite_url: `https://kamariteams.com/team-signup?email=${client_email}&type=team&org_id=${associated_org.org_id}&invitation_id=${invitation_id}`,
+      invite_url: `https://kamariteams.com/team-signup?email=${client_email}&type=${type}&org_id=${associated_org.org_id}&invitation_id=${invitation_id}`,
     });
 
     const created_team_invitation = await newTeamInvitation.save();
