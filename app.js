@@ -602,7 +602,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       status,
       start_date_time,
       duration,
-      kpi_data: {},
+      kpi_data,
       organization: user.organization,
       is_started: false
     });
