@@ -599,7 +599,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
     const newSprint = new Sprint({
       sprint_id,
       title,
-      owner: newUser,
+      owner: user,
       members,
       viewers,
       status,
