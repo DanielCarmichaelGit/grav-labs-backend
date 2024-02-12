@@ -593,7 +593,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       duration,
       kpi_data,
       tasks,
-      objective
+      objective,
     } = req.body;
 
     const active_sprint = await Sprint.findOne({ status: "Active" });
@@ -616,7 +616,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
     });
 
     if (active_sprint) {
-      newSprint.status = "Not Started"
+      newSprint.status = "Not Started";
     }
 
     const saved_sprint = await newSprint.save();
@@ -628,7 +628,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: error,
-      attempted_resource: req.body
+      attempted_resource: req.body,
     });
   }
 });
@@ -639,7 +639,9 @@ app.get("/sprints", authenticateJWT, async (req, res) => {
 
     const user = req.user.user;
 
-    const sprints = await Sprint.find({ "organization.org_id": user.organization.org_id });
+    const sprints = await Sprint.find({
+      "organization.org_id": user.organization.org_id,
+    });
 
     res.status(200).json({
       message: "Sprints Retrieved",
@@ -1418,21 +1420,28 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { email, sprint_id } = req.body;
+    const { email } = req.body;
 
     // add authenticating user correlation check
     const authenticating_user = req.user.user;
 
-    if (sprint_id) {
-      const tasks = 
-    }
-
     if (email) {
-      const tasks = await Task.find({ assignees: { $in: [email] } });
-      res.status(200).json({
-        status: 200,
-        tasks,
-      });
+      if (email === "all") {
+        const active_sprint = await Sprint.findOne({ status: "Active" });
+
+        const tasks = await Task.find({ sprint_id: active_sprint.sprint_id });
+
+        res.status(200).json({
+          status: 200,
+          tasks,
+        });
+      } else {
+        const tasks = await Task.find({ assignees: { $in: [email] } });
+        res.status(200).json({
+          status: 200,
+          tasks,
+        });
+      }
     } else {
       const tasks = await Task.find({
         assignees: { $in: [authenticating_user.email] },
@@ -1463,7 +1472,7 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
       hard_limit,
       requires_authorization,
       sprint_id,
-      temporary_task_id
+      temporary_task_id,
     } = req.body;
 
     const task_id = uuidv4();
@@ -1506,8 +1515,8 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
 
     res.status(200).json({
       message: "Task Created",
-      task: created_task
-    })
+      task: created_task,
+    });
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
