@@ -633,7 +633,7 @@ app.get("/sprints", authenticateJWT, async (req, res) => {
 
     const user = req.user.user;
 
-    const sprints = await Sprint.find({ "organization.org_id": user.org_id });
+    const sprints = await Sprint.find({ "organization.org_id": user.organization.org_id });
 
     res.status(200).json({
       message: "Sprints Retrieved",
