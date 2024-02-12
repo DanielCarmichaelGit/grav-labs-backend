@@ -591,6 +591,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       duration,
       kpi_data,
     } = req.body;
+    
     const sprint_id = uuidv4();
 
     const newSprint = new Sprint({
