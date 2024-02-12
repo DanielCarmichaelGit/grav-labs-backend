@@ -1468,9 +1468,11 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
       status,
       escalation,
       start_time,
+      duration,
       hard_limit,
       requires_authorization,
       sprint_id,
+      organization,
       temporary_task_id,
     } = req.body;
 
@@ -1481,15 +1483,16 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
       title,
       assigned_by,
       assignees,
-      description,
-      client,
+      description: description || "",
+      client: client || {},
       status,
       escalation,
       start_time,
       hard_limit,
-      duration: 0,
+      duration,
       requires_authorization,
       sprint_id,
+      organization
     });
 
     const created_task = await newTask.save();
