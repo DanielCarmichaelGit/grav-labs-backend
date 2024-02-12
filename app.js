@@ -588,7 +588,6 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       title,
       members,
       viewers,
-      status,
       start_date_time,
       duration,
       kpi_data,
