@@ -583,6 +583,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
     dbConnect(process.env.GEN_AUTH);
 
     const user = req.user.user;
+
     const {
       title,
       members,
@@ -595,6 +596,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       objective
     } = req.body;
 
+    const active_sprint = await Sprint.findOne({ status: "Active" });
     const sprint_id = uuidv4();
 
     const newSprint = new Sprint({
@@ -603,7 +605,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       owner: user,
       members,
       viewers,
-      status,
+      status: "Active",
       start_date_time,
       duration,
       kpi_data,
@@ -612,6 +614,10 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       is_started: false,
       tasks,
     });
+
+    if (active_sprint) {
+      newSprint.status = "Not Started"
+    }
 
     const saved_sprint = await newSprint.save();
 
@@ -1412,10 +1418,14 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { email } = req.body;
+    const { email, sprint_id } = req.body;
 
     // add authenticating user correlation check
     const authenticating_user = req.user.user;
+
+    if (sprint_id) {
+      const tasks = 
+    }
 
     if (email) {
       const tasks = await Task.find({ assignees: { $in: [email] } });
