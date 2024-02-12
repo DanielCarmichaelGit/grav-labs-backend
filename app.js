@@ -622,6 +622,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: error,
+      attempted_resource: req.body
     });
   }
 });
