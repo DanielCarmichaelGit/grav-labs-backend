@@ -608,9 +608,9 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       duration,
       kpi_data,
       organization: user.organization,
+      objective,
       is_started: false,
       tasks,
-      objective
     });
 
     const saved_sprint = await newSprint.save();
