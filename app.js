@@ -103,9 +103,9 @@ app.post("/signup", async (req, res) => {
     }
 
     if (existing_org_id) {
-      console.log("Signing up a user for existing org")
+      console.log("Signing up a user for existing org");
       try {
-        console.log("1")
+        console.log("1");
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const user_id = uuidv4();
@@ -115,7 +115,7 @@ app.post("/signup", async (req, res) => {
 
         const organization = await Organization.findOne({ org_id });
 
-        console.log("3", organization)
+        console.log("3", organization);
 
         const newUser = new User({
           user_id,
@@ -133,11 +133,11 @@ app.post("/signup", async (req, res) => {
           marketable: true,
         });
 
-        console.log("4", newUser)
+        console.log("4", newUser);
 
         const created_user = await newUser.save();
 
-        console.log("5", created_user)
+        console.log("5", created_user);
 
         const org_user = {
           user_id,
@@ -149,21 +149,21 @@ app.post("/signup", async (req, res) => {
           role,
         };
 
-        console.log("6", org_user)
+        console.log("6", org_user);
 
         if (role.toLowerCase() === "Admin") {
-          console.log("7", "admin")
+          console.log("7", "admin");
           organization.admins.push(org_user);
         } else {
-          console.log("8", "standard")
+          console.log("8", "standard");
           organization.members.push(org_user);
         }
 
-        console.log("9", organization.seats)
+        console.log("9", organization.seats);
 
         organization.seats = organization.seats + 1;
 
-        console.log("10", organization.seats)
+        console.log("10", organization.seats);
 
         const updated_org = await Organization.findOneAndUpdate(
           { org_id },
@@ -172,7 +172,7 @@ app.post("/signup", async (req, res) => {
           }
         );
 
-        console.log("11", updated_org)
+        console.log("11", updated_org);
 
         // sign the first token provided to the user
         const token = jwt.sign(
@@ -183,7 +183,7 @@ app.post("/signup", async (req, res) => {
           }
         );
 
-        console.log("12", token)
+        console.log("12", token);
 
         await TeamInvitation.findOneAndUpdate(
           { invitation_id },
@@ -192,7 +192,7 @@ app.post("/signup", async (req, res) => {
           }
         );
 
-        console.log("13")
+        console.log("13");
 
         res.status(200).json({
           message: "User Registered",
@@ -295,7 +295,8 @@ app.post("/signup", async (req, res) => {
         duration: "1209600000",
         kpi_data: {},
         organization: newOrg,
-        is_started: false
+        is_started: false,
+        tasks: [first_task],
       });
 
       const newProject = new Project({
@@ -590,8 +591,9 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       start_date_time,
       duration,
       kpi_data,
+      tasks,
     } = req.body;
-    
+
     const sprint_id = uuidv4();
 
     const newSprint = new Sprint({
@@ -605,7 +607,8 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       duration,
       kpi_data,
       organization: user.organization,
-      is_started: false
+      is_started: false,
+      tasks,
     });
 
     const saved_sprint = await newSprint.save();
@@ -1418,19 +1421,76 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         tasks,
       });
     } else {
-      const tasks = await Task.find({ assignees: { $in: [authenticating_user.email] }});
+      const tasks = await Task.find({
+        assignees: { $in: [authenticating_user.email] },
+      });
       res.status(200).json({
         status: 200,
         tasks,
       });
     }
-
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
 });
 
+app.post("/tasks", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
 
+    const {
+      title,
+      assigned_by,
+      assignees,
+      description,
+      client,
+      status,
+      escalation,
+      start_time,
+      hard_limit,
+      requires_authorization,
+      sprint_id,
+    } = req.body;
+
+    const task_id = uuidv4();
+
+    const newTask = new Task({
+      task_id,
+      title,
+      assigned_by,
+      assignees,
+      description,
+      client,
+      status,
+      escalation,
+      start_time,
+      hard_limit,
+      duration: 0,
+      requires_authorization,
+      sprint_id,
+    });
+
+    const created_task = await newTask.save();
+
+    await Sprint.findOneAndUpdate(
+      { sprint_id },
+      {
+        $push: { tasks: created_task },
+      }
+    );
+
+    if (client) {
+      await Client.findOneAndUpdate(
+        { client_id: client.client_id },
+        {
+          $push: { tasks: created_task },
+        }
+      );
+    }
+  } catch (error) {
+    res.status(500).json({ status: 500, message: error });
+  }
+});
 
 app.get("/projects", authenticateJWT, async (req, res) => {
   try {
