@@ -1450,6 +1450,7 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
       hard_limit,
       requires_authorization,
       sprint_id,
+      temporary_task_id
     } = req.body;
 
     const task_id = uuidv4();
@@ -1487,6 +1488,13 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
         }
       );
     }
+
+    created_task.temporary_task_id = temporary_task_id;
+
+    res.status(200).json({
+      message: "Task Created",
+      task: created_task
+    })
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
