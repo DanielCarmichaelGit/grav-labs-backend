@@ -592,6 +592,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       duration,
       kpi_data,
       tasks,
+      objective
     } = req.body;
 
     const sprint_id = uuidv4();
@@ -609,6 +610,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       organization: user.organization,
       is_started: false,
       tasks,
+      objective
     });
 
     const saved_sprint = await newSprint.save();
