@@ -665,7 +665,7 @@ app.get("/team", authenticateJWT, async (req, res) => {
     const { org_id } = req.query;
 
     if (org_id) {
-      const team = User.find({ "organization.org_id": org_id });
+      const team = await User.find({ "organization.org_id": org_id });
 
       res.status(200).json({
         message: "Team Found",
@@ -673,7 +673,7 @@ app.get("/team", authenticateJWT, async (req, res) => {
         team,
       });
     } else {
-      const team = User.find({
+      const team = await User.find({
         "organization.org_id": user.organization.org_id,
       });
 
@@ -685,9 +685,7 @@ app.get("/team", authenticateJWT, async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({
-      message: error.message,
-      user: req.user.user,
-      query: req.query
+      message: error
     });
   }
 });
