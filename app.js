@@ -1419,7 +1419,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { email, sprint_id } = req.params;
+    const { email, sprint_id } = req.query;
 
     // add authenticating user correlation check
     const authenticating_user = req.user.user;
@@ -1432,7 +1432,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         message: "Tasks Found",
         tasks,
         log: 1,
-        request: req.params
+        request: req.query
       });
     } else if (email && !sprint_id) {
       if (email === "all") {
@@ -1442,7 +1442,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           message: "Tasks Found",
           tasks,
           log: 2,
-          request: req.params
+          request: req.query
         })
       }
       else {
@@ -1451,7 +1451,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           message: "Tasks Found",
           tasks,
           log: 3,
-          request: req.params
+          request: req.query
         });
       }
     } else if (!email && sprint_id) {
@@ -1460,7 +1460,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         message: "Tasks Found",
         tasks,
         log: 4,
-        request: req.params
+        request: req.query
       });
     } else if (email && sprint_id) {
       if (email === "all") {
@@ -1469,7 +1469,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           message: "Tasks Found",
           tasks,
           log: 5,
-          request: req.params
+          request: req.query
         })
       } else {
         const tasks = Task.find({
@@ -1480,7 +1480,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           message: "Tasks Found",
           tasks,
           log: 6,
-          request: req.params
+          request: req.query
         });
       }
     }
