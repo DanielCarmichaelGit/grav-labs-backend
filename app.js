@@ -1473,16 +1473,23 @@ app.put("/user", authenticateJWT, async (req, res) => {
           });
       }
       else {
-        const updated_user = await User.findOneAndUpdate({ user_id }, {
-          $set: { ...payload }
-        }, {
-          new: true
-        })
-
-        res.status(200).json({
-          message: "User Updated",
-          user: updated_user
-        })
+        try {
+          const updated_user = await User.findOneAndUpdate({ user_id }, {
+            $set: { ...payload }
+          }, {
+            new: true
+          })
+  
+          res.status(200).json({
+            message: "User Updated",
+            user: updated_user
+          })
+        } catch (error) {
+          res.status(500).json({
+            message: error,
+            attempted_resource: req.body
+          })
+        }
       }
     } else {
       res.status(404).json({
