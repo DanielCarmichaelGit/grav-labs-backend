@@ -4,6 +4,7 @@ const sprintSchema = new mongoose.Schema({
   sprint_id: { type: String, required: true },
   title: { type: String, required: true },
   owner: { type: Object, required: true },
+  description: { type: String, required: true },
   members: { type: Array, required: true },
   viewers: { type: Object, required: false },
   status: { type: String, required: true },

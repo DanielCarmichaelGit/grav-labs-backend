@@ -296,7 +296,8 @@ app.post("/signup", async (req, res) => {
         kpi_data: {},
         organization: newOrg,
         is_started: false,
-        tasks: [first_task],
+        tasks: [firstTask],
+        description: "Get familiar with the app!"
       });
 
       const newProject = new Project({
@@ -593,6 +594,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       kpi_data,
       tasks,
       objective,
+      description
     } = req.body;
 
     const active_sprint = await Sprint.findOne({ status: "Active" });
@@ -612,6 +614,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       objective,
       is_started: false,
       tasks,
+      description
     });
 
     if (active_sprint) {
@@ -1618,11 +1621,10 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
       );
     }
 
-    created_task.temporary_task_id = temporary_task_id;
-
     res.status(200).json({
       message: "Task Created",
       task: created_task,
+      temporary_task_id
     });
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
