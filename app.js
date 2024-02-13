@@ -1419,36 +1419,58 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { email } = req.body;
+    const { email, sprint_id } = req.body;
 
     // add authenticating user correlation check
     const authenticating_user = req.user.user;
 
-    if (email) {
-      if (email === "all") {
-        const active_sprint = await Sprint.findOne({ status: "Active" });
-
-        const tasks = await Task.find({ sprint_id: active_sprint.sprint_id });
-
-        res.status(200).json({
-          status: 200,
-          tasks,
-        });
-      } else {
-        const tasks = await Task.find({ assignees: { $in: [email] } });
-        res.status(200).json({
-          status: 200,
-          tasks,
-        });
-      }
-    } else {
+    if (!email && !sprint_id) {
       const tasks = await Task.find({
         assignees: { $in: [authenticating_user.email] },
       });
       res.status(200).json({
-        status: 200,
+        message: "Tasks Found",
         tasks,
       });
+    } else if (email && !sprint_id) {
+      if (email === "all") {
+        const active_sprint = await Sprint.findOne({ status: "Active" });
+        const tasks = await Task.find({ sprint_id: active_sprint.sprint_id })
+        res.status(200).json({
+          message: "Tasks Found",
+          tasks
+        })
+      }
+      else {
+        const tasks = await Task.find({ assignees: { $in: [email] } });
+        res.status(200).json({
+          message: "Tasks Found",
+          tasks,
+        });
+      }
+    } else if (!email && sprint_id) {
+      const tasks = await Task.find({ sprint_id });
+      res.status(200).json({
+        message: "Tasks Found",
+        tasks,
+      });
+    } else if (email && sprint_id) {
+      if (email === "all") {
+        const tasks = await Task.find({ sprint_id })
+        res.status(200).json({
+          message: "Tasks Found",
+          tasks
+        })
+      } else {
+        const tasks = Task.find({
+          assignees: { $in: [email] },
+          sprint_id: sprint_id,
+        });
+        res.status(200).json({
+          message: "Tasks Found",
+          tasks,
+        });
+      }
     }
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
@@ -1466,17 +1488,17 @@ app.get("/user", authenticateJWT, async (req, res) => {
     if (existing_user) {
       res.status(200).json({
         message: "User found",
-        user: existing_user
-      })
+        user: existing_user,
+      });
     } else {
       res.status(404).json({
-        message: "User not found"
-      })
+        message: "User not found",
+      });
     }
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
-})
+});
 
 app.put("/user", authenticateJWT, async (req, res) => {
   try {
@@ -1488,31 +1510,32 @@ app.put("/user", authenticateJWT, async (req, res) => {
 
     if (user_id === user.user_id) {
       if (email) {
-        res
-          .status(202)
-          .json({
-            message:
-              "We do not currently support email changes. Check again soon.",
-          });
-      }
-      else {
+        res.status(202).json({
+          message:
+            "We do not currently support email changes. Check again soon.",
+        });
+      } else {
         try {
-          const updated_user = await User.findOneAndUpdate({ user_id }, {
-            $set: { ...req.body }
-          }, {
-            new: true
-          })
-  
+          const updated_user = await User.findOneAndUpdate(
+            { user_id },
+            {
+              $set: { ...req.body },
+            },
+            {
+              new: true,
+            }
+          );
+
           res.status(200).json({
             message: "User Updated",
-            user: updated_user
-          })
+            user: updated_user,
+          });
         } catch (error) {
           res.status(500).json({
             message: error,
             attempted_resource: req.body,
-            requesting_user: user
-          })
+            requesting_user: user,
+          });
         }
       }
     } else {
