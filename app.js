@@ -1431,6 +1431,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
       res.status(200).json({
         message: "Tasks Found",
         tasks,
+        log: 1
       });
     } else if (email && !sprint_id) {
       if (email === "all") {
@@ -1438,7 +1439,8 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         const tasks = await Task.find({ sprint_id: active_sprint.sprint_id })
         res.status(200).json({
           message: "Tasks Found",
-          tasks
+          tasks,
+          log: 2
         })
       }
       else {
@@ -1446,6 +1448,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         res.status(200).json({
           message: "Tasks Found",
           tasks,
+          log: 3
         });
       }
     } else if (!email && sprint_id) {
@@ -1453,13 +1456,15 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
       res.status(200).json({
         message: "Tasks Found",
         tasks,
+        log: 4
       });
     } else if (email && sprint_id) {
       if (email === "all") {
         const tasks = await Task.find({ sprint_id })
         res.status(200).json({
           message: "Tasks Found",
-          tasks
+          tasks,
+          log: 5
         })
       } else {
         const tasks = Task.find({
@@ -1469,6 +1474,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         res.status(200).json({
           message: "Tasks Found",
           tasks,
+          log: 6
         });
       }
     }
