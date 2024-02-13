@@ -1510,7 +1510,8 @@ app.put("/user", authenticateJWT, async (req, res) => {
         } catch (error) {
           res.status(500).json({
             message: error,
-            attempted_resource: req.body
+            attempted_resource: req.body,
+            requesting_user: user
           })
         }
       }
