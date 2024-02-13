@@ -686,6 +686,8 @@ app.get("/team", authenticateJWT, async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: error,
+      user: req.user.user,
+      query: req.query
     });
   }
 });
