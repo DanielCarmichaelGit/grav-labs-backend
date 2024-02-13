@@ -1463,7 +1463,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         request: req.query
       });
     } else if (email && sprint_id) {
-      if (email === "all") {
+      if (email === "All") {
         const tasks = await Task.find({ sprint_id })
         res.status(200).json({
           message: "Tasks Found",
