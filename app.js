@@ -1432,7 +1432,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         message: "Tasks Found",
         tasks,
         log: 1,
-        request: req
+        request: req.params
       });
     } else if (email && !sprint_id) {
       if (email === "all") {
@@ -1442,7 +1442,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           message: "Tasks Found",
           tasks,
           log: 2,
-          request: req
+          request: req.params
         })
       }
       else {
@@ -1451,7 +1451,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           message: "Tasks Found",
           tasks,
           log: 3,
-          request: req
+          request: req.params
         });
       }
     } else if (!email && sprint_id) {
@@ -1460,7 +1460,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         message: "Tasks Found",
         tasks,
         log: 4,
-        request: req
+        request: req.params
       });
     } else if (email && sprint_id) {
       if (email === "all") {
@@ -1469,7 +1469,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           message: "Tasks Found",
           tasks,
           log: 5,
-          request: req
+          request: req.params
         })
       } else {
         const tasks = Task.find({
@@ -1480,7 +1480,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           message: "Tasks Found",
           tasks,
           log: 6,
-          request: req
+          request: req.params
         });
       }
     }
