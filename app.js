@@ -1455,6 +1455,29 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
   }
 });
 
+app.get("/user", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const user = req.user.user;
+
+    const existing_user = await User.findOne({ user_id: user.user_id });
+
+    if (existing_user) {
+      res.status(200).json({
+        message: "User found",
+        user: existing_user
+      })
+    } else {
+      res.status(404).json({
+        message: "User not found"
+      })
+    }
+  } catch (error) {
+    res.status(500).json({ status: 500, message: error });
+  }
+})
+
 app.put("/user", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
