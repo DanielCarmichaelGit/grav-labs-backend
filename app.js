@@ -1435,7 +1435,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         request: req.query
       });
     } else if (email && !sprint_id) {
-      if (email === "all") {
+      if (email === "All Members") {
         const active_sprint = await Sprint.findOne({ status: "Active" });
         const tasks = await Task.find({ sprint_id: active_sprint.sprint_id })
         res.status(200).json({
