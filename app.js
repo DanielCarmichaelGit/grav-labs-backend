@@ -1419,7 +1419,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { email, sprint_id } = req.body;
+    const { email, sprint_id } = req.params;
 
     // add authenticating user correlation check
     const authenticating_user = req.user.user;
