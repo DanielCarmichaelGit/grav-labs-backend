@@ -1498,7 +1498,7 @@ app.put("/user", authenticateJWT, async (req, res) => {
       else {
         try {
           const updated_user = await User.findOneAndUpdate({ user_id }, {
-            $set: { ...payload }
+            $set: { ...req.body }
           }, {
             new: true
           })
