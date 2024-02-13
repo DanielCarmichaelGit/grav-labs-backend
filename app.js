@@ -297,7 +297,7 @@ app.post("/signup", async (req, res) => {
         organization: newOrg,
         is_started: false,
         tasks: [firstTask],
-        description: "Get familiar with the app!"
+        description: "Get familiar with the app!",
       });
 
       const newProject = new Project({
@@ -594,7 +594,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       kpi_data,
       tasks,
       objective,
-      description
+      description,
     } = req.body;
 
     const active_sprint = await Sprint.findOne({ status: "Active" });
@@ -614,7 +614,7 @@ app.post("/sprints", authenticateJWT, async (req, res) => {
       objective,
       is_started: false,
       tasks,
-      description
+      description,
     });
 
     if (active_sprint) {
@@ -650,6 +650,39 @@ app.get("/sprints", authenticateJWT, async (req, res) => {
       count: sprints.length,
       sprints,
     });
+  } catch (error) {
+    res.status(500).json({
+      message: error,
+    });
+  }
+});
+
+app.get("/team", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const user = req.user.user;
+    const { org_id } = req.query;
+
+    if (org_id) {
+      const team = User.find({ "organization.org_id": org_id });
+
+      res.status(200).json({
+        message: "Team Found",
+        count: team.length,
+        team,
+      });
+    } else {
+      const team = User.find({
+        "organization.org_id": user.organization.org_id,
+      });
+
+      res.status(200).json({
+        message: "Team Found",
+        count: team.length,
+        team,
+      });
+    }
   } catch (error) {
     res.status(500).json({
       message: error,
@@ -1435,26 +1468,25 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         message: "Tasks Found",
         tasks,
         log: 1,
-        request: req.query
+        request: req.query,
       });
     } else if (email && !sprint_id) {
       if (email === "All") {
         const active_sprint = await Sprint.findOne({ status: "Active" });
-        const tasks = await Task.find({ sprint_id: active_sprint.sprint_id })
+        const tasks = await Task.find({ sprint_id: active_sprint.sprint_id });
         res.status(200).json({
           message: "Tasks Found",
           tasks,
           log: 2,
-          request: req.query
-        })
-      }
-      else {
+          request: req.query,
+        });
+      } else {
         const tasks = await Task.find({ assignees: { $in: [email] } });
         res.status(200).json({
           message: "Tasks Found",
           tasks,
           log: 3,
-          request: req.query
+          request: req.query,
         });
       }
     } else if (!email && sprint_id) {
@@ -1463,17 +1495,17 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         message: "Tasks Found",
         tasks,
         log: 4,
-        request: req.query
+        request: req.query,
       });
     } else if (email && sprint_id) {
       if (email === "All") {
-        const tasks = await Task.find({ sprint_id })
+        const tasks = await Task.find({ sprint_id });
         res.status(200).json({
           message: "Tasks Found",
           tasks,
           log: 5,
-          request: req.query
-        })
+          request: req.query,
+        });
       } else {
         const tasks = Task.find({
           assignees: { $in: [email] },
@@ -1483,7 +1515,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           message: "Tasks Found",
           tasks,
           log: 6,
-          request: req.query
+          request: req.query,
         });
       }
     }
@@ -1624,7 +1656,7 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
     res.status(200).json({
       message: "Task Created",
       task: created_task,
-      temporary_task_id
+      temporary_task_id,
     });
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
