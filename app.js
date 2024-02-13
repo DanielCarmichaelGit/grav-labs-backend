@@ -1595,6 +1595,29 @@ app.put("/user", authenticateJWT, async (req, res) => {
   }
 });
 
+app.put("/sprints", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { sprint_id, sprint_data } = req.body;
+
+    const updated_sprint = await Sprint.findOneAndUpdate({ sprint_id }, {
+      $set: { sprint_data },
+    },
+    {
+      new: true
+    })
+
+    res.status(200).json({
+      message: "Sprint Updated",
+      sprint: updated_sprint
+    })
+
+  } catch (error) {
+    res.status(500).json({ status: 500, message: error });
+  }
+})
+
 app.post("/tasks", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
