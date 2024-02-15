@@ -1699,7 +1699,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { task_id, task_data } = req.body;
+    const { task_id, task } = req.body;
 
     const existing_task = await Task.findOne({ task_id });
 
