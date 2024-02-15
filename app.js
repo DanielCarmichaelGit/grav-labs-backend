@@ -1701,16 +1701,45 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
 
     const { task_id, task_data } = req.body;
 
-    const updated_task = await Task.findOneAndUpdate(
-      { task_id },
-      { $set: { task_data } },
-      { new: true }
-    );
+    const existing_task = await Task.findOne({ task_id });
 
-    res.status(200).json({
-      message: "Task Updated",
-      task: updated_task
-    })
+    if (existing_task.status.status_title !== "Done" && task_data.status.status_title === "Done") {
+      task_data.completed_on = Date.now();
+      const updated_task = await Task.findOneAndUpdate(
+        { task_id },
+        { $set: { task_data } },
+        { new: true }
+      );
+
+      res.status(200).json({
+        message: "Task Updated",
+        task: updated_task
+      })
+    }
+    else if (existing_task.status.status_title === "Done" && task_data.status.status_title !== "Done") {
+      task_data.completed_on = "not done";
+      const updated_task = await Task.findOneAndUpdate(
+        { task_id },
+        { $set: { task_data } },
+        { new: true }
+      );
+
+      res.status(200).json({
+        message: "Task Updated",
+        task: updated_task
+      })
+    } else {
+      const updated_task = await Task.findOneAndUpdate(
+        { task_id },
+        { $set: { task_data } },
+        { new: true }
+      );
+
+      res.status(200).json({
+        message: "Task Updated",
+        task: updated_task
+      })
+    }
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
