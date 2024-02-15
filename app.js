@@ -1703,11 +1703,11 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
 
     const existing_task = await Task.findOne({ task_id });
 
-    if (existing_task.status.status_title !== "Done" && task_data.status.status_title === "Done") {
+    if (existing_task.status.status_title !== "Done" && task.status.status_title === "Done") {
       task_data.completed_on = Date.now();
       const updated_task = await Task.findOneAndUpdate(
         { task_id },
-        { $set: { task_data } },
+        { $set: { task } },
         { new: true }
       );
 
@@ -1717,11 +1717,11 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
         task_id
       })
     }
-    else if (existing_task.status.status_title === "Done" && task_data.status.status_title !== "Done") {
-      task_data.completed_on = "not done";
+    else if (existing_task.status.status_title === "Done" && task.status.status_title !== "Done") {
+      task.completed_on = "not done";
       const updated_task = await Task.findOneAndUpdate(
         { task_id },
-        { $set: { task_data } },
+        { $set: { task } },
         { new: true }
       );
 
@@ -1733,7 +1733,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
     } else {
       const updated_task = await Task.findOneAndUpdate(
         { task_id },
-        { $set: { task_data } },
+        { $set: { task } },
         { new: true }
       );
 
