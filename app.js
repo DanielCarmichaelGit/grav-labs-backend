@@ -685,7 +685,7 @@ app.get("/team", authenticateJWT, async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({
-      message: error
+      message: error,
     });
   }
 });
@@ -1525,7 +1525,13 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
       }
     }
   } catch (error) {
-    res.status(500).json({ status: 500, message: error });
+    res
+      .status(500)
+      .json({
+        status: 500,
+        message: error,
+        requested_resource: { email, sprint_id },
+      });
   }
 });
 
@@ -1606,22 +1612,24 @@ app.put("/sprints", authenticateJWT, async (req, res) => {
 
     const { sprint_id, sprint_data } = req.body;
 
-    const updated_sprint = await Sprint.findOneAndUpdate({ sprint_id }, {
-      $set: { sprint_data },
-    },
-    {
-      new: true
-    })
+    const updated_sprint = await Sprint.findOneAndUpdate(
+      { sprint_id },
+      {
+        $set: { sprint_data },
+      },
+      {
+        new: true,
+      }
+    );
 
     res.status(200).json({
       message: "Sprint Updated",
-      sprint: updated_sprint
-    })
-
+      sprint: updated_sprint,
+    });
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
-})
+});
 
 app.post("/tasks", authenticateJWT, async (req, res) => {
   try {
