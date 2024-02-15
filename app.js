@@ -1713,7 +1713,8 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
 
       res.status(200).json({
         message: "Task Updated",
-        task: updated_task
+        task: updated_task,
+        task_id
       })
     }
     else if (existing_task.status.status_title === "Done" && task_data.status.status_title !== "Done") {
@@ -1726,7 +1727,8 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
 
       res.status(200).json({
         message: "Task Updated",
-        task: updated_task
+        task: updated_task,
+        task_id
       })
     } else {
       const updated_task = await Task.findOneAndUpdate(
@@ -1737,7 +1739,8 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
 
       res.status(200).json({
         message: "Task Updated",
-        task: updated_task
+        task: updated_task,
+        task_id
       })
     }
   } catch (error) {
