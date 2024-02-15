@@ -5,7 +5,7 @@ const taskSchema = new mongoose.Schema({
   title: { type: String, required: true },
   assigned_by: { type: Object, required: true },
   assignees: { type: Array, required: true },
-  description: { type: String, required: true },
+  description: { type: Object, required: true },
   client: { type: Object, required: false },
   status: { type: Object, required: true },
   escalation: { type: Object, required: true },
