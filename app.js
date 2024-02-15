@@ -1457,6 +1457,8 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
 
     let { email, sprint_id } = req.query;
 
+    console.log("Query Request", req.query)
+
     // Decode email if it's present
     if (email) {
       email = decodeURIComponent(email);
