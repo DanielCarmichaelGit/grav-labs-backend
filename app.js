@@ -1457,7 +1457,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
 
     let { email, sprint_id } = req.query;
 
-    console.log("Query Request", req.query)
+    console.log("Query Request", req.query);
 
     // Decode email if it's present
     if (email) {
@@ -1527,13 +1527,14 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
       }
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        status: 500,
-        message: error,
-        requested_resource: { email, sprint_id },
-      });
+    res.status(500).json({
+      status: 500,
+      message: error,
+      requested_resource: {
+        email: decodeURIComponent(req.query.email),
+        sprint_id: decodeURIComponent(req.query.sprint_id),
+      },
+    });
   }
 });
 
