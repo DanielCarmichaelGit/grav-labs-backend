@@ -1520,7 +1520,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
 
     if (!email && !sprint_id) {
       const tasks = await Task.find({
-        assignees: { $in: [authenticating_user.email] },
+        "assignees.email": authenticating_user.email
       });
       res.status(200).json({
         message: "Tasks Found",
@@ -1560,7 +1560,9 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           request: req.query,
         });
       } else if (email !== "All") {
-        const tasks = await Task.find({ assignees: { $in: [email] } });
+        const tasks = await Task.find({
+          "assignees.email": email
+        });
         res.status(200).json({
           message: "Tasks Found",
           tasks,
@@ -1588,7 +1590,9 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           request: req.query,
         });
       } else if (email !== "All" && sprint_id === "All") {
-        const tasks = await Task.find({ assignees: { $in: [email] } });
+        const tasks = await Task.find({
+          "assignees.email": email
+        });
         res.status(200).json({
           message: "Tasks Found",
           tasks,
@@ -1598,7 +1602,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
       } else if (email !== "All" && sprint_id !== "All") {
         const tasks = await Task.find({
           sprint_id,
-          assignees: { $in: [email] },
+          "assignees.email": email,
         });
         res.status(200).json({
           message: "Tasks Found",
