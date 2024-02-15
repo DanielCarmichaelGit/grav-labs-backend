@@ -1455,7 +1455,12 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const { email, sprint_id } = req.query;
+    let { email, sprint_id } = req.query;
+
+    // Decode email if it's present
+    if (email) {
+      email = decodeURIComponent(email);
+    }
 
     // add authenticating user correlation check
     const authenticating_user = req.user.user;
