@@ -1477,18 +1477,19 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         log: 1,
         request: req.query,
       });
-    } else if (email && !sprint_id) {
-      if (email === "All") {
-        const active_sprint = await Sprint.findOne({ status: "Active" });
-        const tasks = await Task.find({ sprint_id: active_sprint.sprint_id });
+    } else if (!email && sprint_id) {
+      if (sprint_id === "All") {
+        const tasks = await Task.find({
+          "organization.org_id": authenticating_user.organization.org_id,
+        });
         res.status(200).json({
           message: "Tasks Found",
           tasks,
           log: 2,
           request: req.query,
         });
-      } else {
-        const tasks = await Task.find({ assignees: { $in: [email] } });
+      } else if (sprint_id !== "All") {
+        const tasks = await Task.find({ sprint_id });
         res.status(200).json({
           message: "Tasks Found",
           tasks,
@@ -1496,52 +1497,48 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           request: req.query,
         });
       }
-    } else if (!email && sprint_id) {
-      const tasks = await Task.find({ sprint_id });
-      res.status(200).json({
-        message: "Tasks Found",
-        tasks,
-        log: 4,
-        request: req.query,
-      });
-    } else if (email && sprint_id) {
-      // if email is all then fetch all tasks for a sprint for all users
-      if (email === "All" && sprint_id !== "All") {
-        const tasks = await Task.find({ sprint_id });
+    } else if (email && !sprint_id) {
+      if (email === "All") {
+        const tasks = await Task.find({
+          "organization.org_id": authenticating_user.organization.org_id,
+        });
+        res.status(200).json({
+          message: "Tasks Found",
+          tasks,
+          log: 4,
+          request: req.query,
+        });
+      } else if (email !== "All") {
+        const tasks = await Task.find({ assignees: { $in: [email] } });
         res.status(200).json({
           message: "Tasks Found",
           tasks,
           log: 5,
           request: req.query,
         });
-        // if sprint id is all.. fetch all tasks for thee selected user
-      } else if (sprint_id === "All" && email === "All") {
+      }
+    } else if (email && sprint_id) {
+      if (email === "All" && sprint_id === "All") {
         const tasks = await Task.find({
           "organization.org_id": authenticating_user.organization.org_id,
         });
-
         res.status(200).json({
           message: "Tasks Found",
           tasks,
           log: 6,
           request: req.query,
         });
-        // if sprint id is not All and email is valid.. fetch all tasks for user in a sprint
-      } else if (email !== "All" && sprint_id === "All") {
-        const tasks = await Task.find({
-          assignees: { $in: [email]}
-        })
-
+      } else if (email === "All" && sprint_id !== "All") {
+        const tasks = await Task.find({ sprint_id });
         res.status(200).json({
           message: "Tasks Found",
           tasks,
           log: 7,
           request: req.query,
-        })
-      } else {
+        });
+      } else if (email !== "All" && sprint_id === "All") {
         const tasks = await Task.find({
-          assignees: { $in: [email] },
-          sprint_id: sprint_id,
+          "organization.org_id": authenticating_user.organization.org_id,
         });
         res.status(200).json({
           message: "Tasks Found",
@@ -1549,7 +1546,23 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           log: 8,
           request: req.query,
         });
+      } else if (email !== "All" && sprint_id !== "All") {
+        const tasks = await Task.find({
+          sprint_id,
+          assignees: { $in: [email] },
+        });
+        res.status(200).json({
+          message: "Tasks Found",
+          tasks,
+          log: 9,
+          request: req.query,
+        });
       }
+    }
+    else {
+      res.status(404).json({
+        message: "Selection invalid"
+      })
     }
   } catch (error) {
     res.status(500).json({
