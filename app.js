@@ -1514,7 +1514,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           request: req.query,
         });
       } else {
-        const tasks = Task.find({
+        const tasks = await Task.find({
           assignees: { $in: [email] },
           sprint_id: sprint_id,
         });
