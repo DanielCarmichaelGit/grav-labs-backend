@@ -1506,7 +1506,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
       });
     } else if (email && sprint_id) {
       // if email is all then fetch all tasks for a sprint for all users
-      if (email === "All") {
+      if (email === "All" && sprint_id !== "All") {
         const tasks = await Task.find({ sprint_id });
         res.status(200).json({
           message: "Tasks Found",
@@ -1515,7 +1515,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           request: req.query,
         });
         // if sprint id is all.. fetch all tasks for thee selected user
-      } else if (sprint_id === "All") {
+      } else if (sprint_id === "All" && email === "All") {
         const tasks = await Task.find({
           "organization.org_id": authenticating_user.organization.org_id,
         });
@@ -1527,6 +1527,10 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           request: req.query,
         });
         // if sprint id is not All and email is valid.. fetch all tasks for user in a sprint
+      } else if (email !== "All" && sprint_id === "All") {
+        const tasks = await Task.find({
+          assignees: { $in: [email]}
+        })
       } else {
         const tasks = await Task.find({
           assignees: { $in: [email] },
