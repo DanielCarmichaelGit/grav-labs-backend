@@ -265,57 +265,57 @@ app.post("/signup", async (req, res) => {
           email: "danielfcarmichael@gmail.com",
         },
         description: {
-          "time": 1707997381851,
-          "blocks": [
-              {
-                  "id": "P4QU_l1hOT",
-                  "type": "header",
-                  "data": {
-                      "text": "Getting Started",
-                      "level": 1
-                  }
+          time: 1707997381851,
+          blocks: [
+            {
+              id: "P4QU_l1hOT",
+              type: "header",
+              data: {
+                text: "Getting Started",
+                level: 1,
               },
-              {
-                  "id": "Cn0KRhT6mt",
-                  "type": "checklist",
-                  "data": {
-                      "items": [
-                          {
-                              "text": "View and Create Tasks, Sprints, Docs, and Reports",
-                              "checked": true
-                          }
-                      ]
-                  }
+            },
+            {
+              id: "Cn0KRhT6mt",
+              type: "checklist",
+              data: {
+                items: [
+                  {
+                    text: "View and Create Tasks, Sprints, Docs, and Reports",
+                    checked: true,
+                  },
+                ],
               },
-              {
-                  "id": "OdpdEJTmcY",
-                  "type": "delimiter",
-                  "data": {}
+            },
+            {
+              id: "OdpdEJTmcY",
+              type: "delimiter",
+              data: {},
+            },
+            {
+              id: "WB-4-HHZYG",
+              type: "paragraph",
+              data: {
+                text: "Manage your teams productivity, tooling, and product docs in one place.",
               },
-              {
-                  "id": "WB-4-HHZYG",
-                  "type": "paragraph",
-                  "data": {
-                      "text": "Manage your teams productivity, tooling, and product docs in one place."
-                  }
+            },
+            {
+              id: "SM1haHTaZj",
+              type: "paragraph",
+              data: {
+                text: "Need to create public docs for your users to enjoy?",
               },
-              {
-                  "id": "SM1haHTaZj",
-                  "type": "paragraph",
-                  "data": {
-                      "text": "Need to create public docs for your users to enjoy?"
-                  }
+            },
+            {
+              id: "BwygCee31r",
+              type: "paragraph",
+              data: {
+                text: "We have your back!",
               },
-              {
-                  "id": "BwygCee31r",
-                  "type": "paragraph",
-                  "data": {
-                      "text": "We have your back!"
-                  }
-              }
+            },
           ],
-          "version": "2.28.2"
-      },
+          version: "2.28.2",
+        },
         assignees: [newUser.email],
         status: { status_title: "Backlog" },
         escalation: {
@@ -1560,9 +1560,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           request: req.query,
         });
       } else if (email !== "All") {
-        const tasks = await Task.find({
-          "assignees.email": email
-        });
+        const tasks = await Task.find({ "assignees.email": email});
         res.status(200).json({
           message: "Tasks Found",
           tasks,
@@ -1590,9 +1588,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           request: req.query,
         });
       } else if (email !== "All" && sprint_id === "All") {
-        const tasks = await Task.find({
-          "assignees.email": email
-        });
+        const tasks = await Task.find({ "assignees.email": email});
         res.status(200).json({
           message: "Tasks Found",
           tasks,
