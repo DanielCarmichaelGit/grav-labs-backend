@@ -1520,7 +1520,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
 
     if (!email && !sprint_id) {
       const tasks = await Task.find({
-        "assignees.email": authenticating_user.email
+        "assignees.email": authenticating_user.email,
       });
       res.status(200).json({
         message: "Tasks Found",
@@ -1560,7 +1560,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           request: req.query,
         });
       } else if (email !== "All") {
-        const tasks = await Task.find({ "assignees.email": email});
+        const tasks = await Task.find({ "assignees.email": email });
         res.status(200).json({
           message: "Tasks Found",
           tasks,
@@ -1588,7 +1588,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           request: req.query,
         });
       } else if (email !== "All" && sprint_id === "All") {
-        const tasks = await Task.find({ "assignees.email": email});
+        const tasks = await Task.find({ "assignees.email": email });
         res.status(200).json({
           message: "Tasks Found",
           tasks,
@@ -1690,6 +1690,27 @@ app.put("/user", authenticateJWT, async (req, res) => {
         message: "User does not have access to change user details",
       });
     }
+  } catch (error) {
+    res.status(500).json({ status: 500, message: error });
+  }
+});
+
+app.put("/tasks", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { task_id, task_data } = req.body;
+
+    const updated_task = await Task.findOneAndUpdate(
+      { task_id },
+      { $set: { task_data } },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Task Updated",
+      task: updated_task
+    })
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
