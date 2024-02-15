@@ -1537,9 +1537,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           request: req.query,
         });
       } else if (email !== "All" && sprint_id === "All") {
-        const tasks = await Task.find({
-          "organization.org_id": authenticating_user.organization.org_id,
-        });
+        const tasks = await Task.find({ assignees: { $in: [email] } });
         res.status(200).json({
           message: "Tasks Found",
           tasks,
@@ -1558,11 +1556,10 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
           request: req.query,
         });
       }
-    }
-    else {
+    } else {
       res.status(404).json({
-        message: "Selection invalid"
-      })
+        message: "Selection invalid",
+      });
     }
   } catch (error) {
     res.status(500).json({
