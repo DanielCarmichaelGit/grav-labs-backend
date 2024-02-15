@@ -1531,6 +1531,13 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         const tasks = await Task.find({
           assignees: { $in: [email]}
         })
+
+        res.status(200).json({
+          message: "Tasks Found",
+          tasks,
+          log: 7,
+          request: req.query,
+        })
       } else {
         const tasks = await Task.find({
           assignees: { $in: [email] },
@@ -1539,7 +1546,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         res.status(200).json({
           message: "Tasks Found",
           tasks,
-          log: 7,
+          log: 8,
           request: req.query,
         });
       }
