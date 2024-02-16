@@ -862,14 +862,21 @@ app.get("/public_doc", async (req, res) => {
     const document = await Document.findOne({ document_id: doc_id });
 
     if (document) {
-      if (document.is_public === true) {
+      if (document.is_public === true && document.associated_org.status === "active") {
+        const returnable_document = {
+          content: document.content
+        }
+        const returnable_org = {
+          name: document.associated_org.name
+        }
         res.status(200).json({
           message: "Document Found",
-          document,
+          document: returnable_document,
+          organization: returnable_org
         });
       } else {
         res.status(409).json({
-          message: "Document Found but Document is not Public",
+          message: "Document is not Public or Org is not active",
           is_public: document.is_public,
         });
       }
