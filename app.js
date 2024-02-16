@@ -1703,117 +1703,118 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
 
     try {
       const existing_task = await Task.findOne({ task_id });
+
+      if (existing_task) {
+        if (
+          existing_task.status.status_title !== "Done" &&
+          task.status.status_title === "Done"
+        ) {
+          try {
+            const updated_task = await Task.findOneAndUpdate(
+              { task_id },
+              {
+                $set: {
+                  title: task.title,
+                  assignees: task.assignees,
+                  description: task.description,
+                  client: task.client,
+                  status: task.status,
+                  escalation: task.escalation,
+                  completed_on: Date.now(),
+                  // Include any other fields you need to update
+                },
+              },
+              { new: true }
+            );
+  
+            res.status(200).json({
+              message: "Task Updated",
+              task: updated_task,
+              task_id,
+              log: 1,
+            });
+          } catch (error) {
+            res.status(500).json({
+              status: 500,
+              message: error.message,
+              requested_resource: req.body,
+            });
+          }
+        } else if (
+          existing_task.status.status_title === "Done" &&
+          task.status.status_title !== "Done"
+        ) {
+          try {
+            const updated_task = await Task.findOneAndUpdate(
+              { task_id },
+              {
+                $set: {
+                  title: task.title,
+                  assignees: task.assignees,
+                  description: task.description,
+                  client: task.client,
+                  status: task.status,
+                  escalation: task.escalation,
+                  completed_on: "incomplete",
+                },
+              },
+              { new: true }
+            );
+  
+            res.status(200).json({
+              message: "Task Updated",
+              task: updated_task,
+              task_id,
+              log: 2,
+            });
+          } catch (error) {
+            res.status(500).json({
+              status: 500,
+              message: error.message,
+              requested_resource: req.body,
+            });
+          }
+        } else {
+          try {
+            const updated_task = await Task.findOneAndUpdate(
+              { task_id },
+              {
+                $set: {
+                  title: task.title,
+                  assignees: task.assignees,
+                  description: task.description,
+                  client: task.client,
+                  status: task.status,
+                  escalation: task.escalation,
+                },
+              },
+              { new: true }
+            );
+  
+            res.status(200).json({
+              message: "Task Updated",
+              task: updated_task,
+              task_id,
+              log: 3,
+            });
+          } catch (error) {
+            res.status(500).json({
+              status: 500,
+              message: error.message,
+              requested_resource: req.body,
+            });
+          }
+        }
+      } else {
+        res.status(404).json({
+          message: "No Task Found",
+          requested_resource: req.body,
+        });
+      }
     } catch (error) {
       res.status(500).json({
         status: 500,
         message: error.message,
-        requested_resource: req.body,
-      });
-    }
-    if (existing_task) {
-      if (
-        existing_task.status.status_title !== "Done" &&
-        task.status.status_title === "Done"
-      ) {
-        try {
-          const updated_task = await Task.findOneAndUpdate(
-            { task_id },
-            {
-              $set: {
-                title: task.title,
-                assignees: task.assignees,
-                description: task.description,
-                client: task.client,
-                status: task.status,
-                escalation: task.escalation,
-                completed_on: Date.now(),
-                // Include any other fields you need to update
-              },
-            },
-            { new: true }
-          );
-
-          res.status(200).json({
-            message: "Task Updated",
-            task: updated_task,
-            task_id,
-            log: 1,
-          });
-        } catch (error) {
-          res.status(500).json({
-            status: 500,
-            message: error.message,
-            requested_resource: req.body,
-          });
-        }
-      } else if (
-        existing_task.status.status_title === "Done" &&
-        task.status.status_title !== "Done"
-      ) {
-        try {
-          const updated_task = await Task.findOneAndUpdate(
-            { task_id },
-            {
-              $set: {
-                title: task.title,
-                assignees: task.assignees,
-                description: task.description,
-                client: task.client,
-                status: task.status,
-                escalation: task.escalation,
-                completed_on: "incomplete",
-              },
-            },
-            { new: true }
-          );
-
-          res.status(200).json({
-            message: "Task Updated",
-            task: updated_task,
-            task_id,
-            log: 2,
-          });
-        } catch (error) {
-          res.status(500).json({
-            status: 500,
-            message: error.message,
-            requested_resource: req.body,
-          });
-        }
-      } else {
-        try {
-          const updated_task = await Task.findOneAndUpdate(
-            { task_id },
-            {
-              $set: {
-                title: task.title,
-                assignees: task.assignees,
-                description: task.description,
-                client: task.client,
-                status: task.status,
-                escalation: task.escalation,
-              },
-            },
-            { new: true }
-          );
-
-          res.status(200).json({
-            message: "Task Updated",
-            task: updated_task,
-            task_id,
-            log: 3,
-          });
-        } catch (error) {
-          res.status(500).json({
-            status: 500,
-            message: error.message,
-            requested_resource: req.body,
-          });
-        }
-      }
-    } else {
-      res.status(404).json({
-        message: "No Task Found",
         requested_resource: req.body,
       });
     }
