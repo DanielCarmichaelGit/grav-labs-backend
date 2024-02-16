@@ -1707,7 +1707,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
       if (existing_task) {
         if (
           existing_task.status.status_title !== "Done" &&
-          task.status.status_title === "Done"
+          task.status?.status_title === "Done"
         ) {
           try {
             const updated_task = await Task.findOneAndUpdate(
@@ -1742,7 +1742,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
           }
         } else if (
           existing_task.status.status_title === "Done" &&
-          task.status.status_title !== "Done"
+          task.status?.status_title !== "Done"
         ) {
           try {
             const updated_task = await Task.findOneAndUpdate(
