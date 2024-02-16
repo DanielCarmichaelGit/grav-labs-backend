@@ -2283,6 +2283,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
         last_block_version: document_data.last_block_version,
         title: document_data.title,
         created_timestamp: Date.now(),
+        is_public: document_data.is_public
       });
 
       console.log("temporary id", temporary_id);
