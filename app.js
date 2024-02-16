@@ -853,6 +853,39 @@ app.get("/documents", authenticateJWT, async (req, res) => {
   }
 });
 
+app.get("/public_doc", async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { doc_id } = req.query;
+
+    const document = await Document.findOne({ document_id: doc_id });
+
+    if (document) {
+      if (document.is_public === true) {
+        res.status(200).json({
+          message: "Document Found",
+          document,
+        });
+      } else {
+        res.status(409).json({
+          message: "Document Found but Document is not Public",
+          is_public: document.is_public,
+        });
+      }
+    } else {
+      res.status(404).json({
+        message: "Document Not Found. No Document Exists with the specified id",
+        requested_resource: req.query,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
 app.post("/folders", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
@@ -1726,7 +1759,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
               },
               { new: true }
             );
-  
+
             res.status(200).json({
               message: "Task Updated",
               task: updated_task,
@@ -1760,7 +1793,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
               },
               { new: true }
             );
-  
+
             res.status(200).json({
               message: "Task Updated",
               task: updated_task,
@@ -1790,7 +1823,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
               },
               { new: true }
             );
-  
+
             res.status(200).json({
               message: "Task Updated",
               task: updated_task,

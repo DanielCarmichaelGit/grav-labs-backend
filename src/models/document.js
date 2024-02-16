@@ -13,7 +13,8 @@ const documentSchema = new mongoose.Schema({
   last_block_timestamp: { type: String, required: true },
   last_block_version: { type: String, required: true },
   title: { type: String, required: true },
-  created_timestamp: { type: String, required: true }
+  created_timestamp: { type: String, required: true },
+  is_public: { type: Boolean, required: true }
 });
 
 module.exports = mongoose.model("Document", documentSchema);
