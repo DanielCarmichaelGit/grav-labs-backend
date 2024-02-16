@@ -876,7 +876,7 @@ app.get("/public_doc", async (req, res) => {
     } else {
       res.status(404).json({
         message: "Document Not Found. No Document Exists with the specified id",
-        requested_resource: req.query,
+        requested_resource: req.query.doc_id,
       });
     }
   } catch (error) {
