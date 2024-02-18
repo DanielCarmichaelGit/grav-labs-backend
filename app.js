@@ -31,8 +31,7 @@ const TeamInvitation = require("./src/models/teamInvitation");
 const app = express();
 app.use(cors());
 app.options("*", cors()); // Enable CORS pre-flight request for all routes
-app.use(express.json());
-app.use(bodyParser.json({ limit: '50mb' }));
+app.use(express.json({ limit: '50mb' }));
 
 // create utility transporter for email service
 const transporter = nodemailer.createTransport(
