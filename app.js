@@ -2296,6 +2296,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
         );
 
         res.status(200).json({
+          message: "New Document Saved",
           document: updated_document,
           status: "old",
         });
