@@ -2296,8 +2296,15 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
         );
 
         res.status(200).json({
-          message: "New Document Saved",
-          document: updated_document,
+          message: "document saved",
+          document: {
+            title: updated_document.title,
+            document_id: updated_document.document_id,
+            is_public: updated_document.is_public,
+            document_client: updated_document.document_client,
+            document_folder: updated_document.document_folder,
+            contributors: updated_document.contributors
+          },
           status: "old",
         });
       }
@@ -2324,7 +2331,14 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
       const savedDocument = await newDocument.save();
       res.status(200).json({
         message: "document saved",
-        document: savedDocument,
+        document: {
+          title: newDocument.title,
+          document_id: newDocument.document_id,
+          is_public: newDocument.is_public,
+          document_client: newDocument.document_client,
+          document_folder: newDocument.document_folder,
+          contributors: newDocument.contributors
+        },
         temporary_id: `${temporary_id ? temporary_id : ""}`,
         status: "new",
       });
