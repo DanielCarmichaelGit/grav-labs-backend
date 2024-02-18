@@ -854,16 +854,23 @@ app.get("/documents", authenticateJWT, async (req, res) => {
       });
     } else {
       const documents = await Document.findOne({ document_id: doc_id });
-      
-      res.status(200).json({
-        count: documents.length,
-        documents
-      })
+
+      if (documents) {
+        res.status(200).json({
+          count: documents.length,
+          documents
+        })
+      } else {
+        res.status(404).json({
+          message: `No document with the id of ${doc_id} was found`
+        })
+      }
     }
     // Use the org_id to find documents and select specific fields
   } catch (error) {
     res.status(500).json({
       message: error.message,
+      requested_resource: req.query
     });
   }
 });
