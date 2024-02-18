@@ -31,7 +31,7 @@ const TeamInvitation = require("./src/models/teamInvitation");
 const app = express();
 app.use(cors());
 app.options("*", cors()); // Enable CORS pre-flight request for all routes
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: "50mb" }));
 
 // create utility transporter for email service
 const transporter = nodemailer.createTransport(
@@ -833,13 +833,17 @@ app.get("/organization", authenticateJWT, async (req, res) => {
 
 app.get("/documents", authenticateJWT, async (req, res) => {
   try {
-    dbConnect(process.env.GEN_AUTH);
+    await dbConnect(process.env.GEN_AUTH);
 
     // Assuming req.user.organization holds the user's organization details
     const org_id = req.user.user.organization.org_id;
 
-    // Use the org_id to find documents
-    const documents = await Document.find({ "associated_org.org_id": org_id });
+    // Use the org_id to find documents and select specific fields
+    const documents = await Document.find({
+      "associated_org.org_id": org_id,
+    }).select(
+      "document_id title is_public document_client document_folder contributors -_id"
+    );
 
     // Send the documents as a response
     res.status(200).json({
@@ -862,17 +866,20 @@ app.get("/public_doc", async (req, res) => {
     const document = await Document.findOne({ document_id: doc_id });
 
     if (document) {
-      if (document.is_public === true && document.associated_org.status === "active") {
+      if (
+        document.is_public === true &&
+        document.associated_org.status === "active"
+      ) {
         const returnable_document = {
-          content: document.content
-        }
+          content: document.content,
+        };
         const returnable_org = {
-          name: document.associated_org.name
-        }
+          name: document.associated_org.name,
+        };
         res.status(200).json({
           message: "Document Found",
           document: returnable_document,
-          organization: returnable_org
+          organization: returnable_org,
         });
       } else {
         res.status(409).json({
@@ -2290,7 +2297,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
         last_block_version: document_data.last_block_version,
         title: document_data.title,
         created_timestamp: Date.now(),
-        is_public: document_data.is_public
+        is_public: document_data.is_public,
       });
 
       console.log("temporary id", temporary_id);
