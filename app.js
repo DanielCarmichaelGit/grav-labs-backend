@@ -838,18 +838,29 @@ app.get("/documents", authenticateJWT, async (req, res) => {
     // Assuming req.user.organization holds the user's organization details
     const org_id = req.user.user.organization.org_id;
 
-    // Use the org_id to find documents and select specific fields
-    const documents = await Document.find({
-      "associated_org.org_id": org_id,
-    }).select(
-      "document_id title is_public document_client document_folder contributors -_id"
-    );
+    const { doc_id } = req.query;
 
-    // Send the documents as a response
-    res.status(200).json({
-      count: documents.length,
-      documents,
-    });
+    if (!doc_id) {
+      const documents = await Document.find({
+        "associated_org.org_id": org_id,
+      }).select(
+        "document_id title is_public document_client document_folder contributors -_id"
+      );
+  
+      // Send the documents as a response
+      res.status(200).json({
+        count: documents.length,
+        documents,
+      });
+    } else {
+      const documents = await Document.findOne({ document_id: doc_id });
+      
+      res.status(200).json({
+        count: documents.length,
+        documents
+      })
+    }
+    // Use the org_id to find documents and select specific fields
   } catch (error) {
     res.status(500).json({
       message: error.message,
