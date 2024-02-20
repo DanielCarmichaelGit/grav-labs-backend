@@ -846,7 +846,7 @@ app.get("/documents", authenticateJWT, async (req, res) => {
       }).select(
         "document_id title is_public document_client document_folder contributors -_id"
       );
-  
+
       // Send the documents as a response
       res.status(200).json({
         count: documents.length,
@@ -858,19 +858,19 @@ app.get("/documents", authenticateJWT, async (req, res) => {
       if (documents) {
         res.status(200).json({
           count: documents.length,
-          documents
-        })
+          documents,
+        });
       } else {
         res.status(404).json({
-          message: `No document with the id of ${doc_id} was found`
-        })
+          message: `No document with the id of ${doc_id} was found`,
+        });
       }
     }
     // Use the org_id to find documents and select specific fields
   } catch (error) {
     res.status(500).json({
       message: error.message,
-      requested_resource: req.query
+      requested_resource: req.query,
     });
   }
 });
@@ -1689,6 +1689,48 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
   }
 });
 
+app.delete("/tasks", authenticateJWT, async (req, res) => {
+  try {
+    const { type, task_ids } = req.body;
+
+    const user = req.user.user;
+
+    if (user) {
+      if (type === "one") {
+        await Task.findOneAndDelete({ task_id: task_ids[0] });
+
+        res.status(200).json({
+          message: "Task Deleted",
+          requested_resource: {
+            type: "task",
+            resource: task_ids
+          },
+        });
+      } else if (type === "many") {
+        await Task.deleteMany({ task_id: { $in: task_ids } });
+
+        res.status(200).json({
+          message: "Tasks Deleted",
+          requested_resource: {
+            type: "task",
+            resource: task_ids
+          }
+        })
+      } else {
+        res.status(404).json({
+          message: "Please supply an array of task ids"
+        })
+      }
+    } else {
+      res.status(404).json({
+        message: "Authentication Invalid"
+      })
+    }
+  } catch (error) {
+    res.status(500).json({ status: 500, message: error });
+  }
+});
+
 app.get("/user", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
@@ -2303,7 +2345,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
             is_public: updated_document.is_public,
             document_client: updated_document.document_client,
             document_folder: updated_document.document_folder,
-            contributors: updated_document.contributors
+            contributors: updated_document.contributors,
           },
           status: "old",
         });
@@ -2313,9 +2355,9 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
         document_id: uuidv4(), // Generate a new UUID for the document
         associated_org: document_data.associated_org,
         contributors: document_data.contributors,
-        document_client: document_client,
+        document_client: document_client || {},
         updates: document_data.updates,
-        document_folder: document_folder,
+        document_folder: document_folder || {},
         creator: user.user, // Assuming user object has a nested user object
         content: document_data.content,
         blocks: document_data.blocks,
@@ -2337,7 +2379,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
           is_public: newDocument.is_public,
           document_client: newDocument.document_client,
           document_folder: newDocument.document_folder,
-          contributors: newDocument.contributors
+          contributors: newDocument.contributors,
         },
         temporary_id: `${temporary_id ? temporary_id : ""}`,
         status: "new",
