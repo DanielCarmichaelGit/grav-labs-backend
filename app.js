@@ -1975,7 +1975,7 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
       duration,
       hard_limit,
       requires_authorization,
-      sprint_id,
+      //sprint_id,
       organization,
       temporary_task_id,
     } = req.body;
@@ -1995,18 +1995,18 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
       hard_limit,
       duration,
       requires_authorization,
-      sprint_id,
+      //sprint_id,
       organization,
     });
 
     const created_task = await newTask.save();
 
-    await Sprint.findOneAndUpdate(
-      { sprint_id },
-      {
-        $push: { tasks: created_task },
-      }
-    );
+    // await Sprint.findOneAndUpdate(
+    //   { sprint_id },
+    //   {
+    //     $push: { tasks: created_task },
+    //   }
+    // );
 
     if (client) {
       await Client.findOneAndUpdate(
