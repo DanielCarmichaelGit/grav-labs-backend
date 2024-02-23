@@ -851,14 +851,13 @@ app.get("/documents", authenticateJWT, async (req, res) => {
           count: documents.length,
           documents,
         });
-      }
-      else {
+      } else {
         res.status(409).json({
           message: "no client associated with auth",
           requested_resource: {
             req_query: req.query,
-          }
-        })
+          },
+        });
       }
     } else {
       // Assuming req.user.organization holds the user's organization details
@@ -1601,109 +1600,224 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
 
     let { email, sprint_id } = req.query;
 
-    console.log("Query Request", req.query);
+    const { client_id } = req.user.client_id;
 
-    // Decode email if it's present
-    if (email) {
-      email = decodeURIComponent(email);
-    }
-
-    // add authenticating user correlation check
-    const authenticating_user = req.user.user;
-
-    if (!email && !sprint_id) {
-      const tasks = await Task.find({
-        "assignees.email": authenticating_user.email,
-      });
-      res.status(200).json({
-        message: "Tasks Found",
-        tasks,
-        log: 1,
-        request: req.query,
-      });
-    } else if (!email && sprint_id) {
-      if (sprint_id === "All") {
-        const tasks = await Task.find({
-          "organization.org_id": authenticating_user.organization.org_id,
-        });
-        res.status(200).json({
-          message: "Tasks Found",
-          tasks,
-          log: 2,
-          request: req.query,
-        });
-      } else if (sprint_id !== "All") {
-        const tasks = await Task.find({ sprint_id });
-        res.status(200).json({
-          message: "Tasks Found",
-          tasks,
-          log: 3,
-          request: req.query,
-        });
+    if (client_id) {
+      // Decode email if it's present
+      if (email) {
+        email = decodeURIComponent(email);
       }
-    } else if (email && !sprint_id) {
-      if (email === "All") {
+
+      if (!email && !sprint_id) {
         const tasks = await Task.find({
-          "organization.org_id": authenticating_user.organization.org_id,
+          "client.client_id": client_id,
         });
         res.status(200).json({
           message: "Tasks Found",
           tasks,
-          log: 4,
+          log: 1,
           request: req.query,
         });
-      } else if (email !== "All") {
-        const tasks = await Task.find({ "assignees.email": email });
-        res.status(200).json({
-          message: "Tasks Found",
-          tasks,
-          log: 5,
-          request: req.query,
-        });
-      }
-    } else if (email && sprint_id) {
-      if (email === "All" && sprint_id === "All") {
-        const tasks = await Task.find({
-          "organization.org_id": authenticating_user.organization.org_id,
-        });
-        res.status(200).json({
-          message: "Tasks Found",
-          tasks,
-          log: 6,
-          request: req.query,
-        });
-      } else if (email === "All" && sprint_id !== "All") {
-        const tasks = await Task.find({ sprint_id });
-        res.status(200).json({
-          message: "Tasks Found",
-          tasks,
-          log: 7,
-          request: req.query,
-        });
-      } else if (email !== "All" && sprint_id === "All") {
-        const tasks = await Task.find({ "assignees.email": email });
-        res.status(200).json({
-          message: "Tasks Found",
-          tasks,
-          log: 8,
-          request: req.query,
-        });
-      } else if (email !== "All" && sprint_id !== "All") {
-        const tasks = await Task.find({
-          sprint_id,
-          "assignees.email": email,
-        });
-        res.status(200).json({
-          message: "Tasks Found",
-          tasks,
-          log: 9,
-          request: req.query,
+      } else if (!email && sprint_id) {
+        if (sprint_id === "All") {
+          const tasks = await Task.find({
+            "client.client_id": client_id,
+          });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 2,
+            request: req.query,
+          });
+        } else if (sprint_id !== "All") {
+          const tasks = await Task.find({
+            sprint_id,
+            "client.client_id": client_id,
+          });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 3,
+            request: req.query,
+          });
+        }
+      } else if (email && !sprint_id) {
+        if (email === "All") {
+          const tasks = await Task.find({
+            "client.client_id": client_id,
+          });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 4,
+            request: req.query,
+          });
+        } else if (email !== "All") {
+          const tasks = await Task.find({
+            "assignees.email": email,
+            "client.client_id": client_id,
+          });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 5,
+            request: req.query,
+          });
+        }
+      } else if (email && sprint_id) {
+        if (email === "All" && sprint_id === "All") {
+          const tasks = await Task.find({
+            "client.client_id": client_id,
+          });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 6,
+            request: req.query,
+          });
+        } else if (email === "All" && sprint_id !== "All") {
+          const tasks = await Task.find({
+            sprint_id,
+            "client.client_id": client_id,
+          });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 7,
+            request: req.query,
+          });
+        } else if (email !== "All" && sprint_id === "All") {
+          const tasks = await Task.find({
+            "assignees.email": email,
+            "client.client_id": client_id,
+          });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 8,
+            request: req.query,
+          });
+        } else if (email !== "All" && sprint_id !== "All") {
+          const tasks = await Task.find({
+            sprint_id,
+            "assignees.email": email,
+            "client.client_id": client_id,
+          });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 9,
+            request: req.query,
+          });
+        }
+      } else {
+        res.status(404).json({
+          message: "Selection invalid",
         });
       }
     } else {
-      res.status(404).json({
-        message: "Selection invalid",
-      });
+      // Decode email if it's present
+      if (email) {
+        email = decodeURIComponent(email);
+      }
+
+      // add authenticating user correlation check
+      const authenticating_user = req.user.user;
+
+      if (!email && !sprint_id) {
+        const tasks = await Task.find({
+          "assignees.email": authenticating_user.email,
+        });
+        res.status(200).json({
+          message: "Tasks Found",
+          tasks,
+          log: 1,
+          request: req.query,
+        });
+      } else if (!email && sprint_id) {
+        if (sprint_id === "All") {
+          const tasks = await Task.find({
+            "organization.org_id": authenticating_user.organization.org_id,
+          });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 2,
+            request: req.query,
+          });
+        } else if (sprint_id !== "All") {
+          const tasks = await Task.find({ sprint_id });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 3,
+            request: req.query,
+          });
+        }
+      } else if (email && !sprint_id) {
+        if (email === "All") {
+          const tasks = await Task.find({
+            "organization.org_id": authenticating_user.organization.org_id,
+          });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 4,
+            request: req.query,
+          });
+        } else if (email !== "All") {
+          const tasks = await Task.find({ "assignees.email": email });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 5,
+            request: req.query,
+          });
+        }
+      } else if (email && sprint_id) {
+        if (email === "All" && sprint_id === "All") {
+          const tasks = await Task.find({
+            "organization.org_id": authenticating_user.organization.org_id,
+          });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 6,
+            request: req.query,
+          });
+        } else if (email === "All" && sprint_id !== "All") {
+          const tasks = await Task.find({ sprint_id });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 7,
+            request: req.query,
+          });
+        } else if (email !== "All" && sprint_id === "All") {
+          const tasks = await Task.find({ "assignees.email": email });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 8,
+            request: req.query,
+          });
+        } else if (email !== "All" && sprint_id !== "All") {
+          const tasks = await Task.find({
+            sprint_id,
+            "assignees.email": email,
+          });
+          res.status(200).json({
+            message: "Tasks Found",
+            tasks,
+            log: 9,
+            request: req.query,
+          });
+        }
+      } else {
+        res.status(404).json({
+          message: "Selection invalid",
+        });
+      }
     }
   } catch (error) {
     res.status(500).json({
