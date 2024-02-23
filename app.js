@@ -1604,7 +1604,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
 
     let log = 0;
 
-    if (client_id) {
+    if (client_id !== undefined && client_id !== null) {
       log = 1;
       // Decode email if it's present
       if (email) {
@@ -1831,7 +1831,6 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         email: decodeURIComponent(req.query.email),
         sprint_id: decodeURIComponent(req.query.sprint_id),
         authenticating_user: req.user.user,
-        log
       },
     });
   }
