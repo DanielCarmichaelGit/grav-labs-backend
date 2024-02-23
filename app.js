@@ -2058,6 +2058,47 @@ app.get("/projects", authenticateJWT, async (req, res) => {
   }
 });
 
+app.post("client-login", async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { client_user_email, client_user_password } = req.body;
+
+    const client_user = await ClientUser.findOne({ client_user_email });
+    const client = await Client.findOne({ client_id: client_user.client.client_id });
+
+    if (client_user && client_user.client_user_password === client_user_password) {
+      const signed_client_user = jwt.sign(
+        { client: client, client_user_id: client_user },
+        process.env.SECRET_JWT,
+        {
+          expiresIn: "7d",
+        }
+      );
+
+      res.status(200).json({
+        message: "Client Logged In",
+        token: signed_client_user,
+        client_user
+      })
+    } else if (client_user.client_user_password !== client_user_password ) {
+      res.status(404).json({
+        message: "Incorrect Login Credentials"
+      })
+    }
+
+    else {
+      res.status(404).json({
+        message: "Client User Not Found"
+      })
+    }
+
+
+  } catch (error) {
+    res.status(500).json({ status: 500, message: error });
+  }
+})
+
 app.post("/client-user", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
