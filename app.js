@@ -1826,6 +1826,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
       requested_resource: {
         email: decodeURIComponent(req.query.email),
         sprint_id: decodeURIComponent(req.query.sprint_id),
+        authenticating_user: req.user.user
       },
     });
   }
