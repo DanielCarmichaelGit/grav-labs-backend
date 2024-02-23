@@ -2069,7 +2069,7 @@ app.post("/client-login", async (req, res) => {
 
     if (client_user && client_user.client_user_password === client_user_password) {
       const signed_client_user = jwt.sign(
-        { client: client, client_user_id: client_user },
+        { client_id: client.client_id, client_user_id: client_user.client_user_id },
         process.env.SECRET_JWT,
         {
           expiresIn: "7d",
