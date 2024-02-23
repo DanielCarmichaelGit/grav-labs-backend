@@ -2058,7 +2058,7 @@ app.get("/projects", authenticateJWT, async (req, res) => {
   }
 });
 
-app.post("client-login", async (req, res) => {
+app.post("/client-login", async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
