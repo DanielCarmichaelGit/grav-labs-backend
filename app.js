@@ -2085,15 +2085,11 @@ app.post("client-login", async (req, res) => {
       res.status(404).json({
         message: "Incorrect Login Credentials"
       })
-    }
-
-    else {
+    } else {
       res.status(404).json({
-        message: "Client User Not Found"
+        message: "Could not find client user with the provided credentials"
       })
     }
-
-
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
