@@ -835,37 +835,62 @@ app.get("/documents", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
 
-    // Assuming req.user.organization holds the user's organization details
-    const org_id = req.user.user.organization.org_id;
+    const { type } = req.query;
 
-    const { doc_id } = req.query;
+    if (type && type === "client") {
+      const client_id = req.client_id;
 
-    if (!doc_id) {
-      const documents = await Document.find({
-        "associated_org.org_id": org_id,
-      }).select(
-        "document_id title is_public document_client document_folder contributors -_id"
-      );
+      if (client_id) {
+        const documents = await Document.find({
+          "document_client.client_id": client_id,
+        }).select(
+          "document_id title is_public document_client document_folder contributors -_id"
+        );
 
-      // Send the documents as a response
-      res.status(200).json({
-        count: documents.length,
-        documents,
-      });
+        res.status(200).json({
+          count: documents.length,
+          documents,
+        });
+      }
+      else {
+        res.status(409).json({
+          message: "no client associated with auth"
+        })
+      }
     } else {
-      const documents = await Document.findOne({ document_id: doc_id });
+      // Assuming req.user.organization holds the user's organization details
+      const org_id = req.user.user.organization.org_id;
 
-      if (documents) {
+      const { doc_id } = req.query;
+
+      if (!doc_id) {
+        const documents = await Document.find({
+          "associated_org.org_id": org_id,
+        }).select(
+          "document_id title is_public document_client document_folder contributors -_id"
+        );
+
+        // Send the documents as a response
         res.status(200).json({
           count: documents.length,
           documents,
         });
       } else {
-        res.status(404).json({
-          message: `No document with the id of ${doc_id} was found`,
-        });
+        const documents = await Document.findOne({ document_id: doc_id });
+
+        if (documents) {
+          res.status(200).json({
+            count: documents.length,
+            documents,
+          });
+        } else {
+          res.status(404).json({
+            message: `No document with the id of ${doc_id} was found`,
+          });
+        }
       }
     }
+
     // Use the org_id to find documents and select specific fields
   } catch (error) {
     res.status(500).json({
@@ -1703,7 +1728,7 @@ app.delete("/tasks", authenticateJWT, async (req, res) => {
           message: "Task Deleted",
           requested_resource: {
             type: "task",
-            resource: task_ids
+            resource: task_ids,
           },
         });
       } else if (type === "many") {
@@ -1713,18 +1738,18 @@ app.delete("/tasks", authenticateJWT, async (req, res) => {
           message: "Tasks Deleted",
           requested_resource: {
             type: "task",
-            resource: task_ids
-          }
-        })
+            resource: task_ids,
+          },
+        });
       } else {
         res.status(404).json({
-          message: "Please supply an array of task ids"
-        })
+          message: "Please supply an array of task ids",
+        });
       }
     } else {
       res.status(404).json({
-        message: "Authentication Invalid"
-      })
+        message: "Authentication Invalid",
+      });
     }
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
@@ -2065,11 +2090,19 @@ app.post("/client-login", async (req, res) => {
     const { client_user_email, client_user_password } = req.body;
 
     const client_user = await ClientUser.findOne({ client_user_email });
-    const client = await Client.findOne({ client_id: client_user.client.client_id });
+    const client = await Client.findOne({
+      client_id: client_user.client.client_id,
+    });
 
-    if (client_user && client_user.client_user_password === client_user_password) {
+    if (
+      client_user &&
+      client_user.client_user_password === client_user_password
+    ) {
       const signed_client_user = jwt.sign(
-        { client_id: client.client_id, client_user_id: client_user.client_user_id },
+        {
+          client_id: client.client_id,
+          client_user_id: client_user.client_user_id,
+        },
         process.env.SECRET_JWT,
         {
           expiresIn: "7d",
@@ -2079,21 +2112,21 @@ app.post("/client-login", async (req, res) => {
       res.status(200).json({
         message: "Client Logged In",
         token: signed_client_user,
-        client_user
-      })
-    } else if (client_user.client_user_password !== client_user_password ) {
+        client_user,
+      });
+    } else if (client_user.client_user_password !== client_user_password) {
       res.status(404).json({
-        message: "Incorrect Login Credentials"
-      })
+        message: "Incorrect Login Credentials",
+      });
     } else {
       res.status(404).json({
-        message: "Could not find client user with the provided credentials"
-      })
+        message: "Could not find client user with the provided credentials",
+      });
     }
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
-})
+});
 
 app.post("/client-user", async (req, res) => {
   try {
