@@ -1604,7 +1604,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
 
     console.log("FETCH TASKS 2")
 
-    const { client_id } = req.user.client_id;
+    const client_id = req.user.client_id;
 
     console.log("CLIENT ID: ", client_id);
     console.log("QUERY PARAMS: ", email, sprint_id);
