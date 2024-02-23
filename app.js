@@ -854,7 +854,11 @@ app.get("/documents", authenticateJWT, async (req, res) => {
       }
       else {
         res.status(409).json({
-          message: "no client associated with auth"
+          message: "no client associated with auth",
+          requested_resource: {
+            req_query: req.query,
+            authorizing: req
+          }
         })
       }
     } else {
