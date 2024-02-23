@@ -1602,7 +1602,10 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
 
     const { client_id } = req.user.client_id;
 
+    let log = 0;
+
     if (client_id) {
+      log = 1;
       // Decode email if it's present
       if (email) {
         email = decodeURIComponent(email);
@@ -1716,6 +1719,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         });
       }
     } else {
+      log = 2;
       // Decode email if it's present
       if (email) {
         email = decodeURIComponent(email);
@@ -1826,7 +1830,8 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
       requested_resource: {
         email: decodeURIComponent(req.query.email),
         sprint_id: decodeURIComponent(req.query.sprint_id),
-        authenticating_user: req.user.user
+        authenticating_user: req.user.user,
+        log
       },
     });
   }
