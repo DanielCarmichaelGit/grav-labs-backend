@@ -838,7 +838,7 @@ app.get("/documents", authenticateJWT, async (req, res) => {
     const { type } = req.query;
 
     if (type && type === "client") {
-      const client_id = req.client_id.client_id;
+      const client_id = req.user.client_id;
 
       if (client_id) {
         const documents = await Document.find({
@@ -857,8 +857,6 @@ app.get("/documents", authenticateJWT, async (req, res) => {
           message: "no client associated with auth",
           requested_resource: {
             req_query: req.query,
-            authorizing_client: req.client_id,
-            authorizing_user: req.user
           }
         })
       }
