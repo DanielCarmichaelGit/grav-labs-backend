@@ -1612,6 +1612,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
       }
 
       if (!email && !sprint_id) {
+        console.log("FINDING TASKS BY CLIENT ID")
         const tasks = await Task.find({
           "client.client_id": client_id,
         });
@@ -1719,7 +1720,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         });
       }
     } else {
-      log = 2;
+      console.log("FINDING TASKS BY USER DETAILS")
       // Decode email if it's present
       if (email) {
         email = decodeURIComponent(email);
