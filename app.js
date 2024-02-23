@@ -1602,8 +1602,12 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
 
     const { client_id } = req.user.client_id;
 
-    let log = 0;
+    console.log("CLIENT ID: ", client_id);
+    console.log("QUERY PARAMS: ", email, sprint_id);
 
+    
+
+    console.log("STARTING COMPARISON")
     if (client_id !== undefined && client_id !== null) {
       log = 1;
       // Decode email if it's present
