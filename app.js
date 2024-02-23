@@ -1598,7 +1598,11 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
+    console.log("FETCH TASKS 1")
+
     let { email, sprint_id } = req.query;
+
+    console.log("FETCH TASKS 2")
 
     const { client_id } = req.user.client_id;
 
