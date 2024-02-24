@@ -831,6 +831,28 @@ app.get("/organization", authenticateJWT, async (req, res) => {
   }
 });
 
+app.get("/client-documents", authenticateJWT, async (res, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const client_id = req.user.client_id;
+
+    if (client_id) {
+      const documents = await Document.find({ "document_client.client_id": client_id });
+  
+      res.status(200).json({
+        message: "Documents Found",
+        count: documents.length,
+        documents
+      })
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error,
+    });
+  }
+})
+
 app.get("/documents", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
