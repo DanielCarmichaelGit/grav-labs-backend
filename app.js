@@ -838,88 +838,61 @@ app.get("/client-documents", authenticateJWT, async (req, res) => {
     const client_id = req.user.client_id;
 
     if (client_id) {
-      const documents = await Document.find({ "document_client.client_id": client_id });
-  
+      const documents = await Document.find({
+        "document_client.client_id": client_id,
+      });
+
       res.status(200).json({
         message: "Documents Found",
         count: documents.length,
-        documents
-      })
-    }
-    else {
+        documents,
+      });
+    } else {
       res.status(409).json({
-        message: "No client id associated with auth"
-      })
+        message: "No client id associated with auth",
+      });
     }
   } catch (error) {
     res.status(500).json({
       message: error,
     });
   }
-})
+});
 
 app.get("/documents", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
+    // Assuming req.user.organization holds the user's organization details
+    const org_id = req.user?.user?.organization?.org_id || null;
 
-    const { type } = req.query;
+    const { doc_id } = req.query;
 
-    if (type && type === "client") {
-      const client_id = req.user.client_id;
+    if (!doc_id) {
+      const documents = await Document.find({
+        "associated_org.org_id": org_id,
+      }).select(
+        "document_id title is_public document_client document_folder contributors -_id"
+      );
 
-      if (client_id) {
-        const documents = await Document.find({
-          "document_client.client_id": client_id,
-        }).select(
-          "document_id title is_public document_client document_folder contributors -_id"
-        );
-
-        res.status(200).json({
-          count: documents.length,
-          documents,
-        });
-      } else {
-        res.status(409).json({
-          message: "no client associated with auth",
-          requested_resource: {
-            req_query: req.query,
-          },
-        });
-      }
+      // Send the documents as a response
+      res.status(200).json({
+        count: documents.length,
+        documents,
+      });
     } else {
-      // Assuming req.user.organization holds the user's organization details
-      const org_id = req.user.user.organization.org_id;
+      const documents = await Document.findOne({ document_id: doc_id });
 
-      const { doc_id } = req.query;
-
-      if (!doc_id) {
-        const documents = await Document.find({
-          "associated_org.org_id": org_id,
-        }).select(
-          "document_id title is_public document_client document_folder contributors -_id"
-        );
-
-        // Send the documents as a response
+      if (documents) {
         res.status(200).json({
           count: documents.length,
           documents,
         });
       } else {
-        const documents = await Document.findOne({ document_id: doc_id });
-
-        if (documents) {
-          res.status(200).json({
-            count: documents.length,
-            documents,
-          });
-        } else {
-          res.status(404).json({
-            message: `No document with the id of ${doc_id} was found`,
-          });
-        }
+        res.status(404).json({
+          message: `No document with the id of ${doc_id} was found`,
+        });
       }
     }
-
     // Use the org_id to find documents and select specific fields
   } catch (error) {
     res.status(500).json({
@@ -1625,20 +1598,18 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    console.log("FETCH TASKS 1")
+    console.log("FETCH TASKS 1");
 
     let { email, sprint_id } = req.query;
 
-    console.log("FETCH TASKS 2")
+    console.log("FETCH TASKS 2");
 
     const client_id = req.user.client_id;
 
     console.log("CLIENT ID: ", client_id);
     console.log("QUERY PARAMS: ", email, sprint_id);
 
-    
-
-    console.log("STARTING COMPARISON")
+    console.log("STARTING COMPARISON");
     if (client_id !== undefined && client_id !== null) {
       log = 1;
       // Decode email if it's present
@@ -1647,7 +1618,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
       }
 
       if (!email && !sprint_id) {
-        console.log("FINDING TASKS BY CLIENT ID")
+        console.log("FINDING TASKS BY CLIENT ID");
         const tasks = await Task.find({
           "client.client_id": client_id,
         });
@@ -1755,7 +1726,7 @@ app.get("/tasks", authenticateJWT, async (req, res) => {
         });
       }
     } else {
-      console.log("FINDING TASKS BY USER DETAILS")
+      console.log("FINDING TASKS BY USER DETAILS");
       // Decode email if it's present
       if (email) {
         email = decodeURIComponent(email);
@@ -2499,22 +2470,21 @@ app.get("/client-partners", authenticateJWT, async (req, res) => {
 
     const client_id = req.user.client_id;
 
-    const partners = await Organization.find({ "clients.client_id": client_id }).select(
-      "members name org_id _id"
-    );
+    const partners = await Organization.find({
+      "clients.client_id": client_id,
+    }).select("members name org_id _id");
 
     res.status(200).json({
       message: "Partners Found",
       partners,
     });
-
   } catch (error) {
     res.status(500).json({
       message: "Error auto-saving document",
       error: error.message,
     });
   }
-})
+});
 
 app.delete("/document", authenticateJWT, async (req, res) => {
   try {
