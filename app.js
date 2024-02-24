@@ -831,7 +831,7 @@ app.get("/organization", authenticateJWT, async (req, res) => {
   }
 });
 
-app.get("/client-documents", authenticateJWT, async (res, res) => {
+app.get("/client-documents", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
