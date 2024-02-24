@@ -2581,7 +2581,7 @@ app.post("/autosave-document", authenticateJWT, async (req, res) => {
             document_id,
           },
           {
-            $set: { ...document_data, document_id },
+            $set: { ...document_data, document_id, document_client },
           },
           {
             new: true,
