@@ -741,6 +741,8 @@ app.get("/team", authenticateJWT, async (req, res) => {
   }
 });
 
+
+
 app.post("/permission", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
@@ -2256,6 +2258,32 @@ app.post("/client-login", async (req, res) => {
     res.status(500).json({ status: 500, message: error });
   }
 });
+
+app.get("/client-user", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const client_id = req.user.client_id;
+
+    const client_user = await ClientUser.findOne({ "client.client_id": client_id });
+
+    if (client_user) {
+      res.status(200).json({
+        message: "Client User Found",
+        client_user
+      })
+    } else {
+      res.status(404).json({
+        message: "No Client User Found",
+        requested_resource: {
+          client_id
+        }
+      })
+    }
+  } catch (error) {
+    res.status(500).json({ status: 500, message: error });
+  }
+})
 
 app.post("/client-user", async (req, res) => {
   try {
