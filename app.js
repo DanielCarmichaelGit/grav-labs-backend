@@ -846,6 +846,11 @@ app.get("/client-documents", authenticateJWT, async (res, res) => {
         documents
       })
     }
+    else {
+      res.status(409).json({
+        message: "No client id associated with auth"
+      })
+    }
   } catch (error) {
     res.status(500).json({
       message: error,
