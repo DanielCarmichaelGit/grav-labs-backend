@@ -2466,6 +2466,29 @@ app.delete("/folder", authenticateJWT, async (req, res) => {
   }
 });
 
+app.get("/client-partners", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const client_id = req.user.client_id;
+
+    const partners = await Organization.find({ "clients.client_id": client_id }).select(
+      "members name org_id _id"
+    );
+
+    res.status(200).json({
+      message: "Partners Found",
+      partners,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Error auto-saving document",
+      error: error.message,
+    });
+  }
+})
+
 app.delete("/document", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
