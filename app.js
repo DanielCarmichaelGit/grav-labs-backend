@@ -2130,10 +2130,12 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
         duration,
         hard_limit,
         requires_authorization,
-        //sprint_id,
         organization,
         temporary_task_id,
       } = req.body;
+
+      console.log("PAYLOAD DESTRUCTURED");
+      
       const task_id = uuidv4();
 
       console.log("REQ BODY: ", req.body);
@@ -2145,7 +2147,7 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
           assigned_by,
           assignees,
           description: description,
-          client: client,
+          client,
           status,
           escalation,
           start_time,
