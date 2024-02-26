@@ -2117,73 +2117,90 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
 
-    const {
-      title,
-      assigned_by,
-      assignees,
-      description,
-      client,
-      status,
-      escalation,
-      start_time,
-      duration,
-      hard_limit,
-      requires_authorization,
-      //sprint_id,
-      organization,
-      temporary_task_id,
-    } = req.body;
+    try {
+      const {
+        title,
+        assigned_by,
+        assignees,
+        description,
+        client,
+        status,
+        escalation,
+        start_time,
+        duration,
+        hard_limit,
+        requires_authorization,
+        //sprint_id,
+        organization,
+        temporary_task_id,
+      } = req.body;
+      const task_id = uuidv4();
 
-    const task_id = uuidv4();
+      console.log("REQ BODY: ", req.body);
 
-    console.log("REQ BODY: ", req.body);
+      try {
+        const newTask = new Task({
+          task_id,
+          title,
+          assigned_by,
+          assignees,
+          description: description,
+          client: client,
+          status,
+          escalation,
+          start_time,
+          hard_limit,
+          duration,
+          requires_authorization,
+          //sprint_id,
+          organization,
+        });
 
-    const newTask = new Task({
-      task_id,
-      title,
-      assigned_by,
-      assignees,
-      description: description || {},
-      client: client || {},
-      status,
-      escalation,
-      start_time,
-      hard_limit,
-      duration,
-      requires_authorization,
-      //sprint_id,
-      organization,
-    });
+        console.log("NEW TASK: ", newTask);
 
-    console.log("NEW TASK: ", newTask);
+        try {
+          const created_task = await newTask.save();
 
-    const created_task = await newTask.save();
+          console.log("TASK SAVED");
 
-    console.log("TASK SAVED");
+          // await Sprint.findOneAndUpdate(
+          //   { sprint_id },
+          //   {
+          //     $push: { tasks: created_task },
+          //   }
+          // );
 
-    // await Sprint.findOneAndUpdate(
-    //   { sprint_id },
-    //   {
-    //     $push: { tasks: created_task },
-    //   }
-    // );
+          if (client) {
+            await Client.findOneAndUpdate(
+              { client_id: client.client_id },
+              {
+                $push: { tasks: created_task },
+              }
+            );
+          }
 
-    if (client) {
-      await Client.findOneAndUpdate(
-        { client_id: client.client_id },
-        {
-          $push: { tasks: created_task },
+          console.log("CLIENT UPDATED");
+
+          res.status(200).json({
+            message: "Task Created",
+            task: created_task,
+            temporary_task_id,
+          });
+        } catch (error) {
+          res.status(500).json({
+            message: error,
+          });
         }
-      );
+      } catch (error) {
+        res.status(500).json({
+          message: error,
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        message: error,
+      });
     }
-
-    console.log("CLIENT UPDATED");
-
-    res.status(200).json({
-      message: "Task Created",
-      task: created_task,
-      temporary_task_id,
-    });
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
   }
