@@ -2189,20 +2189,23 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
         } catch (error) {
           res.status(500).json({
             message: error,
+            log: 1
           });
         }
       } catch (error) {
         res.status(500).json({
           message: error,
+          log: 2
         });
       }
     } catch (error) {
       res.status(500).json({
         message: error,
+        log: 3
       });
     }
   } catch (error) {
-    res.status(500).json({ status: 500, message: error });
+    res.status(500).json({ status: 500, message: error, log: 4 });
   }
 });
 
