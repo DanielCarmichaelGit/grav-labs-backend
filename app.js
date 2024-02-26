@@ -2172,14 +2172,14 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
           //   }
           // );
 
-          if (client) {
-            await Client.findOneAndUpdate(
-              { client_id: client.client_id },
-              {
-                $push: { tasks: created_task },
-              }
-            );
-          }
+          // if (client) {
+          //   await Client.findOneAndUpdate(
+          //     { client_id: client.client_id },
+          //     {
+          //       $push: { tasks: created_task },
+          //     }
+          //   );
+          // }
 
           console.log("CLIENT UPDATED");
 
