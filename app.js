@@ -1876,9 +1876,26 @@ app.delete("/tasks", authenticateJWT, async (req, res) => {
         });
       }
     } else {
-      res.status(404).json({
-        message: "Authentication Invalid",
-      });
+      const client_id = req.user.client_id;
+
+      if (client_id) {
+        await Task.findOneAndDelete({
+          task_id: { $in: task_ids },
+          "client.client_id": client_id,
+        });
+
+        res.status(200).json({
+          message: "Tasks Deleted",
+          requested_resource: {
+            type: "task",
+            resource: task_ids,
+          },
+        });
+      } else {
+        res.status(404).json({
+          message: "Authentication Invalid",
+        });
+      }
     }
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
@@ -2135,7 +2152,7 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
       } = req.body;
 
       console.log("PAYLOAD DESTRUCTURED");
-      
+
       const task_id = uuidv4();
 
       console.log("REQ BODY: ", req.body);
@@ -2191,19 +2208,19 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
         } catch (error) {
           res.status(500).json({
             message: error,
-            log: 1
+            log: 1,
           });
         }
       } catch (error) {
         res.status(500).json({
           message: error,
-          log: 2
+          log: 2,
         });
       }
     } catch (error) {
       res.status(500).json({
         message: error,
-        log: 3
+        log: 3,
       });
     }
   } catch (error) {
