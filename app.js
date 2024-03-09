@@ -863,7 +863,7 @@ app.get("/documents", authenticateJWT, async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);
     // Assuming req.user.organization holds the user's organization details
-    const org_id = req.user?.user?.organization?.org_id || null;
+    const org_id = req.user?.user?.organization?.org_id;
 
     const { doc_id } = req.query;
 
