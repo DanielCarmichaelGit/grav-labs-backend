@@ -260,95 +260,11 @@ app.post("/signup", async (req, res) => {
         client_invitations: [],
       });
 
-      // create first task
-      const firstTask = new Task({
-        task_id,
-        title: "Getting Started",
-        assigned_by: {
-          email: "danielfcarmichael@gmail.com",
-        },
-        description: {
-          time: 1707997381851,
-          blocks: [
-            {
-              id: "P4QU_l1hOT",
-              type: "header",
-              data: {
-                text: "Getting Started",
-                level: 1,
-              },
-            },
-            {
-              id: "Cn0KRhT6mt",
-              type: "checklist",
-              data: {
-                items: [
-                  {
-                    text: "View and Create Tasks, Sprints, Docs, and Reports",
-                    checked: true,
-                  },
-                ],
-              },
-            },
-            {
-              id: "OdpdEJTmcY",
-              type: "delimiter",
-              data: {},
-            },
-            {
-              id: "WB-4-HHZYG",
-              type: "paragraph",
-              data: {
-                text: "Manage your teams productivity, tooling, and product docs in one place.",
-              },
-            },
-            {
-              id: "SM1haHTaZj",
-              type: "paragraph",
-              data: {
-                text: "Need to create public docs for your users to enjoy?",
-              },
-            },
-            {
-              id: "BwygCee31r",
-              type: "paragraph",
-              data: {
-                text: "We have your back!",
-              },
-            },
-          ],
-          version: "2.28.2",
-        },
-        assignees: [newUser.email],
-        status: { status_title: "Backlog" },
-        escalation: {
-          title: "Low",
-          color: "#2EC4B6",
-          softerColor: "rgba(46, 196, 182, 0.3)", // Softer color with reduced opacity
-        },
-        start_time: Date.now(),
-        duration: 5,
-        hard_limit: false,
-        requires_authorization: false,
-        sprint_id,
-      });
-
       const created_org = await newOrg.save();
 
       // save new user and the new group made for the user
       newUser.organization = created_org;
       const created_user = await newUser.save();
-
-      const created_task = await firstTask.save();
-
-      console.log(created_project);
-
-      await User.findOneAndUpdate(
-        { user_id },
-        {
-          $push: { tasks: created_task },
-        }
-      )
 
       // generate email content
       const mail_options = {
