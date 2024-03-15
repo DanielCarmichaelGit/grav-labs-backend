@@ -402,22 +402,42 @@ app.get("/checkout-session", authenticateJWT, async (req, res) => {
 
     if (checkout_session_id) {
       const stripe = require("stripe")(process.env.STRIPE_TEST);
-      const session = await stripe.checkout.sessions.retrieve(checkout_session_id);
+      const session = await stripe.checkout.sessions.retrieve(
+        checkout_session_id
+      );
 
       if (session) {
-        res.status(200).json({
-          message: "Session  found",
-          checkout_session: session
-        })
+        if (session.client_reference_id === user.organization.org_id) {
+          const subscription = await stripe.subscriptions.retrieve(session.subscription);
+          // await Organization.findOneAndUpdate(
+          //   { org_id: user.organization.org_id },
+          //   {
+          //     billable_user: session.customer_details,
+          //     billing: {
+          //       subscription: session.subscription,
+          //       status: session.status,
+          //     },
+          //   }
+          // );
+          res.status(200).json({
+            message: "Session found and org updated to reflect billing",
+            checkout_session: session,
+            subscription
+          });
+        } else {
+          res.status(409).json({
+            message: "Unauthorized access",
+          });
+        }
       } else {
         res.status(404).json({
-          message: "No session found for given checkout session id"
-        })
+          message: "No session found for given checkout session id",
+        });
       }
     } else {
       res.status(404).json({
-        message: "Please provide a checkout session"
-      })
+        message: "Please provide a checkout session",
+      });
     }
   } catch (error) {
     console.error("Error during user registration:", error);
