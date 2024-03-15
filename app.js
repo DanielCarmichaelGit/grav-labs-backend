@@ -230,6 +230,7 @@ app.post("/signup", async (req, res) => {
         type: "Standard",
         sprints: [sprint_id],
         marketable: true,
+        hourly_rate: parseInt(hourly_rate)
       });
 
       const org_user = {
@@ -332,60 +333,6 @@ app.post("/signup", async (req, res) => {
         sprint_id,
       });
 
-      const newSprint = new Sprint({
-        sprint_id,
-        title: `${first}'s First Sprint`,
-        owner: newUser,
-        members: [newUser],
-        objective: "Scale your documentation and business",
-        viewers: [],
-        status: {
-          time_allocated: 0,
-          time_over: 0,
-          active_status: "Not Started",
-        },
-        start_date_time: Date.now(),
-        duration: "1209600000",
-        kpi_data: {},
-        organization: newOrg,
-        is_started: false,
-        tasks: [firstTask],
-        description: "Get familiar with the app!",
-      });
-
-      const newProject = new Project({
-        project_id,
-        title: `${newOrg.name}'s First Project`,
-        tasks: [firstTask],
-        owner: newUser,
-        owner_id: user_id,
-        members: [],
-        viewers: [],
-        status: {
-          task_percentage_complete: 0,
-          status: "Active",
-          percentage_backlogged: 0,
-        },
-        start_date_time: Date.now(),
-        end_date_time: new Date(
-          new Date().setDate(new Date().getDate() + 7)
-        ).getTime(),
-        kpi_data: {},
-        cost: {},
-      });
-
-      const newAlert = new Alert({
-        alert_id,
-        to_user: newUser,
-        created_by: {
-          name: "Kamari",
-        },
-        text: "Welcome to Kamari. We are so excited you trust us as a sprint management tool! Check out your first task to get oriented around the platform.",
-        task: firstTask,
-        timestamp: Date.now(),
-        escalation: "Low",
-      });
-
       const created_org = await newOrg.save();
 
       // save new user and the new group made for the user
@@ -394,20 +341,14 @@ app.post("/signup", async (req, res) => {
 
       const created_task = await firstTask.save();
 
-      const created_project = await newProject.save();
-
       console.log(created_project);
-
-      await newSprint.save();
 
       await User.findOneAndUpdate(
         { user_id },
         {
           $push: { tasks: created_task },
         }
-      ).then(async (res) => {
-        await newAlert.save();
-      });
+      )
 
       // generate email content
       const mail_options = {
