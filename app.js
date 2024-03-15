@@ -731,8 +731,8 @@ app.post("/create-connect-account", authenticateJWT, async (req, res) => {
   
       const accountLinks = await stripe.accountLinks.create({
         account: account.id,
-        refresh_url: 'https://kamariteams.com', // URL to redirect if user closes Stripe page
-        return_url: 'https://kamariteams.com', // URL to redirect after completion
+        refresh_url: 'https://kamariteams.com/', // URL to redirect if user closes Stripe page
+        return_url: 'https://kamariteams.com/', // URL to redirect after completion
         type: 'account_onboarding',
       });
   
