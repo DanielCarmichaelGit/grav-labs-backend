@@ -945,6 +945,93 @@ app.get("/public_doc", async (req, res) => {
   }
 });
 
+app.post("/project", authenticateJWT, async (req, res) => {
+  try {
+    const client_id = req.user.client_id;
+
+    if (!client_id) {
+      res.status(409).json({
+        message: "Unauthorized access"
+      })
+    } else {
+      dbConnect(process.env.GEN_AUTH);
+
+      const client = await Client.findOne({ client_id });
+
+      if (!client) {
+        res.status(404).json({
+          message: "No client found.. unauthorized"
+        })
+      } else {
+        const { title, hourly_cost, description } = req.body;
+        const project_id = uuidv4();
+        const newProject = new Project({
+          project_id,
+          tasks: [],
+          title,
+          organization: client.associated_org,
+          status: "In Progress",
+          total_time: 0,
+          hourly_cost,
+          client: {
+            client_id: client.client_id,
+            client_poc: client.client_poc,
+            client_name: client.client_name
+          },
+          description
+        });
+
+        const savedProject = await newProject.save();
+
+        res.status(200).json({
+          message: "Project saved",
+          project: savedProject
+        })
+      }
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
+app.get("/projects", authenticateJWT, async (req, res) => {
+  try {
+    const client_id = req.user.client_id;
+    const user = req.user.user;
+
+    if (!client_id && !user) {
+      res.status(409).json({
+        message: "Invalid authentication. Please provide token."
+      })
+    } else {
+      dbConnect(process.env.GEN_AUTH);
+      if (user && !client_id) {
+        const projects = await Project.find({ "organization.org_id": user.organization.org_id });
+  
+        res.status(200).json({
+          message: "Projects found",
+          count: projects.length,
+          projects
+        })
+      } else if (!user && client_id) {
+        const projects = await Project.find({ "client.client_id": client_id });
+
+        res.status(200).json({
+          message: "Projects found",
+          count: projects.length,
+          projects
+        })
+      }
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+})
+
 app.post("/folders", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
@@ -953,12 +1040,6 @@ app.post("/folders", authenticateJWT, async (req, res) => {
     const user = req.user.user;
 
     console.log("logging user", user);
-
-    console.log("xx123xx_client", client);
-    console.log("xx123xx_name", name);
-    console.log("xx123xx_documents", documents);
-    console.log("xx123xx_description", description);
-    console.log("xx123xx_organization", user.organization);
 
     const newFolder = new Folder({
       folder_id,
