@@ -717,7 +717,8 @@ app.post("/permission", authenticateJWT, async (req, res) => {
 app.post("/create-connect-account", authenticateJWT, async (req, res) => {
   try {
     const user = req.user.user;
-    const organization = user.organization;
+
+    const organization = await Organization.findOne({ org_id: user.organization.org_id });
 
     if (user && organization.billing.customer) {
       const stripe = require("stripe")(
