@@ -409,16 +409,13 @@ app.get("/checkout-session", authenticateJWT, async (req, res) => {
       if (session) {
         if (session.client_reference_id === user.organization.org_id) {
           const subscription = await stripe.subscriptions.retrieve(session.subscription);
-          // await Organization.findOneAndUpdate(
-          //   { org_id: user.organization.org_id },
-          //   {
-          //     billable_user: session.customer_details,
-          //     billing: {
-          //       subscription: session.subscription,
-          //       status: session.status,
-          //     },
-          //   }
-          // );
+          await Organization.findOneAndUpdate(
+            { org_id: user.organization.org_id },
+            {
+              billable_user: session.customer_details,
+              billing: subscription
+            }
+          );
           res.status(200).json({
             message: "Session found and org updated to reflect billing",
             checkout_session: session,
