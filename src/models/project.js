@@ -10,7 +10,7 @@ const projectSchema = new mongoose.Schema({
   total_time: { type: Number, required: true },
   hourly_cost: { type: Number, required: true },
   cost: { type: Object, required: true },
-  description: { type: Object, required: false },
+  description: { type: String, required: false },
 });
 
 module.exports = mongoose.model("Project", projectSchema);

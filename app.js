@@ -84,6 +84,7 @@ app.post("/signup", async (req, res) => {
       existing_org_id,
       name,
       invitation_id,
+      hourly_rate
     } = req.body;
     console.log(name);
 
@@ -131,6 +132,7 @@ app.post("/signup", async (req, res) => {
           type: "Standard",
           sprints: [],
           marketable: true,
+          hourly_rate: parseInt(hourly_rate)
         });
 
         console.log("4", newUser);
