@@ -408,18 +408,20 @@ app.get("/checkout-session", authenticateJWT, async (req, res) => {
 
       if (session) {
         if (session.client_reference_id === user.organization.org_id) {
-          const subscription = await stripe.subscriptions.retrieve(session.subscription);
+          const subscription = await stripe.subscriptions.retrieve(
+            session.subscription
+          );
           await Organization.findOneAndUpdate(
             { org_id: user.organization.org_id },
             {
               billable_user: session.customer_details,
-              billing: subscription
+              billing: subscription,
             }
           );
           res.status(200).json({
             message: "Session found and org updated to reflect billing",
             checkout_session: session,
-            subscription
+            subscription,
           });
         } else {
           res.status(409).json({
@@ -723,10 +725,38 @@ app.get("/organization", authenticateJWT, async (req, res) => {
     });
 
     if (organization) {
-      res.status(200).json({
-        message: "Organization Found",
-        organization,
-      });
+      const billing = organization.billing;
+
+      if (billing.id) {
+        const stripe = require("stripe")(process.env.STRIPE_TEST);
+        const subscription = await stripe.subscriptions.retrieve(billing.id);
+
+        if (subscription) {
+          const updated_org = await Organization.findOneAndUpdate(
+            { org_id: organization.org_id },
+            {
+              billing: subscription,
+            },
+            {
+              $new: true,
+            }
+          );
+          res.status(200).json({
+            message: "Organization Found",
+            organization: updated_org,
+          });
+        } else {
+          res.status(200).json({
+            message: "Organization Found",
+            organization,
+          });
+        }
+      } else {
+        res.status(200).json({
+          message: "Organization Found",
+          organization,
+        });
+      }
     } else {
       res.status(404).json({
         message:
