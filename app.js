@@ -397,7 +397,7 @@ app.get("/checkout-session", authenticateJWT, async (req, res) => {
   try {
     //pk_live_51OsVMcFccUTJ6xdayLO7zRpeMUUhdDHKhEkajUALbrsYGvq4vPNiCIYOyrZmB980qOp5as5K6SQ3iDnrvEtqCqt300mwDtRO0i
 
-    const { user } = req.user.user;
+    const user = req.user.user;
     const { checkout_session_id } = req.query;
 
     if (checkout_session_id) {
