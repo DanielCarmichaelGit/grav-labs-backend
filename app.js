@@ -714,6 +714,50 @@ app.post("/permission", authenticateJWT, async (req, res) => {
   }
 });
 
+app.post("/create-connect-account", authenticateJWT, async (req, res) => {
+  try {
+    const user = req.user.user;
+    const organization = user.organization;
+
+    if (user && organization.billing.customer) {
+      const stripe = require("stripe")(
+        "sk_test_51OsVMcFccUTJ6xdazfeYt2WUiiiMuTuepv3jsStcTGELqP0M5goi6KUckgnpiDxvpNN0Sfc6DQ8ANOxdknSS7lOO00kTryseS2"
+      );
+  
+      const account = await stripe.accounts.create({
+        type: "express",
+      });
+  
+      const accountLinks = await stripe.accountLinks.create({
+        account: account.id,
+        refresh_url: 'https://kamariteams.com', // URL to redirect if user closes Stripe page
+        return_url: 'https://kamariteams.com', // URL to redirect after completion
+        type: 'account_onboarding',
+      });
+  
+      if (accountLinks) {
+        res.status(200).json({
+          message: "Link created",
+          connect_url: account.url
+        })
+      }
+      else {
+        res.status(400).json({
+          message: "There was a problem created a link to create a connect account. Please try again later."
+        })
+      }
+    } else {
+      res.status(400).json({
+        message: "There was an error authenticating your request"
+      })
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
 app.get("/organization", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
