@@ -739,7 +739,7 @@ app.post("/create-connect-account", authenticateJWT, async (req, res) => {
       if (accountLinks) {
         res.status(200).json({
           message: "Link created",
-          connect_url: account.url
+          connect_url: accountLinks.url
         })
       }
       else {
