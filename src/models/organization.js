@@ -11,7 +11,8 @@ const organizationSchema = new mongoose.Schema({
   billing: { type: Object, required: true },
   sprints: {type: Array, required: true},
   client_invitations: { type: Array, required: true},
-  clients: { type: Array, required: false }
+  clients: { type: Array, required: false },
+  stripe_account: { type: Object, required: false }
 });
 
 module.exports = mongoose.model("Organization", organizationSchema);

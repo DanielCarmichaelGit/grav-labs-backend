@@ -728,25 +728,46 @@ app.post("/create-connect-account", authenticateJWT, async (req, res) => {
       const account = await stripe.accounts.create({
         type: "express",
       });
-  
-      const accountLinks = await stripe.accountLinks.create({
-        account: account.id,
-        refresh_url: 'https://kamariteams.com/', // URL to redirect if user closes Stripe page
-        return_url: 'https://kamariteams.com/', // URL to redirect after completion
-        type: 'account_onboarding',
-      });
-  
-      if (accountLinks) {
-        res.status(200).json({
-          message: "Link created",
-          connect_url: accountLinks.url
+
+      if (account) {
+
+        await Organization.findOneAndUpdate({ org_id: user.organization.org_id }, {
+          stripe_account: account
         })
-      }
-      else {
+
+        // LIVE
+        const accountLinks = await stripe.accountLinks.create({
+          account: account.id,
+          refresh_url: 'https://kamariteams.com/', // URL to redirect if user closes Stripe page
+          return_url: 'https://kamariteams.com/', // URL to redirect after completion
+          type: 'account_onboarding',
+        });
+  
+        // TEST
+        // const accountLinks = await stripe.accountLinks.create({
+        //   account: account.id,
+        //   refresh_url: 'http:localhost:5173/', // URL to redirect if user closes Stripe page
+        //   return_url: 'http:localhost:5173/', // URL to redirect after completion
+        //   type: 'account_onboarding',
+        // });
+    
+        if (accountLinks) {
+          res.status(200).json({
+            message: "Link created",
+            connect_url: accountLinks.url
+          })
+        }
+        else {
+          res.status(400).json({
+            message: "There was a problem created a link to create a connect account. Please try again later."
+          })
+        }
+      } else {
         res.status(400).json({
-          message: "There was a problem created a link to create a connect account. Please try again later."
+          message: "There was an issue creating your stripe connect account"
         })
       }
+  
     } else {
       res.status(400).json({
         message: "There was an error authenticating your request"
