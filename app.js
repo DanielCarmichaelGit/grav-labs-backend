@@ -718,6 +718,7 @@ app.post("/create-customer-portal", authenticateJWT, async (req, res) => {
     console.log("1");
     if (user) {
       console.log("USER FOUND AND AUTH IS VALID");
+      dbConnect(process.env.GEN_AUTH);
       const organization = await Organization.findOne({
         org_id: user.organization.org_id,
       });
