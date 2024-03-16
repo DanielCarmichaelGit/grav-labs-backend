@@ -715,40 +715,48 @@ app.post("/permission", authenticateJWT, async (req, res) => {
 app.post("/create-customer-portal", authenticateJWT, async (req, res) => {
   try {
     const user = req.user.user;
-
+    console.log("1")
     if (user) {
       const organization = await Organization.findOne({
         org_id: user.organization.org_id,
       });
-
+      console.log("2")
       if (organization && organization.billing) {
+        console.log("3")
         if (organization.billing.customer) {
+          console.log("4")
           const stripe = require("stripe")(process.env.STRIPE_TEST);
           const session = await stripe.billingPortal.sessions.create({
             customer: organization.billing.customer,
             return_url: "https://kamariteams.com",
           });
+          console.log("5")
           if (session) {
+            console.log("6")
             res.status(200).json({
               message: "Customer portal connection established",
               connect_url: session
             })
           } else {
+            console.log("7")
             res.status(400).json({
               message: "There was an error creating the customer session"
             })
           }
         } else {
+          console.log("8")
           res.status(404).json({
             message: "The associated organization does not have a customer account"
           })
         }
       } else {
+        console.log("9")
         res.status(500).json({
           message: "Organization not found or is not an active customer"
         })
       }
     } else {
+      console.log("10")
       res.status(409).json({
         message: "Unauthorized access"
       })
@@ -756,6 +764,7 @@ app.post("/create-customer-portal", authenticateJWT, async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: error,
+      requested_resource: "Could not create session"
     });
   }
 });
