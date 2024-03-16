@@ -712,6 +712,54 @@ app.post("/permission", authenticateJWT, async (req, res) => {
   }
 });
 
+app.post("/create-customer-portal", authenticateJWT, async (req, res) => {
+  try {
+    const user = req.user.user;
+
+    if (user) {
+      const organization = await Organization.findOne({
+        org_id: user.organization.org_id,
+      });
+
+      if (organization && organization.billing) {
+        if (organization.billing.customer) {
+          const stripe = require("stripe")(process.env.STRIPE_TEST);
+          const session = await stripe.billingPortal.sessions.create({
+            customer: organization.billing.customer,
+            return_url: "https://kamariteams.com",
+          });
+          if (session) {
+            res.status(200).json({
+              message: "Customer portal connection established",
+              connect_url: session
+            })
+          } else {
+            res.status(400).json({
+              message: "There was an error creating the customer session"
+            })
+          }
+        } else {
+          res.status(404).json({
+            message: "The associated organization does not have a customer account"
+          })
+        }
+      } else {
+        res.status(500).json({
+          message: "Organization not found or is not an active customer"
+        })
+      }
+    } else {
+      res.status(409).json({
+        message: "Unauthorized access"
+      })
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error,
+    });
+  }
+});
+
 app.post("/create-login-link", authenticateJWT, async (req, res) => {
   try {
     const user = req.user.user;
@@ -723,22 +771,25 @@ app.post("/create-login-link", authenticateJWT, async (req, res) => {
 
       if (organization && organization.stripe_account) {
         const stripe = require("stripe")(process.env.STRIPE_TEST);
-        const loginLink = await stripe.accounts.createLoginLink(organization.stripe_account.id);
+        const loginLink = await stripe.accounts.createLoginLink(
+          organization.stripe_account.id
+        );
 
         if (loginLink) {
           res.status(200).json({
             message: "Login link created",
-            connect_url: loginLink
-          })
+            connect_url: loginLink,
+          });
         } else {
           res.status(400).json({
-            message: "Something went wrong creating the login link, try again later."
-          })
+            message:
+              "Something went wrong creating the login link, try again later.",
+          });
         }
       } else {
         res.status(404).json({
-          message: "Could not find associated organization's stripe account"
-        })
+          message: "Could not find associated organization's stripe account",
+        });
       }
     } else {
       res.status(409).json({
