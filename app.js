@@ -886,7 +886,7 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
   try {
     const user = req.user.user;
 
-    const { type, chunk } = req.body;
+    const { type, chunk } = req.query;
 
     if (user) {
       dbConnect(process.env.GEN_AUTH);
@@ -896,9 +896,8 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
       });
 
       if (organization) {
-        const connect_account_id = organization.stripe_account.id;
+        const connect_account_id = organization?.stripe_account?.id;
         if (connect_account_id) {
-          let has_more = false;
           const stripe = require("stripe")(process.env.STRIPE_TEST);
 
           if (type && type !== "expanded") {
@@ -906,6 +905,8 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
             let has_more = true; // Assuming you have a way to determine whether there are more invoices
 
             let invoices = await stripe.invoices.list({ limit: parseInt(chunk) });
+
+            has_more = invoices.has_more;
 
             all_invoices.push(...invoices.data);
 
@@ -930,6 +931,7 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
 
           } else if (type && type === "expanded") {
             const invoices = [];
+            let has_more = false;
             const invoice_types = ["paid", "open"];
 
             for (let invoice_type of invoice_types) {
@@ -939,7 +941,10 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
               });
               invoices.push(...these_invoices.data);
 
-              while (these_invoices.has_more) {
+              if (these_invoices.has_more) {
+                has_more = true;
+              }
+              while (has_more) {
                 these_invoices = await stripe.invoices.list({
                   limit: parseInt(chunk),
                   starting_after:
@@ -947,6 +952,8 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
                       .id,
                   status: invoice_type,
                 });
+
+                has_more = these_invoices.has_more;
                 invoices.push(...these_invoices.data);
               }
             }
