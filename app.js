@@ -882,6 +882,114 @@ app.post("/create-connect-account", authenticateJWT, async (req, res) => {
   }
 });
 
+app.get("/invoices", authenticateJWT, async (req, res) => {
+  try {
+    const user = req.user.user;
+
+    const { type = "paid", chunk = 15 } = req.body;
+
+    if (user) {
+      dbConnect(process.env.GEN_AUTH);
+
+      const organization = Organization.findOne({
+        org_id: user.organization.org_id,
+      });
+
+      if (organization) {
+        const connect_account_id = organization.stripe_account.id;
+        if (connect_account_id) {
+          let has_more = false;
+          const stripe = require("stripe")(process.env.STRIPE_TEST);
+
+          if (type && type !== "expanded") {
+            const all_invoices = [];
+            let has_more = true; // Assuming you have a way to determine whether there are more invoices
+            const chunk = 100; // Set your desired chunk size
+
+            let invoices = await stripe.invoices.list({ limit: chunk });
+
+            all_invoices.push(...invoices.data);
+
+            while (has_more) {
+              if (invoices.has_more) {
+                invoices = await stripe.invoices.list({
+                  limit: chunk,
+                  starting_after: all_invoices[all_invoices.length - 1].id,
+                });
+                all_invoices.push(...invoices.data);
+                has_more = invoices.has_more;
+              } else {
+                has_more = false;
+              }
+            }
+
+            res.status(200).json({
+              message: "Invoices found an aggregated",
+              count: all_invoices.length,
+              invoices: all_invoices
+            })
+
+          } else if (type && type === "expanded") {
+            const invoices = {};
+            const invoice_types = ["paid", "open"];
+
+            for (let invoice_type of invoice_types) {
+              invoices[invoice_type] = [];
+
+              let these_invoices = await stripe.invoices.list({
+                limit: chunk,
+                status: invoice_type,
+              });
+              invoices[invoice_type].push(...these_invoices.data);
+
+              while (these_invoices.has_more) {
+                these_invoices = await stripe.invoices.list({
+                  limit: chunk,
+                  starting_after:
+                    invoices[invoice_type][invoices[invoice_type].length - 1]
+                      .id,
+                  status: invoice_type,
+                });
+                invoices[invoice_type].push(...these_invoices.data);
+              }
+            }
+
+            res.status(200).json({
+              message: "Invoices found and aggregated",
+              count: invoices.length,
+              invoices
+            })
+          } else {
+            const invoices = await stripe.invoices.list({
+              limit: chunk,
+              status: type,
+            });
+
+            res.status(200).json({
+              message: "Invoices found",
+              count: invoices.length,
+              invoices
+            })
+          }
+        } else {
+          res.status(404).json({
+            message:
+              "Could not find a connect account associated with user organization",
+          });
+        }
+      } else {
+        res.status(409).json({
+          message: "Authentication Invalid",
+        });
+      }
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
 app.get("/organization", authenticateJWT, async (req, res) => {
   try {
     dbConnect(process.env.GEN_AUTH);
