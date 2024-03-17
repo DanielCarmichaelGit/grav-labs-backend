@@ -891,7 +891,7 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
     if (user) {
       dbConnect(process.env.GEN_AUTH);
 
-      const organization = Organization.findOne({
+      const organization = await Organization.findOne({
         org_id: user.organization.org_id,
       });
 
