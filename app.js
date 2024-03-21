@@ -821,9 +821,7 @@ app.post("/reset-password-link", async (req, res) => {
 
     const { email } = req.body;
 
-    const user = await User.findOne({ email }).select(
-      "user_id -_id"
-    );
+    const user = await User.findOne({ email }).select("user_id -_id");
 
     if (user?.user_id) {
       const mail_options = {
@@ -1060,7 +1058,7 @@ app.post("/reset-password-link", async (req, res) => {
             </body>
           </html>`,
       };
-  
+
       console.log("calling transporter");
       // call transporter to send email
       transporter.sendMail(mail_options, (error, info) => {
@@ -1072,19 +1070,274 @@ app.post("/reset-password-link", async (req, res) => {
       });
 
       res.status(200).json({
-        message: "Password Reset Link Sent"
-      })
+        message: "Password Reset Link Sent",
+      });
     } else {
-      res.status(404).json({
-        message: "We could not find the user associated with the email"
-      })
+      const client_user = await ClientUser.findOne({
+        client_email: email,
+      }).select("client_user_id -_id");
+
+      if (client_user?.client_user_id) {
+        const mail_options = {
+          from: `"Kamari" <contact@kamariteams.com>`,
+          to: email, // The user's email address
+          subject: "Kamari: Password Reset",
+          text: `Password reset link. \n\nIf you did not request to reset your password, please email our ceo @danielfcarmichael@gmail.com to get an immediate response. \n\nAs we grow, we are adding measures to insure product security. But, things do slip through. If you feel like you have lost trust please give our ceo a call @2314635567 to discuss your concerns.`,
+          html: `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+          <html data-editor-version="2" class="sg-campaigns" xmlns="http://www.w3.org/1999/xhtml">
+              <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+                <!--[if !mso]><!-->
+                <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+                <!--<![endif]-->
+                <!--[if (gte mso 9)|(IE)]>
+                <xml>
+                  <o:OfficeDocumentSettings>
+                    <o:AllowPNG/>
+                    <o:PixelsPerInch>96</o:PixelsPerInch>
+                  </o:OfficeDocumentSettings>
+                </xml>
+                <![endif]-->
+                <!--[if (gte mso 9)|(IE)]>
+            <style type="text/css">
+              body {width: 600px;margin: 0 auto;}
+              table {border-collapse: collapse;}
+              table, td {mso-table-lspace: 0pt;mso-table-rspace: 0pt;}
+              img {-ms-interpolation-mode: bicubic;}
+            </style>
+          <![endif]-->
+                <style type="text/css">
+              body, p, div {
+                font-family: arial,helvetica,sans-serif;
+                font-size: 14px;
+              }
+              body {
+                color: #000000;
+              }
+              body a {
+                color: #1188E6;
+                text-decoration: none;
+              }
+              p { margin: 0; padding: 0; }
+              table.wrapper {
+                width:100% !important;
+                table-layout: fixed;
+                -webkit-font-smoothing: antialiased;
+                -webkit-text-size-adjust: 100%;
+                -moz-text-size-adjust: 100%;
+                -ms-text-size-adjust: 100%;
+              }
+              img.max-width {
+                max-width: 100% !important;
+              }
+              .column.of-2 {
+                width: 50%;
+              }
+              .column.of-3 {
+                width: 33.333%;
+              }
+              .column.of-4 {
+                width: 25%;
+              }
+              ul ul ul ul  {
+                list-style-type: disc !important;
+              }
+              ol ol {
+                list-style-type: lower-roman !important;
+              }
+              ol ol ol {
+                list-style-type: lower-latin !important;
+              }
+              ol ol ol ol {
+                list-style-type: decimal !important;
+              }
+              @media screen and (max-width:480px) {
+                .preheader .rightColumnContent,
+                .footer .rightColumnContent {
+                  text-align: left !important;
+                }
+                .preheader .rightColumnContent div,
+                .preheader .rightColumnContent span,
+                .footer .rightColumnContent div,
+                .footer .rightColumnContent span {
+                  text-align: left !important;
+                }
+                .preheader .rightColumnContent,
+                .preheader .leftColumnContent {
+                  font-size: 80% !important;
+                  padding: 5px 0;
+                }
+                table.wrapper-mobile {
+                  width: 100% !important;
+                  table-layout: fixed;
+                }
+                img.max-width {
+                  height: auto !important;
+                  max-width: 100% !important;
+                }
+                a.bulletproof-button {
+                  display: block !important;
+                  width: auto !important;
+                  font-size: 80%;
+                  padding-left: 0 !important;
+                  padding-right: 0 !important;
+                }
+                .columns {
+                  width: 100% !important;
+                }
+                .column {
+                  display: block !important;
+                  width: 100% !important;
+                  padding-left: 0 !important;
+                  padding-right: 0 !important;
+                  margin-left: 0 !important;
+                  margin-right: 0 !important;
+                }
+                .social-icon-column {
+                  display: inline-block !important;
+                }
+              }
+            </style>
+                <!--user entered Head Start--><!--End Head user entered-->
+              </head>
+              <body>
+                <center class="wrapper" data-link-color="#1188E6" data-body-style="font-size:14px; font-family:arial,helvetica,sans-serif; color:#000000; background-color:#FFFFFF;">
+                  <div class="webkit">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%" class="wrapper" bgcolor="#FFFFFF">
+                      <tr>
+                        <td valign="top" bgcolor="#FFFFFF" width="100%">
+                          <table width="100%" role="content-container" class="outer" align="center" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td width="100%">
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                  <tr>
+                                    <td>
+                                      <!--[if mso]>
+              <center>
+              <table><tr><td width="600">
+            <![endif]-->
+                                              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;" align="center">
+                                                <tr>
+                                                  <td role="modules-container" style="padding:0px 0px 0px 0px; color:#000000; text-align:left;" bgcolor="#FFFFFF" width="100%" align="left"><table class="module preheader preheader-hide" role="module" data-type="preheader" border="0" cellpadding="0" cellspacing="0" width="100%" style="display: none !important; mso-hide: all; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0;">
+              <tr>
+                <td role="module-content">
+                  <p></p>
+                </td>
+              </tr>
+            </table><table border="0" cellpadding="0" cellspacing="0" align="center" width="100%" role="module" data-type="columns" style="padding:0px 0px 0px 0px;" bgcolor="#FFFFFF" data-distribution="1,1">
+              <tbody>
+                <tr role="module-content">
+                  <td height="100%" valign="top"><table width="290" style="width:290px; border-spacing:0; border-collapse:collapse; margin:0px 10px 0px 0px;" cellpadding="0" cellspacing="0" align="left" border="0" bgcolor="" class="column column-0">
+                <tbody>
+                  <tr>
+                    <td style="padding:0px;margin:0px;border-spacing:0;"><table class="wrapper" role="module" data-type="image" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="dBRBKqWsYgsricgDWAGd23">
+              <tbody>
+                <tr>
+                  <td style="font-size:6px; line-height:10px; padding:0px 0px 0px 0px;" valign="top" align="center">
+                    <img class="max-width" border="0" style="display:block; color:#000000; text-decoration:none; font-family:Helvetica, arial, sans-serif; font-size:16px; max-width:100% !important; width:100%; height:auto !important;" width="290" alt="" data-proportionally-constrained="true" data-responsive="true" src="http://cdn.mcauto-images-production.sendgrid.net/92bbbf50563199d0/680603af-7415-4fdd-9736-6be7e0a29757/1000x500.png">
+                  </td>
+                </tr>
+              </tbody>
+            </table></td>
+                  </tr>
+                </tbody>
+              </table><table width="290" style="width:290px; border-spacing:0; border-collapse:collapse; margin:0px 0px 0px 10px;" cellpadding="0" cellspacing="0" align="left" border="0" bgcolor="" class="column column-1">
+                <tbody>
+                  <tr>
+                    <td style="padding:0px;margin:0px;border-spacing:0;"><table class="module" role="module" data-type="spacer" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="df8d00a9-5a76-4676-82f5-bea1fc2597ae">
+              <tbody>
+                <tr>
+                  <td style="padding:0px 0px 30px 0px;" role="module-content" bgcolor="">
+                  </td>
+                </tr>
+              </tbody>
+            </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="e91ZwuHxUeknHu24krPgcX" data-mc-module-version="2019-10-22">
+              <tbody>
+                <tr>
+                  <td style="padding:18px 0px 18px 0px; line-height:22px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: inherit">Someone sent you an invite to Kamari</div><div></div></div></td>
+                </tr>
+              </tbody>
+            </table></td>
+                  </tr>
+                </tbody>
+              </table></td>
+                </tr>
+              </tbody>
+            </table><table border="0" cellpadding="0" cellspacing="0" class="module" data-role="module-button" data-type="button" role="module" style="table-layout:fixed;" width="100%" data-muid="235b3326-6bfd-4935-b039-dbf42dae480e">
+                <tbody>
+                  <tr>
+                    <td align="right" bgcolor="" class="outer-td" style="padding:0px 0px 0px 0px;">
+                      <table border="0" cellpadding="0" cellspacing="0" class="wrapper-mobile" style="text-align:center;">
+                        <tbody>
+                          <tr>
+                          <td align="center" bgcolor="#be4bff" class="inner-td" style="border-radius:6px; font-size:16px; text-align:right; background-color:inherit;">
+                            <a href="https://kamariteams.com/forgot-password?u=${client_user.client_user_id}" style="background-color:#be4bff; border:0px solid #333333; border-color:#333333; border-radius:6px; border-width:0px; color:#ffffff; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; width:600px;" target="_blank">Get Kamari for Free</a>
+                          </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="f424383d-0101-4b99-b99a-8d428a219037" data-mc-module-version="2019-10-22">
+              <tbody>
+                <tr>
+          <div style="font-family: inherit; text-align: inherit"><br></div>
+          <div style="font-family: inherit; text-align: inherit">The above link will remain active for 30 minutes.</div>
+          <div style="font-family: inherit; text-align: inherit"><br></div>
+          <div style="font-family: inherit; text-align: inherit">To ensure security, we limit the number of password resets to 1 per month. If you have forgotten your password and need access, ask your org admin to contact us @2314635567. If you are the admin, please contact us at the provided phone number.</div><div></div></div></td>
+                </tr>
+              </tbody>
+            </table><div data-role="module-unsubscribe" class="module" role="module" data-type="unsubscribe" style="color:#444444; font-size:12px; line-height:20px; padding:16px 16px 16px 16px; text-align:Center;" data-muid="4e838cf3-9892-4a6d-94d6-170e474d21e5"><div class="Unsubscribe--addressLine"></div><p style="font-size:12px; line-height:20px;"><a class="Unsubscribe--unsubscribeLink" href="{{{unsubscribe}}}" target="_blank" style="">Unsubscribe</a> - <a href="{{{unsubscribe_preferences}}}" target="_blank" class="Unsubscribe--unsubscribePreferences" style="">Unsubscribe Preferences</a></p></div></td>
+                                                </tr>
+                                              </table>
+                                              <!--[if mso]>
+                                            </td>
+                                          </tr>
+                                        </table>
+                                      </center>
+                                      <![endif]-->
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                </center>
+              </body>
+            </html>`,
+        };
+
+        console.log("calling transporter");
+        // call transporter to send email
+        transporter.sendMail(mail_options, (error, info) => {
+          if (error) {
+            console.error("Email sending error:", error);
+          } else {
+            console.log("Email sent:", info);
+          }
+        });
+
+        res.status(200).json({
+          message: "Password Reset Link Sent",
+        });
+      } else {
+        res.status(404).json({
+          message: "We could not find the user associated with the email",
+        });
+      }
     }
   } catch (error) {
     res.status(500).json({
       message: error.message,
     });
   }
-})
+});
 
 app.post("/create-connect-account", authenticateJWT, async (req, res) => {
   try {
@@ -1610,11 +1863,15 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
     let created_client_invitation = {};
 
     if (refreshSend) {
-      created_client_invitation = await ClientInvitation.findOneAndUpdate({ client_email }, {
-        status: "unaccepted"
-      }, {
-        $new: true
-      })
+      created_client_invitation = await ClientInvitation.findOneAndUpdate(
+        { client_email },
+        {
+          status: "unaccepted",
+        },
+        {
+          $new: true,
+        }
+      );
     } else {
       const newClientInvitation = new ClientInvitation({
         invitation_id,
@@ -1623,10 +1880,9 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
         client_email,
         invite_url: `https://kamariteams.com/client-signup?email=${client_email}&type=client&org_id=${associated_org.org_id}&invitation_id=${invitation_id}`,
       });
-  
+
       created_client_invitation = await newClientInvitation.save();
     }
-
 
     console.log(created_client_invitation);
 
@@ -2955,7 +3211,7 @@ app.post("/client-user", async (req, res) => {
         type: "client user",
         marketable: true,
         client,
-        stripe_customer: customer
+        stripe_customer: customer,
       });
 
       const created_client_user = await client_user.save();
