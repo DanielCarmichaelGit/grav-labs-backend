@@ -1072,7 +1072,7 @@ app.post("/reset-password-link", async (req, res) => {
       });
     } else {
       const client_user = await ClientUser.findOne({
-        client_email: email,
+        client_user_email: email,
       }).select("client_user_id -_id");
 
       if (client_user?.client_user_id) {
@@ -3170,7 +3170,7 @@ app.post("/client-login", async (req, res) => {
         client.client_user_password
       );
 
-      if (hashCompare) {
+      if (hash_compare) {
         const signed_client_user = jwt.sign(
           {
             client_id: client.client_id,
