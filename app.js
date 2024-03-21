@@ -149,6 +149,7 @@ app.post("/signup", async (req, res) => {
             last,
           },
           role,
+          hourly_rate: parseInt(hourly_rate)
         };
 
         console.log("6", org_user);
@@ -1760,22 +1761,27 @@ app.post("/project", authenticateJWT, async (req, res) => {
           message: "No client found.. unauthorized",
         });
       } else {
-        const { title, hourly_cost, description } = req.body;
+        const { title, description, budget } = req.body;
         const project_id = uuidv4();
         const newProject = new Project({
           project_id,
-          tasks: [],
           title,
           organization: client.associated_org,
-          status: "In Progress",
-          total_time: 0,
-          hourly_cost,
+          status: {
+            title: "In Progress",
+            color: "#2EC4B6",
+            softerColor: "rgba(46, 196, 182, 0.3)", // Softer color with reduced opacity
+          },
           client: {
             client_id: client.client_id,
             client_poc: client.client_poc,
             client_name: client.client_name,
           },
+          total_time: 0,
+          cost: 0,
           description,
+          budget: budget,
+          invoices: []
         });
 
         const savedProject = await newProject.save();
