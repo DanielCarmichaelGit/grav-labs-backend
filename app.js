@@ -904,7 +904,9 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
             const all_invoices = [];
             let has_more = true; // Assuming you have a way to determine whether there are more invoices
 
-            let invoices = await stripe.invoices.list({ limit: parseInt(chunk) });
+            let invoices = await stripe.invoices.list({
+              limit: parseInt(chunk),
+            });
 
             has_more = invoices.has_more;
 
@@ -926,9 +928,8 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
             res.status(200).json({
               message: "Invoices found an aggregated",
               count: all_invoices.length,
-              invoices: all_invoices
-            })
-
+              invoices: all_invoices,
+            });
           } else if (type && type === "expanded") {
             const invoices = [];
             let has_more = false;
@@ -947,9 +948,7 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
               while (has_more) {
                 these_invoices = await stripe.invoices.list({
                   limit: parseInt(chunk),
-                  starting_after:
-                    invoices[invoices.length - 1]
-                      .id,
+                  starting_after: invoices[invoices.length - 1].id,
                   status: invoice_type,
                 });
 
@@ -961,8 +960,8 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
             res.status(200).json({
               message: "Invoices found and aggregated",
               count: invoices.length,
-              invoices
-            })
+              invoices,
+            });
           } else {
             const invoices = await stripe.invoices.list({
               limit: parseInt(chunk),
@@ -972,8 +971,8 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
             res.status(200).json({
               message: "Invoices found",
               count: invoices.length,
-              invoices: invoices.data
-            })
+              invoices: invoices.data,
+            });
           }
         } else {
           res.status(404).json({
@@ -1333,19 +1332,30 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
 
     const associated_org = req.user.user.organization;
     const invitation_id = uuidv4();
-    const { client_email } = req.body;
+    const { client_email, refreshSend = false } = req.body;
 
     console.log(client_email, invitation_id, associated_org);
 
-    const newClientInvitation = new ClientInvitation({
-      invitation_id,
-      associated_org,
-      status: "unaccepted",
-      client_email,
-      invite_url: `https://kamariteams.com/client-signup?email=${client_email}&type=client&org_id=${associated_org.org_id}&invitation_id=${invitation_id}`,
-    });
+    let created_client_invitation = {};
 
-    const created_client_invitation = await newClientInvitation.save();
+    if (refreshSend) {
+      created_client_invitation = await ClientInvitation.findOneAndUpdate({ client_email }, {
+        status: unaccepted
+      }, {
+        $new: true
+      })
+    } else {
+      const newClientInvitation = new ClientInvitation({
+        invitation_id,
+        associated_org,
+        status: "unaccepted",
+        client_email,
+        invite_url: `https://kamariteams.com/client-signup?email=${client_email}&type=client&org_id=${associated_org.org_id}&invitation_id=${invitation_id}`,
+      });
+  
+      created_client_invitation = await newClientInvitation.save();
+    }
+
 
     console.log(created_client_invitation);
 
@@ -2658,6 +2668,14 @@ app.post("/client-user", async (req, res) => {
     if (existing_client.client_users.length < 5) {
       console.log("3");
       const client_user_id = uuidv4();
+
+      const stripe = require("stripe")(process.env.STRIPE_TEST);
+
+      const customer = await stripe.customers.create({
+        name: `${client_user_name.first} ${client_user_name.last}`,
+        email: client_user_email,
+      });
+
       const client_user = new ClientUser({
         client_user_id,
         client_user_name,
@@ -2666,6 +2684,7 @@ app.post("/client-user", async (req, res) => {
         type: "client user",
         marketable: true,
         client,
+        stripe_customer: customer
       });
 
       const created_client_user = await client_user.save();

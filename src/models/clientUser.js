@@ -29,6 +29,10 @@ const clientUserSchema = new mongoose.Schema({
   client: {
     type: Object,
     required: true
+  },
+  stripe_customer: {
+    type: Object,
+    required: true
   }
 });
 
