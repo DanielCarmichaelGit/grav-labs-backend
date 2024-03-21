@@ -210,8 +210,6 @@ app.post("/signup", async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, saltRounds);
       const user_id = uuidv4();
       const org_id = uuidv4();
-      const task_id = uuidv4();
-      const alert_id = uuidv4();
       const sprint_id = uuidv4();
       const project_id = uuidv4();
 
@@ -1331,6 +1329,62 @@ app.post("/reset-password-link", async (req, res) => {
           message: "We could not find the user associated with the email",
         });
       }
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
+app.post("/reset-password", async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { id, password } = req.body;
+
+    if (id && password) {
+      const user = await User.findOne({ user_id: id });
+      if (user?.email) {
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        await User.findOneAndUpdate(
+          { user_id: id },
+          {
+            password: hashedPassword,
+          }
+        );
+
+        res.status(200).json({
+          message: "Password Reset",
+        });
+      } else {
+        const client_user = await ClientUser.findOne({ client_user_id: id });
+        if (client_user?.client_user_email) {
+          const saltRounds = 10;
+          const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+          await ClientUser.findOneAndUpdate(
+            { client_user_id: id },
+            {
+              client_user_password: hashedPassword,
+            }
+          );
+
+          res.status(200).json({
+            message: "Password Reset",
+          });
+        } else {
+          res.status(404).json({
+            message: "Could not find a user with the associated id",
+          });
+        }
+      }
+    } else {
+      res.status(500).json({
+        message: "Please provide a password and id",
+      });
     }
   } catch (error) {
     res.status(500).json({
@@ -3110,26 +3164,34 @@ app.post("/client-login", async (req, res) => {
       client_id: client_user.client.client_id,
     });
 
-    if (
-      client_user &&
-      client_user.client_user_password === client_user_password
-    ) {
-      const signed_client_user = jwt.sign(
-        {
-          client_id: client.client_id,
-          client_user_id: client_user.client_user_id,
-        },
-        process.env.SECRET_JWT,
-        {
-          expiresIn: "7d",
-        }
+    if (client_user) {
+      const hash_compare = await comparePassword(
+        client_user_password,
+        client.client_user_password
       );
 
-      res.status(200).json({
-        message: "Client Logged In",
-        token: signed_client_user,
-        client_user,
-      });
+      if (hashCompare) {
+        const signed_client_user = jwt.sign(
+          {
+            client_id: client.client_id,
+            client_user_id: client_user.client_user_id,
+          },
+          process.env.SECRET_JWT,
+          {
+            expiresIn: "7d",
+          }
+        );
+  
+        res.status(200).json({
+          message: "Client Logged In",
+          token: signed_client_user,
+          client_user,
+        });
+      } else {
+        res.status(409).json({
+          message: "Authentication Invalid"
+        })
+      }
     } else if (client_user.client_user_password !== client_user_password) {
       res.status(404).json({
         message: "Incorrect Login Credentials",
@@ -3203,11 +3265,14 @@ app.post("/client-user", async (req, res) => {
         email: client_user_email,
       });
 
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
       const client_user = new ClientUser({
         client_user_id,
         client_user_name,
         client_user_email,
-        client_user_password,
+        client_user_password: hashedPassword,
         type: "client user",
         marketable: true,
         client,
