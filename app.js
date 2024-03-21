@@ -1001,7 +1001,7 @@ app.post("/reset-password-link", async (req, res) => {
           </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="e91ZwuHxUeknHu24krPgcX" data-mc-module-version="2019-10-22">
             <tbody>
               <tr>
-                <td style="padding:18px 0px 18px 0px; line-height:22px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: inherit">Someone sent you an invite to Kamari</div><div></div></div></td>
+                <td style="padding:18px 0px 18px 0px; line-height:22px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: inherit">You requested a password reset link</div><div></div></div></td>
               </tr>
             </tbody>
           </table></td>
@@ -1018,7 +1018,7 @@ app.post("/reset-password-link", async (req, res) => {
                       <tbody>
                         <tr>
                         <td align="center" bgcolor="#be4bff" class="inner-td" style="border-radius:6px; font-size:16px; text-align:right; background-color:inherit;">
-                          <a href="https://kamariteams.com/forgot-password?u=${user.user_id}" style="background-color:#be4bff; border:0px solid #333333; border-color:#333333; border-radius:6px; border-width:0px; color:#ffffff; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; width:600px;" target="_blank">Get Kamari for Free</a>
+                          <a href="https://kamariteams.com/forgot-password?u=${user.user_id}" style="background-color:#be4bff; border:0px solid #333333; border-color:#333333; border-radius:6px; border-width:0px; color:#ffffff; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; width:600px;" target="_blank">Reset Password</a>
                         </td>
                         </tr>
                       </tbody>
@@ -1255,7 +1255,7 @@ app.post("/reset-password-link", async (req, res) => {
             </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="e91ZwuHxUeknHu24krPgcX" data-mc-module-version="2019-10-22">
               <tbody>
                 <tr>
-                  <td style="padding:18px 0px 18px 0px; line-height:22px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: inherit">Someone sent you an invite to Kamari</div><div></div></div></td>
+                  <td style="padding:18px 0px 18px 0px; line-height:22px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: inherit">You requested a password reset link</div><div></div></div></td>
                 </tr>
               </tbody>
             </table></td>
@@ -1272,7 +1272,7 @@ app.post("/reset-password-link", async (req, res) => {
                         <tbody>
                           <tr>
                           <td align="center" bgcolor="#be4bff" class="inner-td" style="border-radius:6px; font-size:16px; text-align:right; background-color:inherit;">
-                            <a href="https://kamariteams.com/forgot-password?u=${client_user.client_user_id}" style="background-color:#be4bff; border:0px solid #333333; border-color:#333333; border-radius:6px; border-width:0px; color:#ffffff; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; width:600px;" target="_blank">Get Kamari for Free</a>
+                            <a href="https://kamariteams.com/forgot-password?u=${client_user.client_user_id}" style="background-color:#be4bff; border:0px solid #333333; border-color:#333333; border-radius:6px; border-width:0px; color:#ffffff; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; width:600px;" target="_blank">Reset Password</a>
                           </td>
                           </tr>
                         </tbody>
