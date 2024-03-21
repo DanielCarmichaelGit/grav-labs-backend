@@ -1340,7 +1340,7 @@ app.post("/client-invitation", authenticateJWT, async (req, res) => {
 
     if (refreshSend) {
       created_client_invitation = await ClientInvitation.findOneAndUpdate({ client_email }, {
-        status: unaccepted
+        status: "unaccepted"
       }, {
         $new: true
       })
