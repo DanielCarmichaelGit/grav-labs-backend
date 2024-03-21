@@ -3167,7 +3167,7 @@ app.post("/client-login", async (req, res) => {
     if (client_user) {
       const hash_compare = await comparePassword(
         client_user_password,
-        client.client_user_password
+        client_user.client_user_password
       );
 
       if (hash_compare) {
