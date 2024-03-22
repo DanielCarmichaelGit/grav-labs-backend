@@ -240,7 +240,7 @@ app.post("/signup", async (req, res) => {
           last: last,
         },
         type,
-        hourly_rate: parseInt(hourly_rate)
+        hourly_rate: parseInt(hourly_rate),
       };
 
       // create new org
@@ -1769,8 +1769,8 @@ app.put("/update-project", authenticateJWT, async (req, res) => {
       );
 
       res.status(200).json({
-        message: "Project Updated"
-      })
+        message: "Project Updated",
+      });
     } else {
       res.status(409).json({
         message: "Authentication Invalid",
@@ -2939,7 +2939,8 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
                   status: task.status,
                   escalation: task.escalation,
                   completed_on: Date.now(),
-                  project: task.project
+                  project: task.project,
+                  duration: task.duration,
                   // Include any other fields you need to update
                 },
               },
@@ -2975,7 +2976,8 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
                   status: task.status,
                   escalation: task.escalation,
                   completed_on: "incomplete",
-                  project: task.project
+                  project: task.project,
+                  duration: task.duration
                 },
               },
               { new: true }
@@ -3006,7 +3008,8 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
                   client: task.client,
                   status: task.status,
                   escalation: task.escalation,
-                  project: task.project
+                  project: task.project,
+                  duration: task.duration
                 },
               },
               { new: true }
@@ -3092,7 +3095,7 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
         requires_authorization,
         organization,
         temporary_task_id,
-        project
+        project,
       } = req.body;
 
       console.log("PAYLOAD DESTRUCTURED");
@@ -3117,7 +3120,7 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
           requires_authorization,
           //sprint_id,
           organization,
-          project
+          project,
         });
 
         console.log("NEW TASK: ", newTask);
@@ -3267,7 +3270,7 @@ app.get("/client-user", authenticateJWT, async (req, res) => {
       const client_user = await ClientUser.findOne({
         "client.client_id": client_id,
       });
-  
+
       if (client_user) {
         res.status(200).json({
           message: "Client User Found",
@@ -3283,8 +3286,8 @@ app.get("/client-user", authenticateJWT, async (req, res) => {
       }
     } else {
       res.status(409).json({
-        message: "Authentication Invalid"
-      })
+        message: "Authentication Invalid",
+      });
     }
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
@@ -3323,7 +3326,10 @@ app.post("/client-user", async (req, res) => {
       });
 
       const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(client_user_password, saltRounds);
+      const hashedPassword = await bcrypt.hash(
+        client_user_password,
+        saltRounds
+      );
 
       const client_user = new ClientUser({
         client_user_id,
@@ -3373,7 +3379,7 @@ app.post("/client-user", async (req, res) => {
         message: "Client User Created",
         client_user: created_client_user,
         client,
-        token: signed_client_user
+        token: signed_client_user,
       });
     } else {
       res.status(200).json({
