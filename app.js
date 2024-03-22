@@ -2940,7 +2940,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
                   escalation: task.escalation,
                   completed_on: Date.now(),
                   project: task.project,
-                  duration: task.duration,
+                  duration: parseInt(task.duration),
                   // Include any other fields you need to update
                 },
               },
@@ -2977,7 +2977,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
                   escalation: task.escalation,
                   completed_on: "incomplete",
                   project: task.project,
-                  duration: task.duration
+                  duration: parseInt(task.duration)
                 },
               },
               { new: true }
@@ -3019,8 +3019,8 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
               message: "Task Updated",
               task: updated_task,
               task_id,
-              new_duration: updated_task.duration,
-              old_duration: task.duration,
+              new_duration: updated_parseInt(task.duration),
+              old_duration: parseInt(task.duration),
               log: 3,
             });
           } catch (error) {
