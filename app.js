@@ -1486,7 +1486,9 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
           const seconds_to_bill = task.billed_duration
             ? task.duration - task.billed_duration
             : task.duration;
-          const hours_to_bill = (seconds_to_bill / (60 * 60 * 1000)).toFixed(3);
+          const hours_to_bill = Math.floor(seconds_to_bill / (60 * 60 * 1000));
+
+          // add a way to accumulate the dead hours (time above the integer) so they can be billed later
 
           return hours_to_bill;
         }
@@ -1513,13 +1515,17 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
               unit_amount: stripe_invoice_price,
               quantity: calculateHours(task),
               metadata: {
-                project: task.project ? {
-                  project_id: task.project.project_id,
-                  title: task.project.title,
-                  status: task.project.status,
-                  description: task.project.description ? task.project.description : ""
-                } : null
-              }
+                project: task.project
+                  ? {
+                      project_id: task.project.project_id,
+                      title: task.project.title,
+                      status: task.project.status,
+                      description: task.project.description
+                        ? task.project.description
+                        : "",
+                    }
+                  : null,
+              },
             });
 
             res.status(200).json({
