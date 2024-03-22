@@ -1488,8 +1488,14 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
             : task.duration;
           const hours_to_bill = Math.floor(seconds_to_bill / (60 * 60 * 1000));
 
-          // add a way to accumulate the dead hours (time above the integer) so they can be billed later
+          const dead_hours = (seconds_to_bill / (60 * 60 * 1000)).toFixed(3) - hours_to_bill;
 
+          if (dead_hours > 0.00) {
+            Client.findOneAndUpdate({ client_id }, {
+              dead_hours: dead_hours
+            })
+          }
+          
           return hours_to_bill;
         }
 
