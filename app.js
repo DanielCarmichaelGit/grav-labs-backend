@@ -2938,6 +2938,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
                   status: task.status,
                   escalation: task.escalation,
                   completed_on: Date.now(),
+                  project: task.project
                   // Include any other fields you need to update
                 },
               },
@@ -2973,6 +2974,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
                   status: task.status,
                   escalation: task.escalation,
                   completed_on: "incomplete",
+                  project: task.project
                 },
               },
               { new: true }
@@ -3003,6 +3005,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
                   client: task.client,
                   status: task.status,
                   escalation: task.escalation,
+                  project: task.project
                 },
               },
               { new: true }
@@ -3088,6 +3091,7 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
         requires_authorization,
         organization,
         temporary_task_id,
+        project
       } = req.body;
 
       console.log("PAYLOAD DESTRUCTURED");
@@ -3112,6 +3116,7 @@ app.post("/tasks", authenticateJWT, async (req, res) => {
           requires_authorization,
           //sprint_id,
           organization,
+          project
         });
 
         console.log("NEW TASK: ", newTask);
