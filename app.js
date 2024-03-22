@@ -1473,41 +1473,26 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
 
       const tasks = await Task.find({ task_id: { $in: task_ids } });
 
-      const organization = await Organization.findOne({ org_id: user.organization.org_id });
+      const organization = await Organization.findOne({
+        org_id: user.organization.org_id,
+      });
 
       if (organization?.stripe_account?.id) {
         const db_user = await User.findOne({ user_id: user.user_id });
         const db_user_price = db_user.hourly_rate;
-  
+        const stripe_invoice_price = db_user_pricee * 100;
+
         function calculateHours(task) {
-          const seconds_to_bill = task.billed_duration ? task.duration - task.billed_duration : task.duration;
+          const seconds_to_bill = task.billed_duration
+            ? task.duration - task.billed_duration
+            : task.duration;
           const hours_to_bill = (seconds_to_bill / (60 * 60 * 1000)).toFixed(3);
-  
+
           return hours_to_bill;
         }
-  
-        const line_items = tasks.map((task) => {
-          const product_data = {
-            title: task.title
-          };
-  
-          if (task.project) {
-            product_data.project_title = task.project.title;
-            product_data.project_description = task.project.description;
-          }
-  
-          return {
-            price_data: {
-              currency: 'usd',
-              product_data,
-              unit_amount: db_user_price,
-            },
-            quantity: calculateHours(task),
-          };
-        });
-  
+
         const client = await Client.findOne({ client_id });
-  
+
         const stripe = require("stripe")(process.env.STRIPE_TEST);
 
         const invoice = await stripe.invoices.create({
@@ -1515,25 +1500,34 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
           auto_advance: false, // If you want to automatically advance the invoice to the next billing cycle
           collection_method: "send_invoice", // This can be 'send_invoice' or 'charge_automatically' based on your preference
           days_until_due: 7, // Adjust as needed
-          line_items: line_items,
           on_behalf_of: organization.stripe_account.id,
-          statement_descriptor: organization.name
+          statement_descriptor: organization.name,
         });
-  
+
         if (invoice) {
-          res.status(200).json({
-            message: "Invoice Created",
-            invoice
-          })
+          for (let task of tasks) {
+            await stripe.invoiceItems.create({
+              customer: client.client_users[0].stripe_customer.id,
+              invoice: invoice.id,
+              description: task.title,
+              unit_amount: stripe_invoice_price,
+              quantity: calculateHours(task),
+            });
+
+            res.status(200).json({
+              message: "Invoice Created",
+              invoice,
+            });
+          }
         } else {
           res.status(500).json({
-            message: "There was an issue creating your invoice"
-          })
+            message: "There was an issue creating your invoice",
+          });
         }
       } else {
         res.status(404).json({
-          message: "Stripe account not found"
-        })
+          message: "Stripe account not found",
+        });
       }
     } else {
       res.status(409).json({
