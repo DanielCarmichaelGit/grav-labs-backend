@@ -3262,22 +3262,28 @@ app.get("/client-user", authenticateJWT, async (req, res) => {
 
     const client_id = req.user.client_id;
 
-    const client_user = await ClientUser.findOne({
-      "client.client_id": client_id,
-    });
-
-    if (client_user) {
-      res.status(200).json({
-        message: "Client User Found",
-        client_user,
+    if (client_id) {
+      const client_user = await ClientUser.findOne({
+        "client.client_id": client_id,
       });
+  
+      if (client_user) {
+        res.status(200).json({
+          message: "Client User Found",
+          client_user,
+        });
+      } else {
+        res.status(404).json({
+          message: "No Client User Found",
+          requested_resource: {
+            client_id,
+          },
+        });
+      }
     } else {
-      res.status(404).json({
-        message: "No Client User Found",
-        requested_resource: {
-          client_id,
-        },
-      });
+      res.status(409).json({
+        message: "Authentication Invalid"
+      })
     }
   } catch (error) {
     res.status(500).json({ status: 500, message: error });
@@ -3351,10 +3357,22 @@ app.post("/client-user", async (req, res) => {
 
       console.log("5");
 
+      const signed_client_user = jwt.sign(
+        {
+          client_id: existing_client.client_id,
+          client_user_id: client_user.client_user_id,
+        },
+        process.env.SECRET_JWT,
+        {
+          expiresIn: "7d",
+        }
+      );
+
       res.status(200).json({
         message: "Client User Created",
         client_user: created_client_user,
         client,
+        token: signed_client_user
       });
     } else {
       res.status(200).json({
