@@ -1469,7 +1469,10 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
     if (user) {
       const { task_ids, client_id, title } = req.body;
 
+      dbConnect(process.env.GEN_AUTH);
+
       const tasks = await Task.find({ task_id: { $in: task_ids } });
+
       const organization = await Organization.findOne({ org_id: user.organization.org_id });
 
       if (organization?.stripe_account?.id) {
