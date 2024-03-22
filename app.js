@@ -3316,7 +3316,7 @@ app.post("/client-user", async (req, res) => {
       });
 
       const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const hashedPassword = await bcrypt.hash(client_user_password, saltRounds);
 
       const client_user = new ClientUser({
         client_user_id,
