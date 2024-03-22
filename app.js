@@ -1505,6 +1505,8 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
   
         const client = await Client.findOne({ client_id });
   
+        const stripe = require("stripe")(process.env.STRIPE_TEST);
+
         const invoice = await stripe.invoices.create({
           customer: client.client_users[0].stripe_customer.id, // Replace 'customer_id' with your actual customer ID
           auto_advance: false, // If you want to automatically advance the invoice to the next billing cycle
