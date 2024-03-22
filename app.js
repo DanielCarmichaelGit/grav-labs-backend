@@ -240,6 +240,7 @@ app.post("/signup", async (req, res) => {
           last: last,
         },
         type,
+        hourly_rate: parseInt(hourly_rate)
       };
 
       // create new org
