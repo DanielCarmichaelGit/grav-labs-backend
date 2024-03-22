@@ -3019,7 +3019,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
               message: "Task Updated",
               task: updated_task,
               task_id,
-              new_duration: updated_parseInt(task.duration),
+              new_duration: parseInt(updated_task.duration),
               old_duration: parseInt(task.duration),
               log: 3,
             });
