@@ -3009,7 +3009,7 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
                   status: task.status,
                   escalation: task.escalation,
                   project: task.project,
-                  duration: task.duration
+                  duration: parseInt(task.duration)
                 },
               },
               { new: true }
@@ -3019,6 +3019,8 @@ app.put("/tasks", authenticateJWT, async (req, res) => {
               message: "Task Updated",
               task: updated_task,
               task_id,
+              new_duration: updated_task.duration,
+              old_duration: task.duration,
               log: 3,
             });
           } catch (error) {
