@@ -149,7 +149,7 @@ app.post("/signup", async (req, res) => {
             last,
           },
           role,
-          hourly_rate: parseInt(hourly_rate)
+          hourly_rate: parseInt(hourly_rate),
         };
 
         console.log("6", org_user);
@@ -1743,6 +1743,45 @@ app.get("/public_doc", async (req, res) => {
   }
 });
 
+app.put("/update-project", authenticateJWT, async (req, res) => {
+  try {
+    const client_id = req.user.client_id;
+
+    if (client_id) {
+      dbConnect(process.env.GEN_AUTH);
+
+      const { project_id, title, description, budget, status } = req.body;
+
+      await Project.findOneAndUpdate(
+        { project_id },
+        {
+          $set: {
+            title,
+            description,
+            status,
+            budget,
+          },
+        },
+        {
+          $new: true,
+        }
+      );
+
+      res.status(200).json({
+        message: "Project Updated"
+      })
+    } else {
+      res.status(409).json({
+        message: "Authentication Invalid",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
 app.post("/project", authenticateJWT, async (req, res) => {
   try {
     const client_id = req.user.client_id;
@@ -1781,7 +1820,7 @@ app.post("/project", authenticateJWT, async (req, res) => {
           cost: 0,
           description,
           budget: budget,
-          invoices: []
+          invoices: [],
         });
 
         const savedProject = await newProject.save();
@@ -3187,7 +3226,7 @@ app.post("/client-login", async (req, res) => {
             expiresIn: "7d",
           }
         );
-  
+
         res.status(200).json({
           message: "Client Logged In",
           token: signed_client_user,
@@ -3195,8 +3234,8 @@ app.post("/client-login", async (req, res) => {
         });
       } else {
         res.status(409).json({
-          message: "Authentication Invalid"
-        })
+          message: "Authentication Invalid",
+        });
       }
     } else if (client_user.client_user_password !== client_user_password) {
       res.status(404).json({
