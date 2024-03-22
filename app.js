@@ -1467,58 +1467,67 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
     const user = req.user.user;
 
     if (user) {
-      const { task_ids, client_id } = req.body;
+      const { task_ids, client_id, title } = req.body;
 
       const tasks = await Task.find({ task_id: { $in: task_ids } });
+      const organization = await Organization.findOne({ org_id: user.organization.org_id });
 
-      const db_user = await User.findOne({ user_id: user.user_id });
-      const db_user_price = db_user.hourly_rate;
-
-      function calculateHours(task) {
-        const seconds_to_bill = task.billed_duration ? task.duration - task.billed_duration : task.duration;
-        const hours_to_bill = (seconds_to_bill / (60 * 60 * 1000)).toFixed(3);
-
-        return hours_to_bill;
-      }
-
-      const line_items = tasks.map((task) => {
-        const product_data = {
-          title: task.title
-        };
-
-        if (task.project) {
-          product_data.project_title = task.project.title;
-          product_data.project_description = task.project.description;
+      if (organization?.stripe_account?.id) {
+        const db_user = await User.findOne({ user_id: user.user_id });
+        const db_user_price = db_user.hourly_rate;
+  
+        function calculateHours(task) {
+          const seconds_to_bill = task.billed_duration ? task.duration - task.billed_duration : task.duration;
+          const hours_to_bill = (seconds_to_bill / (60 * 60 * 1000)).toFixed(3);
+  
+          return hours_to_bill;
         }
-
-        return {
-          price_data: {
-            currency: 'usd',
-            product_data,
-            unit_amount: db_user_price,
-          },
-          quantity: calculateHours(task),
-        };
-      });
-
-      const client = await Client.findOne({ client_id });
-
-      const invoice = await stripe.invoices.create({
-        customer: client.client_users[0].stripe_customer.id, // Replace 'customer_id' with your actual customer ID
-        auto_advance: false, // If you want to automatically advance the invoice to the next billing cycle
-        collection_method: "send_invoice", // This can be 'send_invoice' or 'charge_automatically' based on your preference
-        days_until_due: 7, // Adjust as needed
-        lines: line_items,
-      });
-
-      if (invoice) {
-        res.status(200).json({
-          message: "Invoice Created",
-          invoice
-        })
+  
+        const line_items = tasks.map((task) => {
+          const product_data = {
+            title: task.title
+          };
+  
+          if (task.project) {
+            product_data.project_title = task.project.title;
+            product_data.project_description = task.project.description;
+          }
+  
+          return {
+            price_data: {
+              currency: 'usd',
+              product_data,
+              unit_amount: db_user_price,
+            },
+            quantity: calculateHours(task),
+          };
+        });
+  
+        const client = await Client.findOne({ client_id });
+  
+        const invoice = await stripe.invoices.create({
+          customer: client.client_users[0].stripe_customer.id, // Replace 'customer_id' with your actual customer ID
+          auto_advance: false, // If you want to automatically advance the invoice to the next billing cycle
+          collection_method: "send_invoice", // This can be 'send_invoice' or 'charge_automatically' based on your preference
+          days_until_due: 7, // Adjust as needed
+          lines: line_items,
+          on_behalf_of: organization.stripe_account.id,
+          statement_descriptor: organization.name
+        });
+  
+        if (invoice) {
+          res.status(200).json({
+            message: "Invoice Created",
+            invoice
+          })
+        } else {
+          res.status(500).json({
+            message: "There was an issue creating your invoice"
+          })
+        }
       } else {
-        res.status(500).json({
-          message: "There was an issue creating your invoice"
+        res.status(404).json({
+          message: "Stripe account not found"
         })
       }
     } else {
