@@ -1515,7 +1515,7 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
           auto_advance: false, // If you want to automatically advance the invoice to the next billing cycle
           collection_method: "send_invoice", // This can be 'send_invoice' or 'charge_automatically' based on your preference
           days_until_due: 7, // Adjust as needed
-          lines: line_items,
+          items: line_items,
           on_behalf_of: organization.stripe_account.id,
           statement_descriptor: organization.name
         });
