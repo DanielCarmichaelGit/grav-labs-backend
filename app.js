@@ -1512,6 +1512,14 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
               description: task.title,
               unit_amount: stripe_invoice_price,
               quantity: calculateHours(task),
+              metadata: {
+                project: task.project ? {
+                  project_id: task.project.project_id,
+                  title: task.project.title,
+                  status: task.project.status,
+                  description: task.project.description ? task.project.description : ""
+                } : null
+              }
             });
 
             res.status(200).json({
