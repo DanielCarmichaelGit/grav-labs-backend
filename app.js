@@ -1480,7 +1480,7 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
       if (organization?.stripe_account?.id) {
         const db_user = await User.findOne({ user_id: user.user_id });
         const db_user_price = db_user.hourly_rate;
-        const stripe_invoice_price = db_user_pricee * 100;
+        const stripe_invoice_price = db_user_price * 100;
 
         function calculateHours(task) {
           const seconds_to_bill = task.billed_duration
