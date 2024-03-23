@@ -1507,7 +1507,7 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
   
           const invoice = await stripe.invoices.create({
             customer: client.client_users[0].stripe_customer.id, // Replace 'customer_id' with your actual customer ID
-            auto_advance: false, // If you want to automatically advance the invoice to the next billing cycle
+            auto_advance: true, // If you want to automatically advance the invoice to the next billing cycle
             collection_method: "send_invoice", // This can be 'send_invoice' or 'charge_automatically' based on your preference
             days_until_due: 7, // Adjust as needed
             on_behalf_of: organization.stripe_account.id,
@@ -1516,7 +1516,6 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
               type: "account",
               account: organization.stripe_account.id
             },
-            auto_advance: true
           });
   
           if (invoice) {
