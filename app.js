@@ -1512,6 +1512,11 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
             days_until_due: 7, // Adjust as needed
             on_behalf_of: organization.stripe_account.id,
             statement_descriptor: organization.name,
+            issuer: {
+              type: "account",
+              account: organization.stripe_account.id
+            },
+            auto_advance: true
           });
   
           if (invoice) {
