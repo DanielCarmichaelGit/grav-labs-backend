@@ -1495,55 +1495,63 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
               dead_hours: dead_hours
             })
           }
-          
+
           return hours_to_bill;
         }
 
         const client = await Client.findOne({ client_id });
 
-        const stripe = require("stripe")(process.env.STRIPE_TEST);
+        if (client.client_users[0].stripe_customer.id) {
 
-        const invoice = await stripe.invoices.create({
-          customer: client.client_users[0].stripe_customer.id, // Replace 'customer_id' with your actual customer ID
-          auto_advance: false, // If you want to automatically advance the invoice to the next billing cycle
-          collection_method: "send_invoice", // This can be 'send_invoice' or 'charge_automatically' based on your preference
-          days_until_due: 7, // Adjust as needed
-          on_behalf_of: organization.stripe_account.id,
-          statement_descriptor: organization.name,
-        });
-
-        if (invoice) {
-          for (let task of tasks) {
-            await stripe.invoiceItems.create({
-              customer: client.client_users[0].stripe_customer.id,
-              invoice: invoice.id,
-              description: task.title,
-              unit_amount: stripe_invoice_price,
-              quantity: calculateHours(task),
-              metadata: {
-                project: task.project
-                  ? {
-                      project_id: task.project.project_id,
-                      title: task.project.title,
-                      status: task.project.status,
-                      description: task.project.description
-                        ? task.project.description
-                        : "",
-                    }
-                  : null,
-              },
-            });
-
-            res.status(200).json({
-              message: "Invoice Created",
-              invoice,
+          const stripe = require("stripe")(process.env.STRIPE_TEST);
+  
+          const invoice = await stripe.invoices.create({
+            customer: client.client_users[0].stripe_customer.id, // Replace 'customer_id' with your actual customer ID
+            auto_advance: false, // If you want to automatically advance the invoice to the next billing cycle
+            collection_method: "send_invoice", // This can be 'send_invoice' or 'charge_automatically' based on your preference
+            days_until_due: 7, // Adjust as needed
+            on_behalf_of: organization.stripe_account.id,
+            statement_descriptor: organization.name,
+          });
+  
+          if (invoice) {
+            for (let task of tasks) {
+              await stripe.invoiceItems.create({
+                customer: client.client_users[0].stripe_customer.id,
+                invoice: invoice.id,
+                description: task.title,
+                unit_amount: stripe_invoice_price,
+                quantity: calculateHours(task),
+                metadata: {
+                  project: task.project
+                    ? {
+                        project_id: task.project.project_id,
+                        title: task.project.title,
+                        status: task.project.status,
+                        description: task.project.description
+                          ? task.project.description
+                          : "",
+                      }
+                    : null,
+                },
+              });
+  
+              res.status(200).json({
+                message: "Invoice Created",
+                invoice,
+              });
+            }
+          } else {
+            res.status(500).json({
+              message: "There was an issue creating your invoice",
             });
           }
         } else {
-          res.status(500).json({
-            message: "There was an issue creating your invoice",
-          });
+          res.status(404).json({
+            message: "Could not find customer for associated client"
+          })
         }
+
       } else {
         res.status(404).json({
           message: "Stripe account not found",
