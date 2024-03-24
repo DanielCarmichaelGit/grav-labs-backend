@@ -1635,6 +1635,7 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
               if (invoices.has_more) {
                 invoices = await stripe.invoices.list({
                   limit: parseInt(chunk),
+                  status: type,
                   starting_after: all_invoices[all_invoices.length - 1].id,
                 });
                 all_invoices.push(...invoices.data);
