@@ -1492,16 +1492,6 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
             (
               (seconds_to_bill / (60 * 60 * 1000)).toFixed(3) - hours_to_bill
             ).toFixed(3) + existing_dead_hours;
-
-          if (dead_hours > 0.0) {
-            await Client.findOneAndUpdate(
-              { client_id },
-              {
-                dead_hours: dead_hours,
-              }
-            );
-          }
-
           return { hours_to_bill, dead_hours };
         }
 
@@ -1552,6 +1542,15 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                     : null,
                 },
               });
+
+              if (client_dead_hours > 0.0) {
+                await Client.findOneAndUpdate(
+                  { client_id },
+                  {
+                    dead_hours: client_dead_hours,
+                  }
+                );
+              }
 
               res.status(200).json({
                 message: "Invoice Created",
