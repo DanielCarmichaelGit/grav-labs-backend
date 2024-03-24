@@ -1500,6 +1500,11 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
         if (client.client_users[0].stripe_customer.id) {
           const stripe = require("stripe")(process.env.STRIPE_TEST);
 
+          const client_metadata = JSON.stringify({
+            client_id: client.client_id,
+            client_name: client.client_name,
+          });
+
           const invoice = await stripe.invoices.create({
             customer: client.client_users[0].stripe_customer.id, // Replace 'customer_id' with your actual customer ID
             collection_method: "send_invoice", // This can be 'send_invoice' or 'charge_automatically' based on your preference
@@ -1511,13 +1516,10 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
               account: organization.stripe_account.id,
             },
             metadata: {
-              client: {
-                client_id: client.client_id,
-                client_name: client.client_name
-              }
+              client: client_metadata
             },
             transfer_data: {
-              destination: organization.stripe_account.id
+              destination: organization.stripe_account.id,
             },
           });
 
@@ -1540,15 +1542,15 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                 quantity: hours_to_bill,
                 metadata: {
                   project: task.project
-                  ? {
-                    project_id: task.project.project_id,
-                    title: task.project.title,
-                    status: task.project.status,
-                    description: task.project.description
-                    ? task.project.description
-                    : "",
-                  }
-                  : null,
+                    ? {
+                        project_id: task.project.project_id,
+                        title: task.project.title,
+                        status: task.project.status,
+                        description: task.project.description
+                          ? task.project.description
+                          : "",
+                      }
+                    : null,
                 },
               });
 
@@ -1561,7 +1563,9 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                 );
               }
 
-              const finalized_invoice = await stripe.invoices.finalizeInvoice(invoice.id);
+              const finalized_invoice = await stripe.invoices.finalizeInvoice(
+                invoice.id
+              );
 
               res.status(200).json({
                 message: "Invoice Created",
@@ -1620,7 +1624,7 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
 
             let invoices = await stripe.invoices.list({
               limit: parseInt(chunk),
-              status: type
+              status: type,
             });
 
             has_more = invoices.has_more;
@@ -1703,8 +1707,8 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
       }
     } else {
       res.status(409).json({
-        message: "Authentication Invalid"
-      })
+        message: "Authentication Invalid",
+      });
     }
   } catch (error) {
     res.status(500).json({
