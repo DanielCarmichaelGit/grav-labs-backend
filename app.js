@@ -1533,7 +1533,7 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                 task,
                 existing_dead_hours
               );
-              client_dead_hours = parseFloat(client_dead_hours) + parseFloat(dead_hours);
+              client_dead_hours = parseFloat(existing_dead_hours) + parseFloat(dead_hours);
               await stripe.invoiceItems.create({
                 customer: client.client_users[0].stripe_customer.id,
                 invoice: invoice.id,
