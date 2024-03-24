@@ -1483,29 +1483,33 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
         const stripe_invoice_price = db_user_price * 100;
 
         function calculateHours(task, existing_dead_hours) {
-          
           const seconds_to_bill = task.billed_duration
-          ? task.duration - task.billed_duration
-          : task.duration;
+            ? task.duration - task.billed_duration
+            : task.duration;
           const hours_to_bill = Math.floor(seconds_to_bill / (60 * 60 * 1000));
-          
-          const dead_hours = ((seconds_to_bill / (60 * 60 * 1000)).toFixed(3) - hours_to_bill).toFixed(3) + existing_dead_hours;
-          
-          if (dead_hours > 0.00) {
-            Client.findOneAndUpdate({ client_id }, {
-              dead_hours: dead_hours
-            })
+
+          const dead_hours =
+            (
+              (seconds_to_bill / (60 * 60 * 1000)).toFixed(3) - hours_to_bill
+            ).toFixed(3) + existing_dead_hours;
+
+          if (dead_hours > 0.0) {
+            Client.findOneAndUpdate(
+              { client_id },
+              {
+                dead_hours: dead_hours,
+              }
+            );
           }
-          
-          return {hours_to_bill, dead_hours};
+
+          return { hours_to_bill, dead_hours };
         }
-        
+
         const client = await Client.findOne({ client_id });
 
         if (client.client_users[0].stripe_customer.id) {
-
           const stripe = require("stripe")(process.env.STRIPE_TEST);
-  
+
           const invoice = await stripe.invoices.create({
             customer: client.client_users[0].stripe_customer.id, // Replace 'customer_id' with your actual customer ID
             collection_method: "send_invoice", // This can be 'send_invoice' or 'charge_automatically' based on your preference
@@ -1514,15 +1518,20 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
             statement_descriptor: organization.name,
             issuer: {
               type: "account",
-              account: organization.stripe_account.id
+              account: organization.stripe_account.id,
             },
           });
-  
+
           if (invoice) {
             let client_dead_hours = 0;
             for (let task of tasks) {
-              const existing_dead_hours = client.dead_hours ? client.dead_hours : 0;
-              const [hours_to_bill, dead_hours] = calculateHours(task, existing_dead_hours)
+              const existing_dead_hours = client.dead_hours
+                ? client.dead_hours
+                : 0;
+              const { hours_to_bill, dead_hours } = calculateHours(
+                task,
+                existing_dead_hours
+              );
               client_dead_hours += dead_hours;
               await stripe.invoiceItems.create({
                 customer: client.client_users[0].stripe_customer.id,
@@ -1543,11 +1552,11 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                     : null,
                 },
               });
-  
+
               res.status(200).json({
                 message: "Invoice Created",
                 invoice,
-                dead_hours: client_dead_hours
+                dead_hours: client_dead_hours,
               });
             }
           } else {
@@ -1557,10 +1566,9 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
           }
         } else {
           res.status(404).json({
-            message: "Could not find customer for associated client"
-          })
+            message: "Could not find customer for associated client",
+          });
         }
-
       } else {
         res.status(404).json({
           message: "Stripe account not found",
