@@ -1620,6 +1620,7 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
 
             let invoices = await stripe.invoices.list({
               limit: parseInt(chunk),
+              status: type
             });
 
             has_more = invoices.has_more;
@@ -1676,18 +1677,19 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
               count: invoices.length,
               invoices,
             });
-          } else {
-            const invoices = await stripe.invoices.list({
-              limit: parseInt(chunk),
-              status: type,
-            });
-
-            res.status(200).json({
-              message: "Invoices found",
-              count: invoices.length,
-              invoices: invoices.data,
-            });
           }
+          // else {
+          //   const invoices = await stripe.invoices.list({
+          //     limit: parseInt(chunk),
+          //     status: type,
+          //   });
+
+          //   res.status(200).json({
+          //     message: "Invoices found",
+          //     count: invoices.length,
+          //     invoices: invoices.data,
+          //   });
+          // }
         } else {
           res.status(404).json({
             message:
