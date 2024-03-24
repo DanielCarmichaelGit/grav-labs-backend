@@ -1482,23 +1482,24 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
         const db_user_price = db_user.hourly_rate;
         const stripe_invoice_price = db_user_price * 100;
 
-        function calculateHours(task) {
+        function calculateHours(task, existing_dead_hours) {
+          
           const seconds_to_bill = task.billed_duration
-            ? task.duration - task.billed_duration
-            : task.duration;
+          ? task.duration - task.billed_duration
+          : task.duration;
           const hours_to_bill = Math.floor(seconds_to_bill / (60 * 60 * 1000));
-
-          const dead_hours = (seconds_to_bill / (60 * 60 * 1000)).toFixed(3) - hours_to_bill;
-
+          
+          const dead_hours = ((seconds_to_bill / (60 * 60 * 1000)).toFixed(3) - hours_to_bill).toFixed(3) + existing_dead_hours;
+          
           if (dead_hours > 0.00) {
             Client.findOneAndUpdate({ client_id }, {
               dead_hours: dead_hours
             })
           }
-
+          
           return hours_to_bill;
         }
-
+        
         const client = await Client.findOne({ client_id });
 
         if (client.client_users[0].stripe_customer.id) {
@@ -1524,7 +1525,7 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                 invoice: invoice.id,
                 description: task.title,
                 unit_amount: stripe_invoice_price,
-                quantity: calculateHours(task),
+                quantity: calculateHours(task, client.dead_hours ? client.dead_hours : 0),
                 metadata: {
                   project: task.project
                     ? {
