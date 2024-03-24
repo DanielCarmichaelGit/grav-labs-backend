@@ -1497,7 +1497,7 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
             })
           }
           
-          return hours_to_bill;
+          return {hours_to_bill, dead_hours};
         }
         
         const client = await Client.findOne({ client_id });
@@ -1519,13 +1519,17 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
           });
   
           if (invoice) {
+            let client_dead_hours = 0;
             for (let task of tasks) {
+              const existing_dead_hours = client.dead_hours ? client.dead_hours : 0;
+              const [hours_to_bill, dead_hours] = calculateHours(task, existing_dead_hours)
+              client_dead_hours += dead_hours;
               await stripe.invoiceItems.create({
                 customer: client.client_users[0].stripe_customer.id,
                 invoice: invoice.id,
                 description: task.title,
                 unit_amount: stripe_invoice_price,
-                quantity: calculateHours(task, client.dead_hours ? client.dead_hours : 0),
+                quantity: hours_to_bill,
                 metadata: {
                   project: task.project
                     ? {
@@ -1543,6 +1547,7 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
               res.status(200).json({
                 message: "Invoice Created",
                 invoice,
+                dead_hours: client_dead_hours
               });
             }
           } else {
