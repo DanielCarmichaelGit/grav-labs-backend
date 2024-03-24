@@ -1510,6 +1510,15 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
               type: "account",
               account: organization.stripe_account.id,
             },
+            metadata: {
+              client: {
+                client_id: client.client_id,
+                client_name: client.client_name
+              }
+            },
+            transfer_data: {
+              destination: organization.stripe_account.id
+            },
           });
 
           if (invoice) {
@@ -1531,19 +1540,15 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                 quantity: hours_to_bill,
                 metadata: {
                   project: task.project
-                    ? {
-                        project_id: task.project.project_id,
-                        title: task.project.title,
-                        status: task.project.status,
-                        description: task.project.description
-                          ? task.project.description
-                          : "",
-                      }
-                    : null,
-                  client: {
-                    client_id: client.client_id,
-                    client_name: client.client_name
+                  ? {
+                    project_id: task.project.project_id,
+                    title: task.project.title,
+                    status: task.project.status,
+                    description: task.project.description
+                    ? task.project.description
+                    : "",
                   }
+                  : null,
                 },
               });
 
@@ -1556,9 +1561,11 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                 );
               }
 
+              const finalized_invoice = await stripe.invoices.finalizeInvoice(invoice.id);
+
               res.status(200).json({
                 message: "Invoice Created",
-                invoice,
+                invoic: finalized_invoice,
                 dead_hours: client_dead_hours,
               });
             }
