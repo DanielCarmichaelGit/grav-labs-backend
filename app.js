@@ -1689,6 +1689,10 @@ app.get("/invoices", authenticateJWT, async (req, res) => {
           message: "Authentication Invalid",
         });
       }
+    } else {
+      res.status(409).json({
+        message: "Authentication Invalid"
+      })
     }
   } catch (error) {
     res.status(500).json({
