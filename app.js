@@ -1494,7 +1494,7 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
             ).toFixed(3) + existing_dead_hours;
 
           if (dead_hours > 0.0) {
-            Client.findOneAndUpdate(
+            await Client.findOneAndUpdate(
               { client_id },
               {
                 dead_hours: dead_hours,
