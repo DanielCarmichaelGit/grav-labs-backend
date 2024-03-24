@@ -1540,6 +1540,10 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                           : "",
                       }
                     : null,
+                  client: {
+                    client_id: client.client_id,
+                    client_name: client.client_name
+                  }
                 },
               });
 
