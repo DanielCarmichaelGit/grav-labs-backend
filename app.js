@@ -1489,9 +1489,9 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
           const hours_to_bill = Math.floor(seconds_to_bill / (60 * 60 * 1000));
 
           const dead_hours =
-            (
+            ((
               (seconds_to_bill / (60 * 60 * 1000)).toFixed(3) - hours_to_bill
-            ).toFixed(3) + existing_dead_hours;
+            ).toFixed(3) + existing_dead_hours) - (task.dead_hours ? task.dead_hours : 0);
           return { hours_to_bill, dead_hours };
         }
 
@@ -1534,6 +1534,13 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                 task,
                 existing_dead_hours
               );
+              // my problem is that when I add an invoice, it gets the existing dead hours and adds them to the new dead hours. 
+              // this does not account for if you keep billing the same tasks dead hours.
+
+              // update tasks billed duration
+              // update projects billed amount and duration
+
+              // subtract hours from dead_hours and add hours to hours to bill for each task
               client_dead_hours =
                 parseFloat(existing_dead_hours) + parseFloat(dead_hours);
               await stripe.invoiceItems.create({
@@ -1573,16 +1580,27 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                 );
               }
 
-              const finalized_invoice = await stripe.invoices.finalizeInvoice(
-                invoice.id
-              );
+              // update task to reflect existing dead hours
+              Task.findOneAndUpdate({ task_id: task.task_id }, {
+                dead_hours: dead_hours,
+                billed_duration: (task.billed_duration || 0) + (hours_to_bill * 60 * 60 * 1000)
+              })
 
-              res.status(200).json({
-                message: "Invoice Created",
-                invoic: finalized_invoice,
-                dead_hours: client_dead_hours,
-              });
+              if (task.project?.project_id) {
+                Project.findOneAndUpdate({ project_id: task.project.project_id }, {
+                  $push: { invoices: invoice.id },
+                  $inc: { cost: stripe_invoice_price * hours_to_bill, total_time: (hours_to_bill * 60 * 60 * 1000) }
+                })
+              }
             }
+            const finalized_invoice = await stripe.invoices.finalizeInvoice(
+              invoice.id
+            );
+            res.status(200).json({
+              message: "Invoice Created",
+              invoice: finalized_invoice,
+              dead_hours: client_dead_hours,
+            });
           } else {
             res.status(500).json({
               message: "There was an issue creating your invoice",

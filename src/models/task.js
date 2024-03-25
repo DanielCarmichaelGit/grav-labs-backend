@@ -18,7 +18,8 @@ const taskSchema = new mongoose.Schema({
   sprint_id: { type: String, required: false },
   organization: { type: Object, required: true },
   project: { type: Object, required: false },
-  billed_duration: { type: Number, required: false }
+  billed_duration: { type: Number, required: false },
+  dead_hours: { type: Number, required: false }
 });
 
 module.exports = mongoose.model("Task", taskSchema);
