@@ -3025,7 +3025,7 @@ app.put("/user", authenticateJWT, async (req, res) => {
 
     const user = req.user.user;
 
-    const { user_id, name, profile_image_url, email } = req.body;
+    const { user_id, email } = req.body;
 
     if (user_id === user.user_id) {
       if (email) {
