@@ -12,7 +12,8 @@ const clientSchema = new mongoose.Schema({
   tasks: { types: Array, required: false },
   dead_hours: { type: Number, required: false },
   total_billed: { type: Number, required: false },
-  total_paid: { type: Number, required: false }
+  total_paid: { type: Number, required: false },
+  total_billable_hours: { type: Number, required: false }
 });
 
 module.exports = mongoose.model("Client", clientSchema);

@@ -1516,7 +1516,7 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
               account: organization.stripe_account.id,
             },
             metadata: {
-              client: client_metadata
+              client: client_metadata,
             },
             transfer_data: {
               destination: organization.stripe_account.id,
@@ -1533,7 +1533,8 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                 task,
                 existing_dead_hours
               );
-              client_dead_hours = parseFloat(existing_dead_hours) + parseFloat(dead_hours);
+              client_dead_hours =
+                parseFloat(existing_dead_hours) + parseFloat(dead_hours);
               await stripe.invoiceItems.create({
                 customer: client.client_users[0].stripe_customer.id,
                 invoice: invoice.id,
@@ -1559,7 +1560,14 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                   { client_id },
                   {
                     dead_hours: client_dead_hours,
-                    total_billed: parseInt(hours_to_bill) * parseInt(stripe_invoice_price)
+                    total_billed: client.total_billed
+                      ? client.total_billed +
+                        parseInt(hours_to_bill) * parseInt(stripe_invoice_price)
+                      : parseInt(hours_to_bill) *
+                        parseInt(stripe_invoice_price),
+                    total_billable_hours: client.total_billable_hours
+                      ? client.total_billable_hours + hours_to_bill
+                      : hours_to_bill,
                   }
                 );
               }
