@@ -1559,6 +1559,7 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                   { client_id },
                   {
                     dead_hours: client_dead_hours,
+                    total_billed: parseInt(hours_to_bill) * parseInt(stripe_invoice_price)
                   }
                 );
               }

@@ -10,7 +10,9 @@ const clientSchema = new mongoose.Schema({
   client_admin: { type: Object, required: true },
   documents: {type: Array, required: true},
   tasks: { types: Array, required: false },
-  dead_hours: { type: Number, required: false }
+  dead_hours: { type: Number, required: false },
+  total_billed: { type: Number, required: false },
+  total_paid: { type: Number, required: false }
 });
 
 module.exports = mongoose.model("Client", clientSchema);
