@@ -1550,6 +1550,7 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
                 unit_amount: stripe_invoice_price,
                 quantity: hours_to_bill,
                 metadata: {
+                  task_id: task.task_id,
                   project: task.project
                     ? {
                         project_id: task.project.project_id,
