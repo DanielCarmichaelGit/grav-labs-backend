@@ -1517,6 +1517,7 @@ app.post("/invoices", authenticateJWT, async (req, res) => {
             },
             metadata: {
               client: client_metadata,
+              title
             },
             transfer_data: {
               destination: organization.stripe_account.id,
