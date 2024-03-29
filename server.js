@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
-const axios = require('axios');
 const Anthropic = require("@anthropic-ai/sdk");
 
 const app = express();
