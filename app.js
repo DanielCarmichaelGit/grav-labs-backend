@@ -3,7 +3,8 @@ const cors = require("cors");
 
 // import utility functions
 const dbConnect = require("./src/utils/dbConnect");
-const { Anthropic } = require("@anthropic-ai/sdk");
+//const { Anthropic } = require("@anthropic-ai/sdk");
+import Anthropic from "@anthropic-ai/sdk";
 
 // import packages
 const { v4: uuidv4 } = require("uuid");
