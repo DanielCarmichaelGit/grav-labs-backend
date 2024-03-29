@@ -3,6 +3,7 @@ const cors = require("cors");
 
 // import utility functions
 const dbConnect = require("./src/utils/dbConnect");
+const { Anthropic } = require("@anthropic-ai/sdk");
 
 // import packages
 const { v4: uuidv4 } = require("uuid");
@@ -14,23 +15,9 @@ const bcrypt = require("bcrypt");
 // Secret key for JWT signing (change it to a strong, random value)
 const SECRET_JWT = process.env.SECRET_JWT;
 
-// import models
-const User = require("./src/models/user");
-const Organization = require("./src/models/organization");
-const Task = require("./src/models/task");
-const Sprint = require("./src/models/sprint");
-const Alert = require("./src/models/alerts");
-const Project = require("./src/models/project");
-const Document = require("./src/models/document");
-const Folder = require("./src/models/folder");
-const ClientInvitation = require("./src/models/clientInvitation");
-const ClientUser = require("./src/models/clientUser");
-const Client = require("./src/models/client");
-const TeamInvitation = require("./src/models/teamInvitation");
-
 const app = express();
 app.use(cors());
-app.options("*", cors()); // Enable CORS pre-flight request for all routes
+app.options("*", cors());
 app.use(express.json({ limit: "50mb" }));
 
 // create utility transporter for email service
@@ -70,8 +57,49 @@ app.get("/", (req, res) => {
   return res.status(200).json({ message: "working" });
 });
 
-//###########################################################################
-// Add a POST endpoint for user registration (signup)
+app.post("/anthropic/landing-page", async (req, res) => {
+  const { prompt } = req.body;
+
+  try {
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const response = await anthropic.completions.create({
+      model: "claude-3-opus-20240229",
+      max_tokens: 4000,
+      temperature: 0,
+      prompt,
+      stop_sequences: [anthropic.HUMAN_PROMPT],
+      stream: true,
+    }, {
+      system: `Objective: \nIngest an object which will look similar to the following:\n\n{website_title: "Kamari", theme: "dark", colors: {primary: "#9013FE", secondary: "#BD10E0", tertiary: "#FF5555"}, header: {signup: "/signup", pricing: "/pricing", features: {Invoicing: "#invoicing", client_management: "#client-management", time_tracking: "#time-tracking"}}, copy: "Kamari teams is a time tracking, task management, and invoicing tool, designed for freelancers. Freelancers can invite clients, track time against tasks, send invoices for hours worked, and clients can closely manage their product pipeline via task management. Kamari teams partners with stripe to bring invoicing to every freelancer. Kamari teams takes no portion of the money earned... no platform fees ever! Get started for free with no credit card required. Don\'t like it? No commitment."}\n\nEach feature in the features dropdown should have its own section on thee landing page. Clicking on the feature in the feature dropdown should scroll the user the the position of the features section. Additional sections should be added to the landing page that are found within the copy of the input. Images should be added to the landing page where necessary, such as for each feature, in the header (logo) and in the footer (logo).\n\nTone:\nThe tone of the application should be friendly and jovial but remain professional and be as accurate and frank as possible with the responses.\n\nRules:\nThe output should not use global css definitions. It should use inline css. \n\nThe output landing page should be seo optimized using the latest seo trends.\n\nEnsure that the end user does not have to scroll at first to see some initial content. There should be a top section that is displayed after the page load.\n\nThe output should also have an object of required images. {header_logo: "", footer_logo: "", feature_invoicing: ""...}. The landing page that is generated should be react and should have all function definitions within the same output.\n\nThe output landing page should have a max header height of 60px unless specified within thee input object with the "header_height" key. \n\nThe initial content of the page should take up the entire height and width of the page and all other content should be found only when the user scrolls down. \n\nThe content that is found only when the user scrolls should load in on scroll.\n\nThe dropdown in the header should trigger on hover and should have styles similar to the other buttons but should contain a chevron to indicate it is a drop down. Again, this is very important. Any dropdown within the header or found within the landing page should be triggered on hover.\n\nEach button should have a outline: none on focus. \n\nAdd copy to ensure the page feels full of content. The input will include an "industry" key which will be a string. Additional copy should be derived from industry competition. \n\nThe input object will include "alignment" key that indicates if the copy should be aligned left, center, or right.\n\nThe input may include a "staggered" key which if it is true, the features should stagger from text aligned left to aligned right.\n\nThe header should be vertically aligned so each item is centered vertically.\n\nThe initial content should have an image within it. \n\nThe initial copy should not be the entire copy string but should be the key points of the copy string/should be derived from the copy.`,
+    });
+
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    });
+
+    response.data.on("data", (data) => {
+      const lines = data
+        .toString()
+        .split("\n")
+        .filter((line) => line.trim() !== "");
+
+      for (const line of lines) {
+        const message = line.replace(/^data: /, "");
+        if (message === "[DONE]") {
+          res.write("event: DONE\n\n");
+          res.end();
+          return;
+        }
+        res.write(`data: ${message}\n\n`);
+      }
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
 
 
 const PORT = process.env.PORT || 3000;
