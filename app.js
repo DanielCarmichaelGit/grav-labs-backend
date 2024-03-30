@@ -148,14 +148,11 @@ app.post("/anthropic/modify-html/stream", async (req, res) => {
       Connection: "keep-alive",
     });
 
-    let modifiedHtml = "";
-
     stream.on("text", (text) => {
-      modifiedHtml += text;
+      res.write(`${text}`);
     });
 
     stream.on("end", () => {
-      res.write(cleanedHtml);
       res.end();
     });
 
@@ -168,45 +165,6 @@ app.post("/anthropic/modify-html/stream", async (req, res) => {
     res.status(500).json({ error: "An error occurred" });
   }
 });
-
-// app.post("/upload-image", upload.single("image"), async (req, res) => {
-//   try {
-//     // Establish a database connection
-//     await dbConnect(process.env.GEN_AUTH);
-
-//     const image = req.file;
-//     const uniqueFilename = `${Date.now()}-${image.originalname}`;
-//     const uploadDirectory = path.join(__dirname, "uploads");
-
-//     // Create the upload directory if it doesn't exist
-//     if (!fs.existsSync(uploadDirectory)) {
-//       fs.mkdirSync(uploadDirectory);
-//     }
-
-//     // Save the image file to the upload directory
-//     const imagePath = path.join(uploadDirectory, uniqueFilename);
-//     fs.writeFileSync(imagePath, image.buffer);
-
-//     // Save the image metadata to MongoDB
-//     const db = mongoose.connection.db;
-//     const result = await db.collection("images").insertOne({
-//       filename: uniqueFilename,
-//       contentType: image.mimetype,
-//     });
-
-//     // Generate the hosted URL for the image
-//     const hostedUrl = `${req.protocol}://${req.get(
-//       "host"
-//     )}/uploads/${uniqueFilename}`;
-
-//     res
-//       .status(200)
-//       .json({ message: "Image uploaded successfully", imageUrl: hostedUrl });
-//   } catch (error) {
-//     console.error("Error:", error);
-//     res.status(500).json({ error: "An error occurred" });
-//   }
-// });
 
 // Endpoint to serve uploaded images
 app.get("/uploads/:filename", (req, res) => {
