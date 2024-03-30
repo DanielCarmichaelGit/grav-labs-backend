@@ -73,7 +73,7 @@ app.post("/anthropic/landing-page", async (req, res) => {
           "content": [
             {
               "type": "text",
-              "text": prompt
+              "text": JSON.stringify(prompt)
             }
           ]
         }
