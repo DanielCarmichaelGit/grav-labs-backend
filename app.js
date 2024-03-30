@@ -90,7 +90,6 @@ app.post("/anthropic/landing-page/stream", async (req, res) => {
     });
 
     stream.on("end", () => {
-      res.write("event: \n\nDONE\n\n");
       res.end();
     });
 
