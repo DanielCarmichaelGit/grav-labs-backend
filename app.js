@@ -70,7 +70,7 @@ app.get("/", (req, res) => {
 app.post("/upload-image", upload.single("image"), async (req, res) => {
   try {
     // Establish a database connection
-    await dbConnect(process.env.MONGODB_URI);
+    await dbConnect(process.env.GEN_AUTH);
 
     const image = req.file;
     const uniqueFilename = `${Date.now()}-${image.originalname}`;
