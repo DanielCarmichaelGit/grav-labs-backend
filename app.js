@@ -131,20 +131,11 @@ app.post("/anthropic/modify-html/stream", async (req, res) => {
   try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const stream = await anthropic.messages.stream({
-      system: "Injest html and a prompt and output the new html based on the required adjustments. Include no fluff text in the response. Only make changes explicitly asked for or within reason.",
+      system: "Ingest html and a prompt and output the new html based on the required adjustments. Include no fluff text in the response. Only make changes explicitly asked for or within reason.",
       messages: [
-        {
-          role: "user",
-          content: JSON.stringify(initialPrompt)
-        },
-        {
-          role: "assistant",
-          content: JSON.stringify(html)
-        },
-        {
-          role: "user",
-          content: JSON.stringify(prompt),
-        },
+        { role: "user", content: JSON.stringify(initialPrompt) },
+        { role: "assistant", content: JSON.stringify(html) },
+        { role: "user", content: JSON.stringify(prompt) },
       ],
       model: "claude-3-sonnet-20240229",
       max_tokens: 4000,
@@ -156,11 +147,20 @@ app.post("/anthropic/modify-html/stream", async (req, res) => {
       Connection: "keep-alive",
     });
 
+    let modifiedHtml = "";
+
     stream.on("text", (text) => {
-      res.write(`${text}`);
+      modifiedHtml += text;
     });
 
     stream.on("end", () => {
+      // Parse the JSON response
+      const parsedHtml = JSON.parse(modifiedHtml);
+
+      // Remove escaped characters and new line characters
+      const cleanedHtml = parsedHtml.replace(/\\n/g, "").replace(/\\/g, "");
+
+      res.write(cleanedHtml);
       res.end();
     });
 
