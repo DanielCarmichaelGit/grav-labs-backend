@@ -57,9 +57,9 @@ app.get("/", (req, res) => {
   return res.status(200).json({ message: "working" });
 });
 
-app.post("/anthropic/landing-page", async (req, res) => {
-  const { prompt } = req.body;
-});
+// app.post("/anthropic/landing-page", async (req, res) => {
+//   const { prompt } = req.body;
+// });
 
 app.post("/anthropic/landing-page/stream", async (req, res) => {
   const { prompt } = req.body;
@@ -86,11 +86,11 @@ app.post("/anthropic/landing-page/stream", async (req, res) => {
     });
 
     stream.on("text", (text) => {
-      res.write(`data: ${text}\n\n`);
+      res.write(`${text}\n\n`);
     });
 
     stream.on("end", () => {
-      res.write("event: DONE\n\n");
+      res.write("event: \n\nDONE\n\n");
       res.end();
     });
 
