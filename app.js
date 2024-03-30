@@ -1,6 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 
+const path = require("path");
+const fs = require("fs");
+
 // import utility functions
 const dbConnect = require("./src/utils/dbConnect");
 const { Anthropic } = require("@anthropic-ai/sdk");
@@ -19,6 +22,9 @@ const app = express();
 app.use(cors());
 app.options("*", cors());
 app.use(express.json({ limit: "50mb" }));
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // create utility transporter for email service
 const transporter = nodemailer.createTransport(
@@ -60,6 +66,54 @@ app.get("/", (req, res) => {
 // app.post("/anthropic/landing-page", async (req, res) => {
 //   const { prompt } = req.body;
 // });
+
+app.post("/upload-image", upload.single("image"), async (req, res) => {
+  try {
+    // Establish a database connection
+    await dbConnect(process.env.MONGODB_URI);
+
+    const image = req.file;
+    const uniqueFilename = `${Date.now()}-${image.originalname}`;
+    const uploadDirectory = path.join(__dirname, "uploads");
+
+    // Create the upload directory if it doesn't exist
+    if (!fs.existsSync(uploadDirectory)) {
+      fs.mkdirSync(uploadDirectory);
+    }
+
+    // Save the image file to the upload directory
+    const imagePath = path.join(uploadDirectory, uniqueFilename);
+    fs.writeFileSync(imagePath, image.buffer);
+
+    // Save the image metadata to MongoDB
+    const db = mongoose.connection.db;
+    const result = await db.collection("images").insertOne({
+      filename: uniqueFilename,
+      contentType: image.mimetype,
+    });
+
+    // Generate the hosted URL for the image
+    const hostedUrl = `${req.protocol}://${req.get("host")}/uploads/${uniqueFilename}`;
+
+    res.status(200).json({ message: "Image uploaded successfully", imageUrl: hostedUrl });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+
+// Endpoint to serve uploaded images
+app.get("/uploads/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const imagePath = path.join(__dirname, "uploads", filename);
+
+  // Check if the image file exists
+  if (fs.existsSync(imagePath)) {
+    res.sendFile(imagePath);
+  } else {
+    res.status(404).json({ error: "Image not found" });
+  }
+});
 
 app.post("/anthropic/landing-page/stream", async (req, res) => {
   const { prompt } = req.body;
