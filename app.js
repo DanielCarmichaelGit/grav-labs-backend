@@ -64,7 +64,7 @@ app.post("/anthropic/landing-page", async (req, res) => {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const response = await anthropic.completions.create({
       model: "claude-3-opus-20240229",
-      max_tokens: 4000,
+      max_tokens_to_sample: 4000,
       temperature: 0,
       prompt: JSON.stringify(prompt),
       stop_sequences: [anthropic.HUMAN_PROMPT],
