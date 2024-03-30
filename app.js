@@ -73,15 +73,13 @@ app.post("/anthropic/landing-page", async (req, res) => {
           "content": [
             {
               "type": "text",
-              "text": JSON.stringify(prompt)
+              "text": prompt
             }
           ]
         }
       ],
       stream: true
     });
-
-    
 
     msg.data.on("data", (data) => {
       const lines = data
