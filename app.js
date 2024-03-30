@@ -77,14 +77,11 @@ app.post("/anthropic/landing-page", async (req, res) => {
             }
           ]
         }
-      ]
+      ],
+      stream: true
     });
 
-    res.writeHead(200, {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-    });
+    
 
     msg.data.on("data", (data) => {
       const lines = data
