@@ -121,6 +121,44 @@ app.post("/upload-image", (req, res) => {
   });
 });
 
+app.post("/anthropic/modify-html/stream", async (req, res) => {
+  const { prompt, html } = req.body;
+
+  try {
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const stream = await anthropic.completions.stream({
+      prompt: `Modify the following HTML based on the user's input:\n\nUser Input: ${prompt}\n\nHTML: ${html}`,
+      stop_sequences: ["</html>"],
+      max_tokens_to_sample: 4000,
+      model: "claude-1",
+    });
+
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    });
+
+    stream.on("data", (data) => {
+      const lines = data
+        .toString()
+        .split("\n")
+        .filter((line) => line.trim() !== "");
+      for (const line of lines) {
+        const message = line.replace(/^data: /, "");
+        if (message === "[DONE]") {
+          res.end();
+        } else {
+          res.write(`${message}`);
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+
 // app.post("/upload-image", upload.single("image"), async (req, res) => {
 //   try {
 //     // Establish a database connection
