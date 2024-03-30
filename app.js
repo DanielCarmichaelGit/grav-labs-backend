@@ -8,6 +8,8 @@ const fs = require("fs");
 const dbConnect = require("./src/utils/dbConnect");
 const { Anthropic } = require("@anthropic-ai/sdk");
 
+const multer = require("multer");
+
 // import packages
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
