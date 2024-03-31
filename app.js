@@ -175,6 +175,8 @@ app.post("/login", async (req, res) => {
 
 app.post("/upload-image", (req, res) => {
   upload.single("image")(req, res, async (err) => {
+    console.log("Received request");
+    console.log("Uploaded file:", req.file);
     if (err instanceof multer.MulterError) {
       // Handle multer errors
       console.error("Multer error:", err);
@@ -195,7 +197,7 @@ app.post("/upload-image", (req, res) => {
         return res.status(400).json({ error: "No image file provided" });
       }
 
-      const uniqueFilename = `${Date.now()}-${image.originalname}`;
+      const uniqueFilename = `${Date.now()}-${(image.originalname).split(" ".join("-"))}`;
       const uploadDirectory = path.join(__dirname, "uploads");
 
       // Create the upload directory if it doesn't exist
