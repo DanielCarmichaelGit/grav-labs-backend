@@ -383,6 +383,7 @@ app.post(
         newPage.save();
         newHistory.save();
         newThread.save();
+        res.write(`data:${JSON.stringify({ history_id })}`); // Send history_id as a separate event
         res.end();
       });
 
