@@ -126,19 +126,20 @@ app.post("/signup", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   try {
-    dbConnect(process.env.GEN_AUTH);
+    await dbConnect(process.env.GEN_AUTH);
 
     const { email, password } = req.body;
 
-    const existing_user = await User.find({ email });
+    const existing_user = await User.findOne({ email });
 
-    if (Object.keys(existing_user[0]).length === 0) {
+    if (!existing_user) {
       res.status(500).json({ message: "User not found" });
       console.log("user not found");
     } else {
+      console.log("starting hash compare")
       const hash_compare = await comparePassword(
         password,
-        existing_user[0].password
+        existing_user.password
       );
 
       if (hash_compare) {
@@ -284,6 +285,7 @@ app.post("/anthropic/landing-page/stream", authenticateJWT, async (req, res) => 
   const { prompt } = req.body;
 
   try {
+    const page_id = uuidv4();
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const stream = await anthropic.messages.stream({
       system:
