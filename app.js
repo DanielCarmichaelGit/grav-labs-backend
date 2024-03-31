@@ -173,7 +173,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.post("/upload-image", (req, res) => {
+app.post("/upload-image", authenticateJWT, (req, res) => {
   upload.single("image")(req, res, async (err) => {
     console.log("Received request");
     console.log("Uploaded file:", req.file);
