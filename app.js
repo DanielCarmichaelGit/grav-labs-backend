@@ -242,8 +242,8 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
       messages = [
         { role: "user", content: JSON.stringify(initialPrompt) },
         { role: "assistant", content: JSON.stringify(html) },
-        { role: "user", content: JSON.stringify(prompt) }
-      ]
+        { role: "user", content: JSON.stringify(prompt) },
+      ];
     }
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -270,7 +270,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
       res.write(`${text}`);
     });
 
-    stream.on("end", () => {
+    stream.on("end", async () => {
       const page_id = uuidv4();
       let this_history_id = history_id.length > 0 ? history_id : uuidv4();
       const newHistory = new PageHistory({
@@ -281,9 +281,9 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
         content: result,
       });
 
-      newHistory.save();
+      await newHistory.save();
 
-      MessageThread.findOneAndUpdate(
+      await MessageThread.findOneAndUpdate(
         { this_history_id },
         {
           $push: {
@@ -300,11 +300,11 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
 
     stream.on("error", (error) => {
       console.error("Error:", error);
-      res.status(500).json({ error: "An error occurred" });
+      res.status(500).end("An error occurred");
     });
   } catch (error) {
     console.error("Error:", error);
-    res.status(500).json({ error: "An error occurred" });
+    res.status(500).end("An error occurred");
   }
 });
 
