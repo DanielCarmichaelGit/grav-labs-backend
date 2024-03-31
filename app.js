@@ -197,7 +197,7 @@ app.post("/upload-image", authenticateJWT, (req, res) => {
         return res.status(400).json({ error: "No image file provided" });
       }
 
-      const uniqueFilename = `${Date.now()}-${(image.originalname).split(" ".join("-"))}`;
+      const uniqueFilename = `${Date.now()}-${(image.originalname).split(" ").join("-"))}`;
       const uploadDirectory = path.join(__dirname, "uploads");
 
       // Create the upload directory if it doesn't exist
