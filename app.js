@@ -444,6 +444,56 @@ app.get("/history", authenticateJWT, async (req, res) => {
   }
 });
 
+app.get("/threads", authenticateJWT, async (req, res) => {
+  try {
+    const user_id = req.user.user.user_id;
+
+    if (user_id) {
+      dbConnect(process.env.GEN_AUTH);
+
+      const threads = await MessageThread.find({ user_id });
+
+      res.status(200).json({
+        message: "threads found",
+        count: threads.length,
+        threads
+      })
+    } else {
+      res.status(404).json({
+        message: "No user found"
+      })
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+})
+
+app.get("/pages", authenticateJWT, async (req, res) => {
+  try {
+    const user_id = req.user.user.user_id;
+
+    if (user_id) {
+      dbConnect(process.env.GEN_AUTH);
+
+      const pages = await PageHistory.find({ user_id }).select("timestamp content history_id");
+
+      res.status(200).json({
+        message: "pages found",
+        count: pages.length,
+        pages
+      })
+    } else {
+      res.status(404).json({
+        message: "No user found"
+      })
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+})
+
 app.get("/page", authenticateJWT, async (req, res) => {
   try {
     const { page_id } = req.body;
