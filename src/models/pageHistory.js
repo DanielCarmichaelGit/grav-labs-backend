@@ -1,8 +1,8 @@
 // src/models/user.js
 const mongoose = require("mongoose");
 
-const landingPageSchema = new mongoose.Schema({
-  page_id: {
+const pageHistorySchema = new mongoose.Schema({
+  history_id: {
     type: String,
     required: true,
   },
@@ -10,7 +10,7 @@ const landingPageSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  history_id: {
+  page_id: {
     type: String,
     required: true,
   },
@@ -24,4 +24,4 @@ const landingPageSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model("LandingPage", landingPageSchema);
+module.exports = mongoose.model("PageHistory", pageHistorySchema);
