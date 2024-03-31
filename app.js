@@ -322,7 +322,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
 });
 
 // Endpoint to serve uploaded images
-app.get("/uploads/:filename", authenticateJWT, (req, res) => {
+app.get("/uploads/:filename", (req, res) => {
   const filename = req.params.filename;
   const imagePath = path.join(__dirname, "uploads", filename);
 
