@@ -272,7 +272,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
 
     stream.on("end", async () => {
       const page_id = uuidv4();
-      let this_history_id = history_id.length > 0 ? history_id : uuidv4();
+      let this_history_id = history_id?.length > 0 ? history_id : uuidv4();
       const newHistory = new PageHistory({
         this_history_id,
         user_id: req.user.user.user_id,
