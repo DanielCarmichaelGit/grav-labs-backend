@@ -382,6 +382,7 @@ app.post(
 
         newPage.save();
         newHistory.save();
+        newThread.save();
         res.end();
       });
 
