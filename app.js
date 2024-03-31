@@ -146,7 +146,7 @@ app.post("/login", async (req, res) => {
         console.log("hash compare true");
 
         const signed_user = jwt.sign(
-          { user: existing_user[0], userId: existing_user[0].user_id },
+          { user: existing_user, userId: existing_user.user_id },
           process.env.SECRET_JWT,
           {
             expiresIn: "7d",
@@ -154,7 +154,7 @@ app.post("/login", async (req, res) => {
         );
 
         const result = {
-          user: existing_user[0],
+          user: existing_user,
           token: signed_user,
         };
 
