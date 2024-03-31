@@ -178,7 +178,7 @@ app.post("/upload-image", (req, res) => {
     if (err instanceof multer.MulterError) {
       // Handle multer errors
       console.error("Multer error:", err);
-      return res.status(400).json({ error: "File upload error" });
+      return res.status(400).json({ error: "File upload error", extra: err });
     } else if (err) {
       // Handle other errors
       console.error("Error:", err);
