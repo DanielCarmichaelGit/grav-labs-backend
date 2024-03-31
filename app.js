@@ -381,7 +381,7 @@ app.post(
         dbConnect(process.env.GEN_AUTH);
 
         newPage.save();
-        neweHistory.save();
+        newHistory.save();
         res.end();
       });
 
