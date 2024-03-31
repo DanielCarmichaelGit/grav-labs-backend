@@ -236,7 +236,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
     let messages = [];
 
     if (history_id) {
-      console.log("Finding Threads", history_id);
+      console.log("Finding Threads", history_id.split(" "));
       const threads = await MessageThread.findOne({ history_id });
       if (threads.length > 0) {
         messages = threads;
