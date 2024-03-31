@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const cors = require("cors");
 
 const path = require("path");
@@ -177,6 +178,7 @@ app.post("/upload-image", authenticateJWT, (req, res) => {
   upload.single("image")(req, res, async (err) => {
     console.log("Received request");
     console.log("Uploaded file:", req.file);
+
     if (err instanceof multer.MulterError) {
       // Handle multer errors
       console.error("Multer error:", err);
@@ -192,7 +194,6 @@ app.post("/upload-image", authenticateJWT, (req, res) => {
       await dbConnect(process.env.GEN_AUTH);
 
       const image = req.file;
-
       if (!image) {
         return res.status(400).json({ error: "No image file provided" });
       }
