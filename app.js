@@ -272,8 +272,9 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
 
     stream.on("end", () => {
       const page_id = uuidv4();
+      let this_history_id = history_id.length > 0 ? history_id : uuidv4();
       const newHistory = new PageHistory({
-        history_id,
+        this_history_id,
         user_id: req.user.user.user_id,
         page_id,
         timestamp: Date.now(),
@@ -283,7 +284,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
       newHistory.save();
 
       MessageThread.findOneAndUpdate(
-        { history_id },
+        { this_history_id },
         {
           $push: {
             messages: [
