@@ -102,7 +102,7 @@ app.post("/signup", async (req, res) => {
       },
     });
 
-    const created_user = newUser.save();
+    const created_user = await newUser.save();
 
     // sign the first token provided to the user
     const token = jwt.sign(
