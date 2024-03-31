@@ -476,7 +476,7 @@ app.get("/pages", authenticateJWT, async (req, res) => {
     if (user_id) {
       dbConnect(process.env.GEN_AUTH);
 
-      const pages = await PageHistory.find({ user_id }).select("timestamp content history_id");
+      const pages = await PageHistory.find({ user_id }).select("timestamp content history_id page_id");
 
       res.status(200).json({
         message: "pages found",
