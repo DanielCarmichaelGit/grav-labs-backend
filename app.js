@@ -224,7 +224,7 @@ app.post("/upload-image", (req, res) => {
   });
 });
 
-app.post("/anthropic/modify-html/stream", async (req, res) => {
+app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
   const { prompt, html, initialPrompt } = req.body;
 
   try {
@@ -266,7 +266,7 @@ app.post("/anthropic/modify-html/stream", async (req, res) => {
 });
 
 // Endpoint to serve uploaded images
-app.get("/uploads/:filename", (req, res) => {
+app.get("/uploads/:filename", authenticateJWT, (req, res) => {
   const filename = req.params.filename;
   const imagePath = path.join(__dirname, "uploads", filename);
 
@@ -278,7 +278,7 @@ app.get("/uploads/:filename", (req, res) => {
   }
 });
 
-app.post("/anthropic/landing-page/stream", async (req, res) => {
+app.post("/anthropic/landing-page/stream", authenticateJWT, async (req, res) => {
   const { prompt } = req.body;
 
   try {
