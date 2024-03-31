@@ -234,6 +234,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
 
   try {
     let messages = [];
+    dbConnect(process.env.GEN_AUTH);
 
     if (history_id) {
       console.log("Finding Threads", history_id.split(" "));
