@@ -233,11 +233,19 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
   const { prompt, html, initialPrompt, history_id } = req.body;
 
   try {
-    const threads = await MessageThread.findOne({ history_id });
     let messages = [];
 
-    if (threads.length > 0) {
-      messages = threads;
+    if (history_id) {
+      const threads = await MessageThread.findOne({ history_id });
+      if (threads.length > 0) {
+        messages = threads;
+      } else {
+        messages = [
+          { role: "user", content: JSON.stringify(initialPrompt) },
+          { role: "assistant", content: JSON.stringify(html) },
+          { role: "user", content: JSON.stringify(prompt) },
+        ];
+      }
     } else {
       messages = [
         { role: "user", content: JSON.stringify(initialPrompt) },
