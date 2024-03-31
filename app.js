@@ -102,9 +102,11 @@ app.post("/signup", async (req, res) => {
       },
     });
 
+    const created_user = newUser.save();
+
     // sign the first token provided to the user
     const token = jwt.sign(
-      { user: newUser, userId: user_id },
+      { user: created_user, userId: user_id },
       process.env.SECRET_JWT,
       {
         expiresIn: "7d",
@@ -113,7 +115,7 @@ app.post("/signup", async (req, res) => {
 
     res.status(200).json({
       message: "User Registered",
-      user: newUser,
+      user: created_user,
       token,
     });
   } catch (error) {
