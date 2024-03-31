@@ -1,23 +1,27 @@
 // src/models/user.js
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
-  user_id: {
+const landingPageSchema = new mongoose.Schema({
+  page_id: {
     type: String,
     required: true,
   },
-  name: {
+  title: {
     type: Object,
     required: true
   },
-  email: {
+  user: {
     type: String,
     required: true,
   },
-  password: {
+  history_id: {
     type: String,
     required: true,
   },
+  timestamp: {
+    type: String,
+    required: true,
+  }
 });
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("LandingPage", landingPageSchema);

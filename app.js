@@ -17,6 +17,9 @@ const nodemailer = require("nodemailer");
 const sgTransport = require("nodemailer-sendgrid-transport");
 const bcrypt = require("bcrypt");
 
+const User = require("./src/models/user");
+const LandingPage = require("./src/models/landingPage");
+
 // Secret key for JWT signing (change it to a strong, random value)
 const SECRET_JWT = process.env.SECRET_JWT;
 
@@ -65,9 +68,105 @@ app.get("/", (req, res) => {
   return res.status(200).json({ message: "working" });
 });
 
-// app.post("/anthropic/landing-page", async (req, res) => {
-//   const { prompt } = req.body;
-// });
+app.post("/signup", async (req, res) => {
+  try {
+    await dbConnect(process.env.GEN_AUTH);
+    const { password, email, name } = req.body;
+    console.log(name);
+
+    const { first, last } = name;
+
+    // Check if the username already exists
+    const existingUser = await User.findOne({ email });
+
+    // if existing user, early return
+    if (existingUser) {
+      return res.status(409).json({
+        message: "Username already exists",
+        redirect: { url: "https://kamariteams.com" },
+      });
+    }
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const user_id = uuidv4();
+
+    //Create a jam group for this new user
+    const newUser = new User({
+      user_id,
+      email,
+      password: hashedPassword,
+      name: {
+        first,
+        last,
+      },
+    });
+
+    // sign the first token provided to the user
+    const token = jwt.sign(
+      { user: newUser, userId: user_id },
+      process.env.SECRET_JWT,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    res.status(200).json({
+      message: "User Registered",
+      user: newUser,
+      token,
+    });
+  } catch (error) {
+    console.error("Error during user registration:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const { email, password } = req.body;
+
+    const existing_user = await User.find({ email });
+
+    if (Object.keys(existing_user[0]).length === 0) {
+      res.status(500).json({ message: "User not found" });
+      console.log("user not found");
+    } else {
+      const hash_compare = await comparePassword(
+        password,
+        existing_user[0].password
+      );
+
+      if (hash_compare) {
+        console.log("hash compare true");
+
+        const signed_user = jwt.sign(
+          { user: existing_user[0], userId: existing_user[0].user_id },
+          process.env.SECRET_JWT,
+          {
+            expiresIn: "7d",
+          }
+        );
+
+        const result = {
+          user: existing_user[0],
+          token: signed_user,
+        };
+
+        res.status(200).json(result);
+      } else {
+        console.log("hash compare false");
+        res
+          .status(400)
+          .json({ message: "User not authorized. Incorrect password" });
+      }
+    }
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+});
 
 app.post("/upload-image", (req, res) => {
   upload.single("image")(req, res, async (err) => {
