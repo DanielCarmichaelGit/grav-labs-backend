@@ -65,6 +65,10 @@ async function comparePassword(plaintextPassword, hashedPassword) {
   return bcrypt.compare(plaintextPassword, hashedPassword);
 }
 
+function removeEscapeCharacters(str) {
+  return str.replace(/\t|\n/g, '');
+}
+
 // test endpoint to verify server status
 app.get("/", (req, res) => {
   console.log("received home");
@@ -279,8 +283,8 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
     let result = "";
 
     stream.on("text", (text) => {
-      result += text;
-      res.write(`${text}`);
+      result += removeEscapeCharacters(text);
+      res.write(`${removeEscapeCharacters(text)}`);
     });
 
     stream.on("end", async () => {
@@ -368,8 +372,8 @@ app.post(
       let result = "";
 
       stream.on("text", (text) => {
-        result += text;
-        res.write(`${text}`);
+        result += removeEscapeCharacters(text);
+        res.write(`${removeEscapeCharacters(text)}`);
       });
 
       stream.on("end", () => {
