@@ -73,8 +73,38 @@ function removeEscapeCharacters(str) {
 // test endpoint to verify server status
 app.get("/", (req, res) => {
   console.log("received home");
-  return res.status(200).json({ message: "working" });
+  return res.status(200).json({ message: "working", status: 200 });
 });
+
+app.get("/user", authenticateJWT, async (req, res) => {
+  try {
+    const user_id = req.user.user.user_id;
+
+    if (user_id) {
+      const existing_user = await User.findOne({ user_id });
+
+      if (existing_user) {
+        res.status(200).json({
+          message: "user found",
+          status: 200,
+          user: existing_user
+        })
+      } else {
+        res.status(404).json({
+          message: "no user found",
+          status: 404
+        })
+      }
+    } else {
+      res.status(409).json({
+        message: "authentication invalid"
+      })
+    }
+  } catch (error) {
+    console.error("Error during user fetch:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+})
 
 app.post("/signup", async (req, res) => {
   try {
