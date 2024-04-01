@@ -79,6 +79,9 @@ app.get("/", (req, res) => {
 app.get("/user", authenticateJWT, async (req, res) => {
   try {
     const user_id = req.user.user.user_id;
+    console.log(req.user.user)
+    console.log(req.user)
+    console.log(user_id)
 
     if (user_id) {
       const existing_user = await User.findOne({ user_id });
