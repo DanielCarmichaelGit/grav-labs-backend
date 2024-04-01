@@ -27,6 +27,7 @@ const MessageThread = require("./src/models/threads");
 const SECRET_JWT = process.env.SECRET_JWT;
 
 const app = express();
+app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 app.options("*", cors());
 app.use(express.json({ limit: "50mb" }));
@@ -66,7 +67,7 @@ async function comparePassword(plaintextPassword, hashedPassword) {
 }
 
 function removeEscapeCharacters(str) {
-  return str.replace(/\t|\n/g, '');
+  return str.replace(/\t|\n/g, "");
 }
 
 // test endpoint to verify server status
@@ -205,7 +206,7 @@ app.post("/upload-image", authenticateJWT, (req, res) => {
       const uniqueFilename = `${Date.now()}-${image.originalname
         .split(" ")
         .join("-")}`;
-      const uploadDirectory = path.join(__dirname, "uploads");
+      const uploadDirectory = path.join(__dirname, "..", "public", "uploads");
 
       // Create the upload directory if it doesn't exist
       if (!fs.existsSync(uploadDirectory)) {
@@ -221,12 +222,11 @@ app.post("/upload-image", authenticateJWT, (req, res) => {
       const result = await db.collection("images").insertOne({
         filename: uniqueFilename,
         contentType: image.mimetype,
+        user_id: req.user.user.user_id
       });
 
       // Generate the hosted URL for the image
-      const hostedUrl = `${req.protocol}://${req.get(
-        "host"
-      )}/uploads/${uniqueFilename}`;
+      const hostedUrl = `${req.protocol}://${req.get("host")}/uploads/${uniqueFilename}`;
 
       res
         .status(200)
@@ -328,7 +328,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
 // Endpoint to serve uploaded images
 app.get("/uploads/:filename", (req, res) => {
   const filename = req.params.filename;
-  const imagePath = path.join(__dirname, "uploads", filename);
+  const imagePath = path.join(__dirname, "..", "public", "uploads", filename);
 
   // Check if the image file exists
   if (fs.existsSync(imagePath)) {

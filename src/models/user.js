@@ -18,6 +18,30 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  hosted_page: {
+    type: String,
+    required: false
+  },
+  brand_colors: {
+    type: Object,
+    required: false
+  },
+  brand_industry: {
+    type: String,
+    required: false,
+  },
+  brand_name: {
+    type: String,
+    required: false
+  },
+  brand_logo_url: {
+    type: String,
+    required: false
+  },
+  brand_images: {
+    type: Array,
+    required: false
+  }
 });
 
 module.exports = mongoose.model("User", userSchema);
