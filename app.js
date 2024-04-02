@@ -376,6 +376,35 @@ app.get("/uploads/:filename", (req, res) => {
   }
 });
 
+app.get("/images", authenticateJWT, async (req, res) => {
+  try {
+    const user_id = req.user.user.user_id;
+
+    if (user_id) {
+      await dbConnect(process.env.GEN_AUTH);
+
+      const images = await images.find({ user_id });
+
+      if (images) {
+        res.status(200).json({
+          message: "images found",
+          status: 200,
+          count: images.length,
+          images
+        })
+      }
+    } else {
+      res.status(409).json({
+        message: "authentication invalid",
+        status: 409
+      })
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).end("An error occurred");
+  }
+})
+
 app.post(
   "/anthropic/landing-page/stream",
   authenticateJWT,
