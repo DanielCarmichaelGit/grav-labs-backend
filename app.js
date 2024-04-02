@@ -109,6 +109,54 @@ app.get("/user", authenticateJWT, async (req, res) => {
   }
 });
 
+app.put("/user", authenticateJWT, async (req, res) => {
+  try {
+    dbConnect(process.env.GEN_AUTH);
+
+    const user = req.user.user;
+
+    const { user_id, email } = req.body;
+
+    if (user_id === user.user_id) {
+      if (email) {
+        res.status(202).json({
+          message:
+            "We do not currently support email changes. Check again soon.",
+        });
+      } else {
+        try {
+          const updated_user = await User.findOneAndUpdate(
+            { user_id },
+            {
+              $set: { ...req.body },
+            },
+            {
+              new: true,
+            }
+          );
+
+          res.status(200).json({
+            message: "User Updated",
+            user: updated_user,
+          });
+        } catch (error) {
+          res.status(500).json({
+            message: error,
+            attempted_resource: req.body,
+            requesting_user: user,
+          });
+        }
+      }
+    } else {
+      res.status(404).json({
+        message: "User does not have access to change user details",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ status: 500, message: error });
+  }
+});
+
 app.post("/signup", async (req, res) => {
   try {
     await dbConnect(process.env.GEN_AUTH);

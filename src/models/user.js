@@ -45,6 +45,10 @@ const userSchema = new mongoose.Schema({
   brand_images: {
     type: Array,
     required: false
+  },
+  brand_mode: {
+    type: String,
+    required: false
   }
 });
 
