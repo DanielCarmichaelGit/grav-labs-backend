@@ -22,6 +22,7 @@ const User = require("./src/models/user");
 const LandingPage = require("./src/models/landingPage");
 const PageHistory = require("./src/models/pageHistory");
 const MessageThread = require("./src/models/threads");
+const Image = require("./src/models/image");
 
 // Secret key for JWT signing (change it to a strong, random value)
 const SECRET_JWT = process.env.SECRET_JWT;
@@ -257,14 +258,17 @@ app.post("/upload-image", authenticateJWT, (req, res) => {
       )}/uploads/${uniqueFilename}`;
 
       // Save the image metadata to MongoDB
-      const db = mongoose.connection.db;
-      const created_image = await db.collection("images").insertOne({
+      const image_id = uuidv4();
+      const newImage = new Image({
+        image_id,
         filename: uniqueFilename,
         contentType: image.mimetype,
         user_id: req.user.user.user_id,
         hosted_url: hostedUrl,
         copy
       });
+
+      const created_image = await newImage.save();
 
       res
         .status(200)
@@ -382,8 +386,8 @@ app.get("/images", authenticateJWT, async (req, res) => {
 
     if (user_id) {
       await dbConnect(process.env.GEN_AUTH);
-      const db = mongoose.connection.db;
-      const images = await db.collection("images").find({ user_id });
+
+      const images = await Image.find({ user_id });
 
       if (images) {
         res.status(200).json({
