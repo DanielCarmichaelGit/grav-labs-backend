@@ -19,7 +19,7 @@ const imageSchema = new mongoose.Schema({
     required: true,
   },
   hosted__url: {
-    type: Object,
+    type: String,
     required: false
   },
   copy: {
