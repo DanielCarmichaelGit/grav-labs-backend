@@ -269,7 +269,7 @@ app.post("/upload-image", authenticateJWT, (req, res) => {
       });
       await newImage.save();
 
-      res.status(200).json({ message: "Image uploaded successfully", imageUrl: hostedUrl });
+      res.status(200).json({ message: "Image uploaded successfully", imageUrl: hostedUrl, image: created_image });
     } catch (error) {
       console.error("Error:", error);
       res.status(500).json({ error: "An error occurred" });
