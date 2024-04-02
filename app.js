@@ -82,31 +82,31 @@ app.get("/user", authenticateJWT, async (req, res) => {
 
     if (user_id) {
       await dbConnect(process.env.GEN_AUTH);
-      
+
       const existing_user = await User.findOne({ user_id });
 
       if (existing_user) {
         res.status(200).json({
           message: "user found",
           status: 200,
-          user: existing_user
-        })
+          user: existing_user,
+        });
       } else {
         res.status(404).json({
           message: "no user found",
-          status: 404
-        })
+          status: 404,
+        });
       }
     } else {
       res.status(409).json({
-        message: "authentication invalid"
-      })
+        message: "authentication invalid",
+      });
     }
   } catch (error) {
     console.error("Error during user fetch:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
-})
+});
 
 app.post("/signup", async (req, res) => {
   try {
@@ -212,6 +212,8 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/upload-image", authenticateJWT, (req, res) => {
+  const { copy = "" } = req.body;
+
   upload.single("image")(req, res, async (err) => {
     console.log("Received request");
     console.log("Uploaded file:", req.file);
@@ -249,20 +251,24 @@ app.post("/upload-image", authenticateJWT, (req, res) => {
       const imagePath = path.join(uploadDirectory, uniqueFilename);
       fs.writeFileSync(imagePath, image.buffer);
 
+      // Generate the hosted URL for the image
+      const hostedUrl = `${req.protocol}://${req.get(
+        "host"
+      )}/uploads/${uniqueFilename}`;
+
       // Save the image metadata to MongoDB
       const db = mongoose.connection.db;
-      const result = await db.collection("images").insertOne({
+      const created_image = await db.collection("images").insertOne({
         filename: uniqueFilename,
         contentType: image.mimetype,
-        user_id: req.user.user.user_id
+        user_id: req.user.user.user_id,
+        hosted_url: hostedUrl,
+        copy
       });
-
-      // Generate the hosted URL for the image
-      const hostedUrl = `${req.protocol}://${req.get("host")}/uploads/${uniqueFilename}`;
 
       res
         .status(200)
-        .json({ message: "Image uploaded successfully", imageUrl: hostedUrl });
+        .json({ message: "Image uploaded successfully", image: created_image });
     } catch (error) {
       console.error("Error:", error);
       res.status(500).json({ error: "An error occurred" });

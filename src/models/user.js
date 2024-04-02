@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   hosted_page: {
-    type: String,
+    type: Object,
     required: false
   },
   brand_colors: {
@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema({
   brand_industry: {
     type: String,
     required: false,
+  },
+  brand_copy: {
+    type: String,
+    required: false
   },
   brand_name: {
     type: String,
