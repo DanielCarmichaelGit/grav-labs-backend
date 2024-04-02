@@ -392,6 +392,11 @@ app.get("/images", authenticateJWT, async (req, res) => {
           count: images.length,
           images
         })
+      } else {
+        res.status(404).json({
+          message: "no images found",
+          status: 404
+        })
       }
     } else {
       res.status(409).json({
