@@ -24,7 +24,7 @@ const imageSchema = new mongoose.Schema({
   },
   copy: {
     type: String,
-    required: true
+    required: false
   },
 });
 
