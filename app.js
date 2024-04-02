@@ -383,7 +383,7 @@ app.get("/images", authenticateJWT, async (req, res) => {
     if (user_id) {
       await dbConnect(process.env.GEN_AUTH);
 
-      const images = await images.find({ user_id });
+      const images = await await db.collection("images").find({ user_id });
 
       if (images) {
         res.status(200).json({
