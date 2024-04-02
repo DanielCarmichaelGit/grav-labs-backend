@@ -230,6 +230,10 @@ app.post("/upload-image", authenticateJWT, (req, res) => {
     }
 
     try {
+      if (!req.user || !req.user.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
       // Establish a database connection
       await dbConnect(process.env.GEN_AUTH);
 
@@ -238,10 +242,8 @@ app.post("/upload-image", authenticateJWT, (req, res) => {
         return res.status(400).json({ error: "No image file provided" });
       }
 
-      const uniqueFilename = `${Date.now()}-${image.originalname
-        .split(" ")
-        .join("-")}`;
-      const uploadDirectory = path.join(__dirname, "..", "public", "uploads");
+      const uniqueFilename = `${Date.now()}-${image.originalname.split(" ").join("-")}`;
+      const uploadDirectory = path.join(__dirname, "public", "uploads");
 
       // Create the upload directory if it doesn't exist
       if (!fs.existsSync(uploadDirectory)) {
@@ -253,9 +255,7 @@ app.post("/upload-image", authenticateJWT, (req, res) => {
       fs.writeFileSync(imagePath, image.buffer);
 
       // Generate the hosted URL for the image
-      const hostedUrl = `${req.protocol}://${req.get(
-        "host"
-      )}/uploads/${uniqueFilename}`;
+      const hostedUrl = `${req.protocol}://${req.get("host")}/uploads/${uniqueFilename}`;
 
       // Save the image metadata to MongoDB
       const image_id = uuidv4();
@@ -265,14 +265,11 @@ app.post("/upload-image", authenticateJWT, (req, res) => {
         contentType: image.mimetype,
         user_id: req.user.user.user_id,
         hosted_url: hostedUrl,
-        copy
+        copy,
       });
+      await newImage.save();
 
-      const created_image = await newImage.save();
-
-      res
-        .status(200)
-        .json({ message: "Image uploaded successfully", image: created_image });
+      res.status(200).json({ message: "Image uploaded successfully", imageUrl: hostedUrl });
     } catch (error) {
       console.error("Error:", error);
       res.status(500).json({ error: "An error occurred" });
