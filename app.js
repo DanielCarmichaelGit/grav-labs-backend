@@ -81,42 +81,32 @@ app.get("/", (req, res) => {
 app.post("/anthropic/clean-html", authenticateJWT, async (req, res) => {
   try {
     const { page_id, variant_id, code } = req.body;
-
     if (page_id && variant_id) {
       const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  
       const cleaned_code = await anthropic.messages.create({
         model: "claude-3-sonnet-20240229",
         system: "Your role is to intake a string that contains an entire html page and output a cleaned string that is the html page.\n\nThe issue is that sometimes I get a an html page with fluff text, random quotation marks, and random escape sequences scattered throughout the page. Sometimes, the html also contains fluff that falls outside the html page. Do not ever return any response that starts with something like 'here are the changes you asked for' as it breaks the output.",
         max_tokens: 4000,
         messages: [{ role: "user", content: code }],
       });
-
       if (cleaned_code.content[0].text) {
-        await Variant.findOneAndUpdate({ variant_id }, {
-          $set: {
-            content: cleaned_code.content[0].text
-          }
-        })
-        await PageHistory.findByIdAndUpdate({ page_id: page_id }, {
-          $set: {
-            content: cleaned_code.content[0].text
-          }
-        })
-
+        await Variant.findOneAndUpdate(
+          { variant_id },
+          { $set: { content: cleaned_code.content[0].text } }
+        );
+        await PageHistory.findOneAndUpdate(
+          { page_id: page_id },
+          { $set: { content: cleaned_code.content[0].text } }
+        );
         res.status(200).json({
           content: cleaned_code.content[0].text,
-          message: "HTML Cleaned"
-        })
+          message: "HTML Cleaned",
+        });
       } else {
-        res.status(500).json({
-          message: "could not clean code"
-        })
+        res.status(500).json({ message: "could not clean code" });
       }
     } else {
-      res.status(404).json({
-        message: "please provide a page and variant id"
-      })
+      res.status(404).json({ message: "please provide a page and variant id" });
     }
   } catch (error) {
     console.error("Error during html cleaning:", error);
