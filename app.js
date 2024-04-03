@@ -335,7 +335,7 @@ app.post("/upload-image", authenticateJWT, (req, res) => {
 });
 
 app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
-  const { prompt, html, initialPrompt, history_id } = req.body;
+  const { prompt, html, initialPrompt, history_id, page_id } = req.body;
 
   try {
     let messages = [];
@@ -384,15 +384,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
     });
 
     stream.on("end", async () => {
-      const page_id = uuidv4();
       let this_history_id = history_id?.length > 0 ? history_id : uuidv4();
-      const newHistory = new PageHistory({
-        history_id: this_history_id,
-        user_id: req.user.user.user_id,
-        page_id,
-        timestamp: Date.now(),
-        content: result,
-      });
 
       const newVariant = new Variant({
         variant_id: uuidv4(),
@@ -406,7 +398,25 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
           { role: "assistant", content: result },
         ],
       });
-      
+
+      await PageHistory.findOneAndUpdate(
+        { page_id },
+        {
+          $set: {
+            history_id: this_history_id,
+            timestamp: Date.now(),
+            content: result
+          },
+          $inc: {
+            variant_count: 1
+          }
+        }
+      );
+
+      // - do not make a new page but update the existing page. You will need to return the page id
+      // - from the create endpoint and then pass it to this endpoint
+      // - after you pass it here, you need to create a new variant.
+      // - after creating the new variant, you need to update the existing page 
 
       newHistory.save();
       newVariant.save();
@@ -536,6 +546,7 @@ app.post(
           timestamp: Date.now(),
           page_id,
           user_id: req.user.user.user_id,
+          variant_count: 1
         });
 
         const newVariant = new Variant({
@@ -567,7 +578,7 @@ app.post(
         newThread.save();
         newVariant.save();
 
-        res.write(`data:${JSON.stringify({ history_id })}`); // Send history_id as a separate event
+        res.write(`data:${JSON.stringify({ history_id, page_id })}`); // Send history_id as a separate event
         res.end();
       });
 
@@ -583,6 +594,34 @@ app.post(
 );
 
 app.get("/history", authenticateJWT, async (req, res) => {
+  try {
+    const { history_id } = req.body;
+
+    if (history_id) {
+      dbConnect(process.env.GEN_AUTH);
+
+      const versions = LandingPage.find({ history_id });
+
+      if (versions?.length > 0) {
+        res.status(200).json({
+          message: "Versions Found",
+          count: versions.length,
+          versions,
+        });
+      } else {
+        res.status(404).json({
+          message: "No versions found",
+          count: 0,
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+
+app.get("/variants", authenticateJWT, async (req, res) => {
   try {
     const { history_id } = req.body;
 

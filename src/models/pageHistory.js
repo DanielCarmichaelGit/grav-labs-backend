@@ -21,6 +21,10 @@ const pageHistorySchema = new mongoose.Schema({
   content: {
     type: String,
     required: true
+  },
+  variant_count: {
+    type: Number,
+    required: true
   }
 });
 
