@@ -340,6 +340,12 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
   try {
     let messages = [];
     dbConnect(process.env.GEN_AUTH);
+  
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    });
 
     if (history_id) {
       console.log("Finding Threads", history_id.split(" "));
@@ -376,12 +382,6 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
           messages: [...messages],
           model: "claude-3-sonnet-20240229",
           max_tokens: 4000,
-        });
-  
-        res.writeHead(200, {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          Connection: "keep-alive",
         });
   
         let result = "";
