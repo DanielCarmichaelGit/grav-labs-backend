@@ -366,6 +366,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
     let retryCount = 0;
     const maxRetries = 3;
     const retryDelay = 2000; // 2 seconds
+    let retrying = false;
 
     const streamResponse = async () => {
       const stream = await anthropic.messages.stream({
@@ -388,9 +389,10 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
       stream.on("text", (text) => {
         if (isFirstChunk) {
           if (text.trim().charAt(0) !== "<") {
-            stream.cancel();
+            stream.abort();
             if (retryCount < maxRetries) {
               retryCount++;
+              retrying = true;
               console.log(
                 `Unexpected response. Retrying (${retryCount}/${maxRetries})...`
               );
@@ -399,6 +401,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
                 streamResponse(); // Retry the request after a delay
               }, retryDelay);
             } else {
+              retrying = false;
               console.error("Max retries reached. Sending error response.");
               res.status(500).end("Unexpected response from the API");
             }
@@ -412,54 +415,56 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
       });
 
       stream.on("end", async () => {
-        let this_history_id = history_id?.length > 0 ? history_id : uuidv4();
-
-        const newVariant = new Variant({
-          variant_id: uuidv4(),
-          user_id: req.user.user.user_id,
-          page_id,
-          timestamp: Date.now(),
-          content: result,
-          messages: [
-            ...messages,
-            { role: "user", content: JSON.stringify(prompt) },
-            { role: "assistant", content: result },
-          ],
-        });
-
-        await PageHistory.findOneAndUpdate(
-          { page_id },
-          {
-            $set: {
-              history_id: this_history_id,
-              timestamp: Date.now(),
-              content: result,
-            },
-            $inc: {
-              variant_count: 1,
-            },
-          }
-        );
-
-        newVariant.save();
-
-        await MessageThread.findOneAndUpdate(
-          { history_id: this_history_id },
-          {
-            $push: {
-              messages: [
-                { role: "user", content: JSON.stringify(prompt) },
-                { role: "assistant", content: result },
-              ],
-            },
-          }
-        );
-
-        res.end();
+        if (!retrying) {
+          let this_history_id = history_id?.length > 0 ? history_id : uuidv4();
+  
+          const newVariant = new Variant({
+            variant_id: uuidv4(),
+            user_id: req.user.user.user_id,
+            page_id,
+            timestamp: Date.now(),
+            content: result,
+            messages: [
+              ...messages,
+              { role: "user", content: JSON.stringify(prompt) },
+              { role: "assistant", content: result },
+            ],
+          });
+  
+          await PageHistory.findOneAndUpdate(
+            { page_id },
+            {
+              $set: {
+                history_id: this_history_id,
+                timestamp: Date.now(),
+                content: result,
+              },
+              $inc: {
+                variant_count: 1,
+              },
+            }
+          );
+  
+          newVariant.save();
+  
+          await MessageThread.findOneAndUpdate(
+            { history_id: this_history_id },
+            {
+              $push: {
+                messages: [
+                  { role: "user", content: JSON.stringify(prompt) },
+                  { role: "assistant", content: result },
+                ],
+              },
+            }
+          );
+          res.end();
+        }
       });
 
       stream.on("error", (error) => {
         console.error("Error:", error);
+        console.log("ERROR LOGGING TRACE")
         res.status(500).end("An error occurred");
       });
     };
