@@ -369,13 +369,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-    let retryCount = 0;
-    const maxRetries = 3;
-    const retryDelay = 2000; // 2 seconds
-    let retrying = true;
-
     const streamResponse = async () => {
-      while (retrying) {
         const stream = await anthropic.messages.stream({
           system:
             '<instructions>\nYour task is to intake a json object and output a customized landing page written in HTML. Ensure that the design is visually appealing, responsive, and user-friendly. The HTML, CSS, and JavaScript code should be well-structured, efficiently organized, and properly commented for readability and maintainability. Ensure the output complies with the output specifications.\n\nSometimes the input will just be a simple string and not an object. If it is a string, make the changes requested in the string to the existing webpage and no other alterations. Then, output the updated webpage per the output specifications.\n</instructions>\n\n<Output Specifications>\nThe output should start with <!DOCTYPE html> and end with </html>.\n\nThe output should have and html header at the top of the page, main content, and a footer at the bottom of the page.\n\nThe output page should be SEO optimized.\n</Output Specifications>\n\n<rules>\nThe generated HTML Page should always use normalize css as the base stylesheet which can be imported into the landing page using the below element:\n\n<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">\n\nNo content should horizontally overflow on the edges of the screen. If content is to overflow on the x plane, it needs to wrap.Overflow vertical content is acceptable.\n\nImages may be provided, if specified in the users prompt - apply the image where specified, otherwise analyze the image and place the image on the webpage somewhere and attach some relevant copy.\n\nThere must be a header, main section with all the content, and a footer. The header must have a left aligned logo image or logo text and right aligned buttons. The header should be no more than 60px in height. If the user requests the header to be styled differently, you must make the header style changes.\n</rules>\n\n<example inputs>\n<example input 1>\n{\n    "website_title": "Mortecai",\n    "theme": "dark",\n    "colors": {\n        "primary": "#9013fe",\n        "secondary": "#bd10e0",\n        "tertiary": "#ff5367"\n    },\n    "industry": "Generative AI, AI Web Development, AI, No Code",\n    "copy": "Mortecai is a generative ai solution that uses existing ai infrastructure, internal model training and alignment, and high quality source code to generate full stack web applications based on just a few prompts. The typical cost of building an mvp of a web app for a non technical founder is between $10k and $50k. Using Mortecai, we can reduce that cost by a factor of 10.\\n\\nOur beta now offers landing page generation and hosting. Please be prepared as we acquire funcing soon and launch mortecai into the starts. \\n\\nOur mission is to bring a software engineer into everyone\'s business. No technical skills required.. at all.. ever.. yeah..",\n    "staggered": true,\n    "alignment": "left"\n}\n</example input 1>\n<example input 2>\n{\n    "website_title": "Lavendar",\n    "theme": "light",\n    "colors": {\n        "primary": "#9013fe",\n        "secondary": "#bd10e0",\n        "tertiary": "#ff5367"\n    },\n    "industry": "Flower Growing, Florist, Flower Potting and Planting",\n    "copy": "Lavender is the premier florist for weddings, events, and birthdays in New York City. We bring you earth raised flowers still fresh with the aromas of mother earth. we offer florist catering and event setups as well as bouquets for purchase at one of our many retail centers in the city",\n    "staggered": false,\n    "alignment": "center"\n}\n</example input 2>\n<example input 3>\nadd a free use image for the logo from undraw -- RAG Resource Images: \n</example input 3>\n</example inputs>\n\n\n<reference landing page screenshot urls>\nhttps://www.searchenginejournal.com/wp-content/uploads/2023/08/best-landing-page-examples-64e6080f990bb-sej.png\n\nhttps://neilpatel.com/wp-content/uploads/2023/06/Best_landing_pages2-1536x705.jpg\n\nhttps://neilpatel.com/wp-content/uploads/2023/06/Best_landing_pages6-1536x696.jpg\n\nhttps://neilpatel.com/wp-content/uploads/2023/06/Best_landing_pages9-1536x957.jpg\n</reference landing page screenshot urls>\n\n',
@@ -385,38 +379,13 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
         });
 
         let result = "";
-        let isFirstChunk = true;
 
         stream.on("text", (text) => {
-          if (isFirstChunk) {
-            if (text.trim().charAt(0) !== "<") {
-              stream.abort();
-              if (retryCount < maxRetries) {
-                retryCount++;
-                retrying = true;
-                console.log(
-                  `Unexpected response. Retrying (${retryCount}/${maxRetries})...`
-                );
-                result = ""; // Reset the result variable before retrying
-                setTimeout(() => {
-                  streamResponse(); // Retry the request after a delay
-                }, retryDelay);
-              } else {
-                retrying = false;
-                console.error("Max retries reached. Sending error response.");
-                res.status(500).end("Unexpected response from the API");
-              }
-              return;
-            }
-            isFirstChunk = false;
-          }
-
           result += removeEscapeCharacters(text);
           res.write(removeEscapeCharacters(text));
         });
 
         stream.on("end", async () => {
-          if (!retrying) {
             let this_history_id =
               history_id?.length > 0 ? history_id : uuidv4();
 
@@ -461,7 +430,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
               }
             );
             res.end();
-          }
+          
         });
 
         stream.on("error", (error) => {
@@ -469,7 +438,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
           console.log("ERROR LOGGING TRACE");
           res.status(500).end("An error occurred");
         });
-      }
+      
     };
 
     streamResponse();
