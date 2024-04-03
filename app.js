@@ -363,6 +363,10 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryDelay = 2000; // 2 seconds
+
     const streamResponse = async () => {
       const stream = await anthropic.messages.stream({
         system:
@@ -385,7 +389,16 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
         if (isFirstChunk) {
           if (text.trim().charAt(0) !== "<") {
             stream.cancel();
-            streamResponse(); // Retry the request
+            if (retryCount < maxRetries) {
+              retryCount++;
+              console.log(`Unexpected response. Retrying (${retryCount}/${maxRetries})...`);
+              setTimeout(() => {
+                streamResponse(); // Retry the request after a delay
+              }, retryDelay);
+            } else {
+              console.error("Max retries reached. Sending error response.");
+              res.status(500).end("Unexpected response from the API");
+            }
             return;
           }
           isFirstChunk = false;
