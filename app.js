@@ -474,7 +474,7 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
             },
           }
         );
-        res.write(`data:${JSON.stringify({ history_id: this_history_id, variant_id })}`);
+        res.write(`data:${JSON.stringify({ history_id: this_history_id, variant_id, page_id })}`);
         res.end();
       });
 
