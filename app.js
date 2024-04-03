@@ -23,6 +23,7 @@ const LandingPage = require("./src/models/landingPage");
 const PageHistory = require("./src/models/pageHistory");
 const MessageThread = require("./src/models/threads");
 const Image = require("./src/models/image");
+const Variant = requiree("./src/models/variant");
 
 // Secret key for JWT signing (change it to a strong, random value)
 const SECRET_JWT = process.env.SECRET_JWT;
@@ -393,7 +394,22 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
         content: result,
       });
 
-      await newHistory.save();
+      const newVariant = new Variant({
+        variant_id: uuidv4(),
+        user_id: req.user.user.user_id,
+        page_id,
+        timestamp: Date.now(),
+        content: result,
+        messages: [
+          ...messages,
+          { role: "user", content: JSON.stringify(prompt) },
+          { role: "assistant", content: result },
+        ],
+      });
+      
+
+      newHistory.save();
+      newVariant.save();
 
       await MessageThread.findOneAndUpdate(
         { history_id: this_history_id },
@@ -522,6 +538,18 @@ app.post(
           user_id: req.user.user.user_id,
         });
 
+        const newVariant = new Variant({
+          variant_id: uuidv4(),
+          user_id: req.user.user.user_id,
+          page_id,
+          timestamp: Date.now(),
+          content: result,
+          messages: [
+            { role: "user", content: JSON.stringify(prompt) },
+            { role: "assistant", content: result },
+          ],
+        });
+
         const newThread = new MessageThread({
           history_id,
           user_id: req.user.user.user_id,
@@ -537,6 +565,8 @@ app.post(
         newPage.save();
         newHistory.save();
         newThread.save();
+        newVariant.save();
+
         res.write(`data:${JSON.stringify({ history_id })}`); // Send history_id as a separate event
         res.end();
       });
