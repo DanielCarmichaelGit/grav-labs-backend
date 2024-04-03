@@ -98,7 +98,7 @@ app.post("/anthropic/clean-html", authenticateJWT, async (req, res) => {
             content: cleaned_code.content[0].text
           }
         })
-        await PageHistory.findByIdAndUpdate({ page_id }, {
+        await PageHistory.findByIdAndUpdate({ page_id: page_id }, {
           $set: {
             content: cleaned_code.content[0].text
           }
