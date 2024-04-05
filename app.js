@@ -780,6 +780,8 @@ app.post("/huggingface/inference", async (req, res) => {
     if (prompt) {
       const inference = new HfInference(process.env.HF_INFERENCE_TOKEN);
 
+      const model = inference.endpoint("https://j6po2oe02bi5644g.us-east-1.aws.endpoints.huggingface.cloud")
+
       if (inference) {
         const output = await inference.request({
           inputs: prompt,
