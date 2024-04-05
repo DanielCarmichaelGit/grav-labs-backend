@@ -793,7 +793,11 @@ app.post("/huggingface/inference", async (req, res) => {
       if (inference) {
         // ####
         const streamResponse = async () => {
-          const stream = await model.request({task: prompt});
+          const stream = await model.request({inputs: prompt, parameters: {
+            custom_parameter_1: "only return html as a string",
+            custom_parameter_2: "only use inline styling",
+            custom_parameter_3: "the html page should be the best landing page ever made",
+          }});
 
           let result = "";
 
