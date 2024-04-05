@@ -24,6 +24,7 @@ const PageHistory = require("./src/models/pageHistory");
 const MessageThread = require("./src/models/threads");
 const Image = require("./src/models/image");
 const Variant = require("./src/models/variant");
+const { HfInference } = require("@huggingface/inference");
 
 // Secret key for JWT signing (change it to a strong, random value)
 const SECRET_JWT = process.env.SECRET_JWT;
@@ -764,6 +765,32 @@ app.get("/page", authenticateJWT, async (req, res) => {
         res.status(404).json({
           message: "No landing page found",
         });
+      }
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+
+app.post("/huggingface/inference", async (req, res) => {
+  try {
+    const { prompt = "give me an html landing page" } = req.body;
+
+    if (prompt) {
+      const inference = new HfInference(process.env.HF_INFERENCE_TOKEN);
+
+      if (inference) {
+        const output = await inference.request({
+          inputs: prompt,
+        });
+
+        if (output) {
+          res.status(200).json({
+            message: "good request",
+            output,
+          });
+        }
       }
     }
   } catch (error) {
