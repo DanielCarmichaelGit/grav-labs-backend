@@ -777,7 +777,7 @@ app.post("/huggingface/inference", async (req, res) => {
   try {
     const { prompt = "give me an html landing page" } = req.body;
     if (prompt) {
-      const inference = new HfInference(process.env.HF_INFERENCE_TOKEN);
+      const inference = new HfInference(process.env.HF_INFERENCE_TOKEN_READ);
       const model = inference.endpoint(
         "https://j6po2oe02bi5644g.us-east-1.aws.endpoints.huggingface.cloud"
       );
@@ -794,6 +794,7 @@ app.post("/huggingface/inference", async (req, res) => {
               custom_parameter_1: "only return html as a string",
               custom_parameter_2: "only use inline styling",
               custom_parameter_3: "the html page should be the best landing page ever made",
+              custom_parameter_4: "a minimum output of 1000 lines of code is required"
             },
           });
           let result = "";
