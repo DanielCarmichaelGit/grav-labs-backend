@@ -780,19 +780,46 @@ app.post("/huggingface/inference", async (req, res) => {
     if (prompt) {
       const inference = new HfInference(process.env.HF_INFERENCE_TOKEN);
 
-      const model = inference.endpoint("https://j6po2oe02bi5644g.us-east-1.aws.endpoints.huggingface.cloud")
+      const model = inference.endpoint(
+        "https://j6po2oe02bi5644g.us-east-1.aws.endpoints.huggingface.cloud"
+      );
+
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
 
       if (inference) {
-        const output = await inference.request({
-          inputs: prompt,
-        });
+        // ####
+        const streamResponse = async () => {
+          const stream = await model.request({task: prompt});
 
-        if (output) {
-          res.status(200).json({
-            message: "good request",
-            output,
+          let result = "";
+
+          stream.on("text", (text) => {
+            result += removeEscapeCharacters(text);
+            res.write(removeEscapeCharacters(text));
           });
-        }
+
+          stream.on("end", async () => {
+            res.write(
+              `data:${JSON.stringify({
+                history_id: this_history_id,
+                variant_id,
+                page_id,
+              })}`
+            );
+            res.end();
+          });
+
+          stream.on("error", (error) => {
+            console.error("Error:", error);
+            console.log("ERROR LOGGING TRACE");
+            res.status(500).end("An error occurred");
+          });
+        };
+        // ####
       }
     }
   } catch (error) {
