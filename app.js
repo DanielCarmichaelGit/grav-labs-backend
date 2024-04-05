@@ -776,54 +776,45 @@ app.get("/page", authenticateJWT, async (req, res) => {
 app.post("/huggingface/inference", async (req, res) => {
   try {
     const { prompt = "give me an html landing page" } = req.body;
-
     if (prompt) {
       const inference = new HfInference(process.env.HF_INFERENCE_TOKEN);
-
       const model = inference.endpoint(
         "https://j6po2oe02bi5644g.us-east-1.aws.endpoints.huggingface.cloud"
       );
-
       res.writeHead(200, {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
       });
-
       if (inference) {
-        // ####
         const streamResponse = async () => {
-          const stream = await model.request({inputs: prompt, parameters: {
-            custom_parameter_1: "only return html as a string",
-            custom_parameter_2: "only use inline styling",
-            custom_parameter_3: "the html page should be the best landing page ever made",
-          }});
-
-          let result = "";
-
-          stream.on("text", (text) => {
-            result += removeEscapeCharacters(text);
-            res.write(removeEscapeCharacters(text));
+          const stream = await model.request({
+            inputs: prompt,
+            parameters: {
+              custom_parameter_1: "only return html as a string",
+              custom_parameter_2: "only use inline styling",
+              custom_parameter_3: "the html page should be the best landing page ever made",
+            },
           });
-
+          let result = "";
+          stream.on("text", (text) => {
+            result += text;
+            res.write(text);
+          });
           stream.on("end", async () => {
             res.write(
-              `data:${JSON.stringify({
-                history_id: this_history_id,
-                variant_id,
-                page_id,
-              })}`
+              `DONE`
             );
             res.end();
           });
-
           stream.on("error", (error) => {
             console.error("Error:", error);
             console.log("ERROR LOGGING TRACE");
             res.status(500).end("An error occurred");
           });
         };
-        // ####
+
+        streamResponse();
       }
     }
   } catch (error) {
