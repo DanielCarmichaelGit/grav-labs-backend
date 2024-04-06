@@ -539,50 +539,54 @@ app.get("/images", authenticateJWT, async (req, res) => {
   }
 });
 
-app.post("/anthropic/copy-generation/stream", authenticateJWT, async (req, res) => {
-  try {
-    const { landing_copy_object } = req.body;
+app.post(
+  "/anthropic/copy-generation/stream",
+  authenticateJWT,
+  async (req, res) => {
+    try {
+      const { landing_copy_object } = req.body;
 
-    const anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    });
-    const stream = await anthropic.messages.stream({
-      system:
-        '<system_prompt>\n\n<role>\nyour role is to ingest an object that contains properties with values that are short snippets of descriptive copy. Sometimes, the values will be blank and. You will output an object\n</role>\n\n<example_input>\n{\n    brand_name: "Mortecai",\n    brand_description:\n      "Mortecai is a revolutionary new way to build products. No more do you need to have the technical skills, money to hire developers, or a team behind you. With simple prompts, a few steeps, and a couple minutes, you can have a full stack application ready to deploy. Or, choose from one of our many generation options.",\n    image_configs: [\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362516106-landing-ai.png",\n        type: "logo",\n        copy: "",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362523629-example-2.svg",\n        type: "hero",\n        copy: "",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362532457-undraw_Static_website_re_x70h.png",\n        type: "feature",\n        copy: "No code",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362541420-undraw_Team_up_re_84ok-(1).png",\n        type: "feature",\n        copy: "prompt to product",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362555472-undraw_Design_inspiration_re_tftx.png",\n        type: "feature",\n        copy: "your dreams become reality",\n      },\n    ],\n  }\n</example_input>\n\n<example_output>\n{\n    brand_name: "Mortecai",\n    brand_description:\n      "Mortecai is a revolutionary new way to build products. No more do you need to have the technical skills, money to hire developers, or a team behind you. With simple prompts, a few steeps, and a couple minutes, you can have a full stack application ready to deploy. Or, choose from one of our many generation options.",\n    image_configs: [\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362516106-landing-ai.png",\n        type: "logo",\n        copy: <generated_copy>Add generated copy here</generated_copy>,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362523629-example-2.svg",\n        type: "hero",\n        copy: <generated_copy>Add generated copy here</generated_copy>,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362532457-undraw_Static_website_re_x70h.png",\n        type: "feature",\n        copy: <generated_copy>Add generated copy here based on the copy provided</generated_copy>,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362541420-undraw_Team_up_re_84ok-(1).png",\n        type: "feature",\n        copy: <generated_copy>Add generated copy here based on the copy provided</generated_copy>,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362555472-undraw_Design_inspiration_re_tftx.png",\n        type: "feature",\n        copy: <generated_copy>Add generated copy here based on the copy provided</generated_copy>,\n      },\n    ],\n  }\n</example_output>\n\n<output_rules>\n\n<rule>\nno xml tags should appear in the output\n<rule>\n<rule>\nthe output object should retain the same properties such as brand_deescription should not be renamed to brand_copy, copy, or description.\n<rule>\n<rule>\nthe provided urls must be included\n<rule>\n<rule>\nthe output should contain a keyword array\n<rule>\n<rule>\nfor each image, generate at least 300 words of copy\n<rule>\n<rule>\nonly output an object\n<rule>\n<rule>\nadditional copy can be added in the copy object such as copy for "suspected_industry", "competitive_analysis", and others as long as the copy is aligned well with the brand description\n<rule>\n\n</output_rules>\n\n</system_prompt>',
-      messages: [
-        {
-          role: "user",
-          content: JSON.stringify(landing_copy_object),
-        },
-      ],
-      model: "claude-3-sonnet-20240229",
-      max_tokens: 4000,
-    });
+      const anthropic = new Anthropic({
+        apiKey: process.env.ANTHROPIC_API_KEY,
+      });
+      const stream = await anthropic.messages.stream({
+        system:
+          '<system_prompt>\n\n<role>\nyour role is to ingest an object that contains properties with values that are short snippets of descriptive copy. Sometimes, the values will be blank and. You will output an object\n</role>\n\n<example_input>\n{\n    brand_name: "Mortecai",\n    brand_description:\n      "Mortecai is a revolutionary new way to build products. No more do you need to have the technical skills, money to hire developers, or a team behind you. With simple prompts, a few steeps, and a couple minutes, you can have a full stack application ready to deploy. Or, choose from one of our many generation options.",\n    image_configs: [\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362516106-landing-ai.png",\n        type: "logo",\n        copy: "",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362523629-example-2.svg",\n        type: "hero",\n        copy: "",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362532457-undraw_Static_website_re_x70h.png",\n        type: "feature",\n        copy: "No code",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362541420-undraw_Team_up_re_84ok-(1).png",\n        type: "feature",\n        copy: "prompt to product",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362555472-undraw_Design_inspiration_re_tftx.png",\n        type: "feature",\n        copy: "your dreams become reality",\n      },\n    ],\n  }\n</example_input>\n\n<example_output>\n{\n    brand_name: "Mortecai",\n    brand_description:\n      "Mortecai is a revolutionary new way to build products. No more do you need to have the technical skills, money to hire developers, or a team behind you. With simple prompts, a few steeps, and a couple minutes, you can have a full stack application ready to deploy. Or, choose from one of our many generation options.",\n    image_configs: [\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362516106-landing-ai.png",\n        type: "logo",\n        copy: <generated_copy>Add generated copy here</generated_copy>,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362523629-example-2.svg",\n        type: "hero",\n        copy: <generated_copy>Add generated copy here</generated_copy>,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362532457-undraw_Static_website_re_x70h.png",\n        type: "feature",\n        copy: <generated_copy>Add generated copy here based on the copy provided</generated_copy>,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362541420-undraw_Team_up_re_84ok-(1).png",\n        type: "feature",\n        copy: <generated_copy>Add generated copy here based on the copy provided</generated_copy>,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362555472-undraw_Design_inspiration_re_tftx.png",\n        type: "feature",\n        copy: <generated_copy>Add generated copy here based on the copy provided</generated_copy>,\n      },\n    ],\n  }\n</example_output>\n\n<output_rules>\n\n<rule>\nno xml tags should appear in the output\n<rule>\n<rule>\nthe output object should retain the same properties such as brand_deescription should not be renamed to brand_copy, copy, or description.\n<rule>\n<rule>\nthe provided urls must be included\n<rule>\n<rule>\nthe output should contain a keyword array\n<rule>\n<rule>\nfor each image, generate at least 300 words of copy\n<rule>\n<rule>\nonly output an object\n<rule>\n<rule>\nadditional copy can be added in the copy object such as copy for "suspected_industry", "competitive_analysis", and others as long as the copy is aligned well with the brand description\n<rule>\n\n</output_rules>\n\n</system_prompt>',
+        messages: [
+          {
+            role: "user",
+            content: JSON.stringify(landing_copy_object),
+          },
+        ],
+        model: "claude-3-sonnet-20240229",
+        max_tokens: 4000,
+      });
 
-    res.writeHead(200, {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-    });
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
 
-    stream.on("text", (text) => {
-      res.write(text);
-    });
+      stream.on("text", (text) => {
+        res.write(text);
+      });
 
-    stream.on("end", () => {
-      res.write("DONE"); // Send history_id as a separate event
-      res.end();
-    });
+      stream.on("end", () => {
+        res.write("DONE"); // Send history_id as a separate event
+        res.end();
+      });
 
-    stream.on("error", (error) => {
+      stream.on("error", (error) => {
+        console.error("Error:", error);
+        res.status(500).json({ error: "An error occurred" });
+      });
+    } catch (error) {
       console.error("Error:", error);
-      res.status(500).json({ error: "An error occurred" });
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).end("An error occurred");
+      res.status(500).end("An error occurred");
+    }
   }
-});
+);
 
 app.post("/anthropic/copy-generation", authenticateJWT, async (req, res) => {
   try {
@@ -596,7 +600,7 @@ app.post("/anthropic/copy-generation", authenticateJWT, async (req, res) => {
 
     const response = await anthropic.messages.create({
       system:
-        '<system_prompt>\n\n<role>\nyour role is to ingest an object that contains properties with values that are short snippets of descriptive copy. Sometimes, the values will be blank and. You will output an object\n</role>\n\n<example_input>\n{\n    brand_name: "Mortecai",\n    brand_description:\n      "Mortecai is a revolutionary new way to build products. No more do you need to have the technical skills, money to hire developers, or a team behind you. With simple prompts, a few steeps, and a couple minutes, you can have a full stack application ready to deploy. Or, choose from one of our many generation options.",\n    image_configs: [\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362516106-landing-ai.png",\n        type: "logo",\n        copy: "",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362523629-example-2.svg",\n        type: "hero",\n        copy: "",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362532457-undraw_Static_website_re_x70h.png",\n        type: "feature",\n        copy: "No code",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362541420-undraw_Team_up_re_84ok-(1).png",\n        type: "feature",\n        copy: "prompt to product",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362555472-undraw_Design_inspiration_re_tftx.png",\n        type: "feature",\n        copy: "your dreams become reality",\n      },\n    ],\n  }\n</example_input>\n\n<example_output>\n{\n    brand_name: "Mortecai",\n    brand_description:\n      "Mortecai is a revolutionary new way to build products. No more do you need to have the technical skills, money to hire developers, or a team behind you. With simple prompts, a few steeps, and a couple minutes, you can have a full stack application ready to deploy. Or, choose from one of our many generation options.",\n    image_configs: [\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362516106-landing-ai.png",\n        type: "logo",\n        copy: <generated_copy>Add generated copy here</generated_copy>,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362523629-example-2.svg",\n        type: "hero",\n        copy: <generated_copy>Add generated copy here</generated_copy>,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362532457-undraw_Static_website_re_x70h.png",\n        type: "feature",\n        copy: <generated_copy>Add generated copy here based on the copy provided</generated_copy>,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362541420-undraw_Team_up_re_84ok-(1).png",\n        type: "feature",\n        copy: <generated_copy>Add generated copy here based on the copy provided</generated_copy>,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362555472-undraw_Design_inspiration_re_tftx.png",\n        type: "feature",\n        copy: <generated_copy>Add generated copy here based on the copy provided</generated_copy>,\n      },\n    ],\n  }\n</example_output>\n\n<output_rules>\n\n<rule>\nno xml tags should appear in the output\n<rule>\n<rule>\nthe output object should retain the same properties such as brand_deescription should not be renamed to brand_copy, copy, or description.\n<rule>\n<rule>\nthe provided urls must be included\n<rule>\n<rule>\nthe output should contain a keyword array\n<rule>\n<rule>\nfor each image, generate at least 300 words of copy\n<rule>\n<rule>\nonly output an object\n<rule>\n<rule>\nadditional copy can be added in the copy object such as copy for "suspected_industry", "competitive_analysis", and others as long as the copy is aligned well with the brand description\n<rule>\n\n</output_rules>\n\n</system_prompt>',
+        '<system_prompt>\n\n<role>\nyou are an expert copywriter and your job is to receive an object and return a similar object but with new copy. The copy you create should always be clear of spelling error even if the given text is full of errors.\n</role>\n\n<example_input>\n{\n    brand_name: "Mortecai",\n    brand_description:\n      "Mortecai is a revolutionary new way to build products. No more do you need to have the technical skills, money to hire developers, or a team behind you. With simple prompts, a few steeps, and a couple minutes, you can have a full stack application ready to deploy. Or, choose from one of our many generation options.",\n    image_configs: [\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362516106-landing-ai.png",\n        type: "logo",\n        copy: "",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362523629-example-2.svg",\n        type: "hero",\n        copy: "",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362532457-undraw_Static_website_re_x70h.png",\n        type: "feature",\n        copy: "No code",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362541420-undraw_Team_up_re_84ok-(1).png",\n        type: "feature",\n        copy: "prompt to product",\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362555472-undraw_Design_inspiration_re_tftx.png",\n        type: "feature",\n        copy: "your dreams become reality",\n      },\n    ],\n  }\n</example_input>\n\n<example_output>\n{\n    brand_name: "Mortecai",\n    brand_description:\n      "Mortecai is a revolutionary new way to build products. No more do you need to have the technical skills, money to hire developers, or a team behind you. With simple prompts, a few steeps, and a couple minutes, you can have a full stack application ready to deploy. Or, choose from one of our many generation options.",\n    image_configs: [\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362516106-landing-ai.png",\n        type: "logo",\n        copy: Mortecai is a leading generative ai product that is in it\'s beta program and outputs web applications and landing pages in a few minutes,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362523629-example-2.svg",\n        type: "hero",\n        copy: Mortecai brings you MortecaiX, the world\'s premier AI only product engineer.,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362532457-undraw_Static_website_re_x70h.png",\n        type: "feature",\n        copy: Mortecai is a no code platform. Everything can be adjusted with simple prompts, navigate your web app and suggest changes, wait for them to compile, and see your app become exactly what you want,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362541420-undraw_Team_up_re_84ok-(1).png",\n        type: "feature",\n        copy: easily iterate on past products for free, or build something new. only using prompts,\n      },\n      {\n        url: "http://grav-labs-5d2f91941bbb.herokuapp.com/uploads/1712362555472-undraw_Design_inspiration_re_tftx.png",\n        type: "feature",\n        copy: choose from design templates, or craft something new using simple prompts. No more do you need to be able to code to deliver stunning web applications and landing pages.,\n      },\n    ],\n  }\n</example_output>\n\n<output_rules>\n\n<rule>\nno xml tags should appear in the output\n<rule>\n<rule>\nthe output object should retain the same properties such as brand_deescription should not be renamed to brand_copy, copy, or description.\n<rule>\n<rule>\nthe provided urls must be included\n<rule>\n<rule>\nthe output should contain a keyword array\n<rule>\n<rule>\nfor each image, generate at least 300 words of copy\n<rule>\n<rule>\nonly output an object\n<rule>\n<rule>\nadditional copy can be added in the copy object such as copy for "suspected_industry", "competitive_analysis", and others as long as the copy is aligned well with the brand description.\n<rule>\n<rule>\nif you include a competitive analysis property in the output, it should heavily focus on numbers and analytics.\n</rule>\n\n</output_rules>\n\n</system_prompt>',
       messages: [
         {
           role: "user",
@@ -609,8 +613,8 @@ app.post("/anthropic/copy-generation", authenticateJWT, async (req, res) => {
 
     if (response) {
       res.status(200).json({
-        data: {...response}
-      })
+        data: { ...response },
+      });
     }
   } catch (error) {
     console.error("Error:", error);
