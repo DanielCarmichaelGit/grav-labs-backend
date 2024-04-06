@@ -584,6 +584,47 @@ app.post("/anthropic/copy-generation/stream", authenticateJWT, async (req, res) 
   }
 });
 
+app.post("/anthropic/copy-generation", authenticateJWT, async (req, res) => {
+  try {
+    const { landing_copy_object } = req.body;
+
+    const anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
+
+    // Set the response headers to indicate that the response will be sent in chunks
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Transfer-Encoding': 'chunked',
+    });
+
+    // Create a readable stream from the Anthropic API response
+    const stream = await anthropic.messages.create({
+      system: '...', // Your system prompt goes here
+      messages: [
+        {
+          role: "user",
+          content: JSON.stringify(landing_copy_object),
+        },
+      ],
+      model: "claude-3-sonnet-20240229",
+      max_tokens: 4000,
+      stream: true, // Enable streaming mode
+    });
+
+    // Pipe the readable stream to the response
+    stream.pipe(res);
+
+    // Handle the 'end' event to indicate the completion of the response
+    stream.on('end', () => {
+      res.end();
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).end("An error occurred");
+  }
+});
+
 app.post(
   "/anthropic/landing-page/stream",
   authenticateJWT,
