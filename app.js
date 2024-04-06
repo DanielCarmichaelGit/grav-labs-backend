@@ -645,7 +645,6 @@ app.post(
         ],
         model: "claude-3-sonnet-20240229",
         max_tokens: 4000,
-        anthropic_beta: "tools-2024-04-04",
       });
 
       res.writeHead(200, {
