@@ -34,6 +34,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 app.options("*", cors());
 app.use(express.json({ limit: "50mb" }));
+app.timeout = 60 * 1000 * 10;
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -80,10 +81,11 @@ app.get("/", (req, res) => {
 });
 
 app.post("/anthropic/clean-html", authenticateJWT, async (req, res) => {
+  req.setTimeout(5 * 60 * 1000);
+
   try {
     const { page_id, variant_id, code } = req.body;
 
-    req.setTimeout(5 * 60 * 1000);
 
     if (page_id && variant_id && code) {
       const anthropic = new Anthropic({
