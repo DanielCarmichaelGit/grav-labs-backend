@@ -123,6 +123,7 @@ app.post("/anthropic/clean-html", authenticateJWT, async (req, res) => {
           content: cleaned_code.content[0].text,
           message: "HTML Cleaned",
         });
+        console.log("response sent");
       } else {
         res.status(500).json({ message: "could not clean code" });
       }
