@@ -628,6 +628,8 @@ app.post(
   async (req, res) => {
     const { prompt } = req.body;
 
+    req.setTimeout(5 * 60 * 1000);
+
     try {
       const page_id = uuidv4();
       const history_id = uuidv4();
