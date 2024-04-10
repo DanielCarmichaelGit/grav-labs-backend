@@ -101,6 +101,7 @@ app.post("/anthropic/clean-html", authenticateJWT, async (req, res) => {
         messages: [{ role: "user", content: code }],
       });
       console.log("this runs too")
+      console.log(cleaned_code.content[0].text)
 
       if (cleaned_code.content[0].text) {
         await dbConnect(process.env.GEN_AUTH);
