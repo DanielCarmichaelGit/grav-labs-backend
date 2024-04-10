@@ -82,11 +82,15 @@ app.get("/", (req, res) => {
 app.post("/anthropic/clean-html", authenticateJWT, async (req, res) => {
   try {
     const { page_id, variant_id, code } = req.body;
+
     req.setTimeout(5 * 60 * 1000);
-    if (page_id && variant_id) {
+
+    if (page_id && variant_id && code) {
       const anthropic = new Anthropic({
         apiKey: process.env.ANTHROPIC_API_KEY,
       });
+
+      console.log("this runs")
       const cleaned_code = await anthropic.messages.create({
         model: "claude-3-sonnet-20240229",
         system:
@@ -94,8 +98,11 @@ app.post("/anthropic/clean-html", authenticateJWT, async (req, res) => {
         max_tokens: 4000,
         messages: [{ role: "user", content: code }],
       });
+      console.log("this runs too")
+
       if (cleaned_code.content[0].text) {
         await dbConnect(process.env.GEN_AUTH);
+
         await Variant.findOneAndUpdate(
           { variant_id },
           { $set: { content: cleaned_code.content[0].text } }
