@@ -120,8 +120,8 @@ app.post("/anthropic/clean-html", authenticateJWT, async (req, res) => {
         console.log("Page Updated");
 
         res.status(200).json({
-          content: cleaned_code.content[0].text,
           message: "HTML Cleaned",
+          content: cleaned_code.content[0].text,
         });
         console.log("response sent");
       } else {
