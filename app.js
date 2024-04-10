@@ -93,6 +93,7 @@ app.post("/anthropic/clean-html", authenticateJWT, async (req, res) => {
           "Your role is to intake a string that contains an entire html page and output a cleaned string that is the html page.\n\nThe issue is that sometimes I get a an html page with fluff text, random quotation marks, and random escape sequences scattered throughout the page. Sometimes, the html also contains fluff that falls outside the html page. Do not ever return any response that starts with something like 'here are the changes you asked for' as it breaks the output.",
         max_tokens: 4000,
         messages: [{ role: "user", content: code }],
+        timeout: 60000
       });
       if (cleaned_code.content[0].text) {
         await dbConnect(process.env.GEN_AUTH);
