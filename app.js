@@ -381,6 +381,8 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
     let messages = [];
     dbConnect(process.env.GEN_AUTH);
 
+    req.setTimeout(5 * 60 * 1000);
+
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
@@ -627,8 +629,6 @@ app.post(
   authenticateJWT,
   async (req, res) => {
     const { prompt } = req.body;
-
-    req.setTimeout(5 * 60 * 1000);
 
     try {
       const page_id = uuidv4();
