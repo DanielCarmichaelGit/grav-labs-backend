@@ -94,6 +94,7 @@ app.post("/anthropic/clean-html", authenticateJWT, async (req, res) => {
         messages: [{ role: "user", content: code }],
       });
       if (cleaned_code.content[0].text) {
+        await dbConnect(process.env.GEN_AUTH);
         await Variant.findOneAndUpdate(
           { variant_id },
           { $set: { content: cleaned_code.content[0].text } }
@@ -380,8 +381,6 @@ app.post("/anthropic/modify-html/stream", authenticateJWT, async (req, res) => {
   try {
     let messages = [];
     dbConnect(process.env.GEN_AUTH);
-
-    req.setTimeout(5 * 60 * 1000);
 
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
