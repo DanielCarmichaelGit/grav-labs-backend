@@ -34,7 +34,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 app.options("*", cors());
 app.use(express.json({ limit: "50mb" }));
-app.setTimeout(10 * 60 * 1000);
+app.timeout = (10 * 60 * 1000);
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
