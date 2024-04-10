@@ -105,15 +105,20 @@ app.post("/anthropic/clean-html", authenticateJWT, async (req, res) => {
 
       if (cleaned_code.content[0].text) {
         await dbConnect(process.env.GEN_AUTH);
+        console.log("DB Connected");
 
         await Variant.findOneAndUpdate(
           { variant_id },
           { $set: { content: cleaned_code.content[0].text } }
         );
+        console.log("Variant Updated");
+
         await PageHistory.findOneAndUpdate(
           { page_id: page_id },
           { $set: { content: cleaned_code.content[0].text } }
         );
+        console.log("Page Updated");
+
         res.status(200).json({
           content: cleaned_code.content[0].text,
           message: "HTML Cleaned",
