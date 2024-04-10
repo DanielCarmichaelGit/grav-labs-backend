@@ -29,18 +29,11 @@ const { HfInference } = require("@huggingface/inference");
 // Secret key for JWT signing (change it to a strong, random value)
 const SECRET_JWT = process.env.SECRET_JWT;
 
-var timeout = require('connect-timeout'); //express v4
 const app = express();
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 app.options("*", cors());
 app.use(express.json({ limit: "50mb" }));
-app.use(timeout(60 * 1000));
-app.use(haltOnTimedout);
-
-function haltOnTimedout(req, res, next){
-  if (!req.timedout) next();
-}
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -87,6 +80,11 @@ app.get("/", (req, res) => {
 });
 
 app.post("/anthropic/clean-html", authenticateJWT, async (req, res) => {
+  res.setTimeout(120000,() => {
+    res.status(408).json({
+      message: "timeout occured"
+    })
+  })
   try {
     const { page_id, variant_id, code } = req.body;
 
