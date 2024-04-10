@@ -82,6 +82,7 @@ app.get("/", (req, res) => {
 app.post("/anthropic/clean-html", authenticateJWT, async (req, res) => {
   try {
     const { page_id, variant_id, code } = req.body;
+    req.setTimeout(5 * 60 * 1000);
     if (page_id && variant_id) {
       const anthropic = new Anthropic({
         apiKey: process.env.ANTHROPIC_API_KEY,
